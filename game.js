@@ -404,6 +404,12 @@ const ARROW = pixTex(['kkkkkkkkk', 'kyyyyyyyk', 'kyyyyyyyk', '.kyyyyyk.', '..kyy
 const capMark = label(ARROW, 0.95, 0.74);
 const capRing = new THREE.Mesh(new THREE.RingGeometry(0.72, 0.95, 24), new THREE.MeshBasicMaterial({ color: '#ffe14a', transparent: true, opacity: 0.9, depthWrite: false }));
 capRing.rotation.x = -Math.PI / 2; capRing.scale.y = 0.6; scene.add(capRing); toPlay(capRing);
+// the ball's marker: a dashed pixel ring that spins on the grass under the ball; it widens as the ball flies higher
+const BRING = tex(32, 32, (g) => { for (let a = 0; a < 6.283; a += 0.02) { const seg = Math.floor(a / (6.283 / 8)); if (seg % 2) continue;
+  const x = Math.round(16 + Math.cos(a) * 12), y = Math.round(16 + Math.sin(a) * 12); g.fillStyle = '#111'; g.fillRect(x - 3, y - 3, 6, 6); }
+  for (let a = 0; a < 6.283; a += 0.02) { const seg = Math.floor(a / (6.283 / 8)); if (seg % 2) continue; const x = Math.round(16 + Math.cos(a) * 12), y = Math.round(16 + Math.sin(a) * 12); g.fillStyle = '#fff'; g.fillRect(x - 2, y - 2, 4, 4); } });
+const ballRing = new THREE.Group(); { const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: BRING, transparent: true, alphaTest: 0.4, depthWrite: false, fog: false }));
+  m.rotation.x = -Math.PI / 2; ballRing.add(m); ballRing.mat = m.material; scene.add(ballRing); toPlay(ballRing); toPlay(m); }
 const ballSpr = (() => { const s = makeSprite(IMG_G); s.sgrp.visible = false; const b = FR.ball; s.show([b[0], b[1], b[2], b[3], b[2] / 2]); s.blob.scale.set(0.45, 0.25, 1); return s; })();
 const ball = { x: 0, z: 0, y: 0, vx: 0, vz: 0, vy: 0, owner: null, last: null, lastT: 0, sup: null, spin: 0, hot: 0 };
 
@@ -1021,7 +1027,9 @@ function draw(dt) {
   ballSpr.mat.color.set(ball.hot > 0 ? (Math.floor(t * 12) % 2 ? '#ff5a3a' : '#ffb03a') : '#ffffff');
   ballSpr.blob.position.set(ball.x, 0.025, ball.z); const bs = Math.max(0.35, 1 - ball.y * 0.1); ballSpr.blob.scale.set(0.45 * bs, 0.25 * bs, 1);
   const c = captain; capMark.visible = G.state !== 'menu';
-  { const h = 3.15 + Math.abs(Math.sin(t * 6)) * 0.3; capMark.position.set(c.x - Math.sin(CAM_YAW) * h * Math.sin(LEAN), c.y + h * Math.cos(LEAN), c.z - Math.cos(CAM_YAW) * h * Math.sin(LEAN)); capMark.quaternion.copy(camera.quaternion); capRing.visible = capMark.visible; capRing.position.set(c.x, 0.03, c.z); } 
+  { const h = 3.15 + Math.abs(Math.sin(t * 6)) * 0.3; capMark.position.set(c.x - Math.sin(CAM_YAW) * h * Math.sin(LEAN), c.y + h * Math.cos(LEAN), c.z - Math.cos(CAM_YAW) * h * Math.sin(LEAN)); capMark.quaternion.copy(camera.quaternion); capRing.visible = capMark.visible; capRing.position.set(c.x, 0.03, c.z); }
+  { const k = 1.9 + Math.min(1.8, ball.y * 0.25) + Math.sin(t * 7) * 0.08; ballRing.position.set(ball.x, 0.04, ball.z); ballRing.scale.setScalar(k); ballRing.rotation.y = -t * 2.6;
+    ballRing.mat.color.set(ball.sup || ball.hot > 0 ? '#ff6a3a' : ball.owner ? (ball.owner.team ? '#d9b8ff' : '#9cf0a8') : '#ffe14a'); } 
   // the camera: high up, following the ball, never past the ends
   const portrait = innerHeight > innerWidth;
   const tx = Math.max(-PX + (portrait ? 5 : 10), Math.min(PX - (portrait ? 5 : 10), ball.x + ball.vx * 0.12)), tz = Math.max(-7, Math.min(7, ball.z * 0.6));
