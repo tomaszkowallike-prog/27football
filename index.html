@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Cuiavia Soccer</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* VOICE an 8-bit cartridge. IDEA the original's black status bar under a 3D pitch. PICTURE the game itself.
+     COLOUR Cuiavia green, the rivals purple, white type on black, GOAL! in orange. TYPE Pixelify Sans. */
+  :root { --ink: #000; --g: #3fbf55; --p: #b98cf2; --w: #f4f1e8; --o: #ffa62b; --barH: 74px; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; font-family: "Pixelify Sans", monospace; color: var(--w); user-select: none; -webkit-user-select: none; touch-action: none; }
+  #stage { position: fixed; inset: 0; }
+  #stage canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+  canvas.px { image-rendering: pixelated; display: block; }
+  /* a broadcast HUD: score top-left, your player bottom-left, the map bottom-centre, the rival bottom-right */
+  .hud { display: none; position: fixed; z-index: 3; }
+  body.playing .hud { display: flex; }
+  #score { top: max(10px, env(safe-area-inset-top)); left: max(10px, env(safe-area-inset-left)); align-items: center; gap: 0; filter: drop-shadow(0 3px 0 rgba(0,0,0,.35)); }
+  #score .plate { display: flex; align-items: center; gap: 10px; background: linear-gradient(#24272c, #101114); border: 2px solid #3a3d44; border-radius: 6px 0 0 6px; padding: 4px 12px 4px 6px; height: 46px; }
+  #score .crest { width: 34px; height: 38px; flex: none; }
+  #score .tn { font-size: 22px; font-weight: 700; letter-spacing: .04em; }
+  #score .num { font-size: 32px; font-weight: 700; min-width: 70px; text-align: center; white-space: nowrap; }
+  #score .clockp { display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 14px 0 18px; background: linear-gradient(#2b2e34, #15171a); border: 2px solid #3a3d44; border-left: 0; clip-path: polygon(12px 0, 100% 0, 100% 100%, 0 100%); margin-left: -6px; font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .card { bottom: max(10px, env(safe-area-inset-bottom)); align-items: flex-end; gap: 0; filter: drop-shadow(0 3px 0 rgba(0,0,0,.35)); }
+  #me { left: max(10px, env(safe-area-inset-left)); }
+  #them { right: max(10px, env(safe-area-inset-right)); flex-direction: row-reverse; }
+  .card canvas { width: 88px; height: 88px; image-rendering: pixelated; position: relative; z-index: 2; }
+  .card .info { background: linear-gradient(#24272c, #101114); border: 2px solid #3a3d44; padding: 4px 10px 6px; min-width: 190px; margin-bottom: 4px; }
+  #me .info { margin-left: -10px; border-radius: 0 6px 6px 0; } #them .info { margin-right: -10px; border-radius: 6px 0 0 6px; text-align: right; }
+  .card .row1 { display: flex; align-items: baseline; gap: 8px; } #them .row1 { flex-direction: row-reverse; }
+  .card .n { font-size: 30px; font-weight: 700; line-height: 1; } .card .lbl { font-size: 13px; opacity: .8; }
+  .meter { height: 10px; margin-top: 4px; background: #000; border: 2px solid #4a4d55; position: relative; }
+  .meter i { position: absolute; top: 0; bottom: 0; left: 0; width: 100%; background: var(--g); }
+  #them .meter i { left: auto; right: 0; background: #e8e8ee; }
+  .say { font-size: 13px; height: 15px; margin-top: 3px; color: #ffe14a; white-space: nowrap; }
+  /* the map: a broadcast plate like the score, with the pitch filling its window edge to edge */
+  #minibox { left: 50%; bottom: max(10px, env(safe-area-inset-bottom)); transform: translateX(-50%); flex-direction: column; gap: 3px; padding: 3px 6px 6px; background: linear-gradient(#24272c, #101114); border: 2px solid #3a3d44; border-radius: 6px; filter: drop-shadow(0 3px 0 rgba(0,0,0,.35)); }
+  #minibox .mh { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; letter-spacing: .08em; line-height: 14px; padding: 0 2px; }
+  #minibox .mh i { font-style: normal; opacity: .55; font-weight: 400; }
+  #mini { width: 210px; height: 126px; border: 2px solid #000; outline: 1px solid #4a4d55; }
+  body.touch #minibox { top: max(10px, env(safe-area-inset-top)); bottom: auto; left: auto; right: max(10px, env(safe-area-inset-right)); transform: none; padding: 2px 4px 4px; }
+  body.touch #mini { width: 140px; height: 84px; } body.touch #minibox .mh { font-size: 10px; line-height: 12px; }
+  body.touch #me { bottom: max(10px, env(safe-area-inset-bottom)); } body.touch #score { transform: scale(.8); transform-origin: top left; }
+  body.touch #them { display: none !important; }
+  body.touch .card canvas { width: 64px; height: 64px; } body.touch .card .info { min-width: 150px; }
+  body.touch #me { left: 50%; transform: translateX(-50%); }
+  /* banners */
+  #banner { position: fixed; left: 50%; top: 18%; z-index: 6; transform: translate(-50%, -50%) scale(.3); opacity: 0; pointer-events: none; text-align: center; white-space: nowrap;
+            font-size: clamp(20px, 4.5vw, 36px); font-weight: 700; line-height: 1; padding: 6px 14px 8px; background: rgba(0,0,0,.8); border: 2px solid #8a8a8a; transition: transform .14s steps(3), opacity .1s; }
+  #banner.on { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  #banner small { display: block; font-size: 12px; letter-spacing: .12em; margin-bottom: 4px; color: #fff; }
+  #banner.goal { top: 40%; transform: translate(-50%, -50%) scale(.3); background: rgba(0,0,0,.75); border: 0; padding: 4px 40px;
+                 font-size: clamp(40px, 9vw, 64px); font-style: italic; color: var(--o) !important; text-shadow: 3px 3px 0 #7a3a00; letter-spacing: .03em; }
+  #banner.goal.on { transform: translate(-50%, -50%) scale(1); }
+  #banner.big { top: 30%; font-size: clamp(30px, 7vw, 54px); font-style: italic; color: var(--o) !important; text-shadow: 3px 3px 0 #7a3a00; background: none; border: 0; }
+  /* menu, end */
+  .ov { position: fixed; inset: 0; z-index: 8; display: grid; place-items: center; padding: 12px; background: rgba(0,0,0,.6); }
+  .ov[hidden] { display: none; }
+  .panel { width: min(600px, 100%); max-height: 100%; overflow: auto; padding: 16px 18px; background: #000; border: 3px solid #8a8a8a; }
+  h1 { margin: 0; font-size: clamp(32px, 7vw, 50px); line-height: .95; font-style: italic; color: var(--o); text-shadow: 3px 3px 0 #7a3a00; }
+  h1 span { color: var(--g); text-shadow: 3px 3px 0 #0d3a14; display: block; }
+  .vs { display: flex; align-items: flex-end; justify-content: center; gap: 10px; margin: 12px 0; flex-wrap: wrap; }
+  .squad { display: flex; gap: 2px; align-items: flex-end; } .vs b { font-size: 22px; margin-bottom: 18px; }
+  .tname { text-align: center; font-weight: 700; font-size: 14px; }
+  .how { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: 14px; margin: 0 0 12px; }
+  .how dt { color: var(--o); font-weight: 700; white-space: nowrap; } .how dd { margin: 0; }
+  .k-keys { display: contents; } .k-touch { display: none; } body.touch .k-touch { display: contents; } body.touch .k-keys { display: none; }
+  .btn { all: unset; cursor: pointer; display: inline-block; padding: 9px 22px; font: 700 20px "Pixelify Sans", monospace; color: #000; background: var(--o); border: 3px solid #fff; box-shadow: 0 4px 0 #7a3a00; }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #7a3a00; } .btn:focus-visible { outline: 3px solid var(--g); outline-offset: 2px; }
+  .btn[disabled] { opacity: .6; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .note { font-size: 12px; opacity: .6; margin: 10px 0 0; }
+  #final { font-size: 60px; font-weight: 700; margin: 8px 0; }
+  #turn { display: none; font-size: 14px; margin: 0 0 8px; color: var(--o); } @media (orientation: portrait) { body.touch #turn { display: block; } }
+  /* the pad: an 8-bit controller, a cross and four red buttons */
+  .nes { position: fixed; z-index: 5; display: none; bottom: max(14px, env(safe-area-inset-bottom)); touch-action: none; }
+  body.playing.touch .nes { display: block; }
+  #dpad { left: max(16px, env(safe-area-inset-left)); width: 138px; height: 138px; }
+  #dpad .arm { position: absolute; background: #1c1c1e; box-shadow: inset 0 3px 0 #3a3a3e, inset 0 -3px 0 #050505; }
+  #dpad .h { left: 0; top: 46px; width: 138px; height: 46px; border-radius: 6px; } #dpad .v { left: 46px; top: 0; width: 46px; height: 138px; border-radius: 6px; }
+  #dpad .dot { position: absolute; left: 59px; top: 59px; width: 20px; height: 20px; border-radius: 50%; background: #0d0d0e; box-shadow: inset 0 2px 3px #000; }
+  #dpad .tri { position: absolute; width: 0; height: 0; border: 7px solid transparent; opacity: .55; }
+  #dpad .tu { left: 62px; top: 8px; border-bottom-color: #8a8a90; } #dpad .td { left: 62px; bottom: 8px; border-top-color: #8a8a90; }
+  #dpad .tl { top: 62px; left: 8px; border-right-color: #8a8a90; } #dpad .tr { top: 62px; right: 8px; border-left-color: #8a8a90; }
+  #dpad.on-u .tu, #dpad.on-d .td, #dpad.on-l .tl, #dpad.on-r .tr { opacity: 1; border-color: transparent; }
+  #dpad.on-u .tu { border-bottom-color: #ffe14a; } #dpad.on-d .td { border-top-color: #ffe14a; } #dpad.on-l .tl { border-right-color: #ffe14a; } #dpad.on-r .tr { border-left-color: #ffe14a; }
+  #dpad.dash .dot { background: #e8361f; }
+  #btns { right: max(14px, env(safe-area-inset-right)); width: 196px; height: 186px; }
+  .nb { position: absolute; width: 74px; text-align: center; }
+  .nb i { display: block; width: 58px; height: 58px; margin: 0 auto; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #f0453a, #b5121b 70%); border: 4px solid #2a2a2c; box-shadow: 0 0 0 5px #bdbdbd, 0 4px 0 5px #8e8e8e; }
+  .nb span { display: block; margin-top: 9px; font: 700 12px "Pixelify Sans", monospace; color: #e8361f; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; letter-spacing: .04em; }
+  .nb.down i { transform: translateY(3px); box-shadow: 0 0 0 5px #bdbdbd, 0 1px 0 5px #8e8e8e; background: radial-gradient(circle at 40% 35%, #c9302a, #8a0e15 70%); }
+  #nbJump { right: 96px; top: 0; } #nbSlide { right: 0; top: 0; } #nbPass { right: 96px; top: 98px; } #nbShoot { right: 0; top: 98px; }
+  /* the crowd in front of the camera, out of focus */
+  #front { position: fixed; left: -4%; width: 108%; bottom: -2vh; height: 19vh; z-index: 2; pointer-events: none; filter: blur(7px) brightness(.55) saturate(.8); opacity: .92; display: none; animation: bob 1.6s ease-in-out infinite; }
+  body.playing #front { display: block; }
+  body.cheer #front { animation: bob .35s ease-in-out infinite; }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(1.2vh); } }
+  #wx { font-size: 13px; opacity: .85; font-weight: 400; }
+  #penHint { position: fixed; left: 50%; top: 22%; transform: translateX(-50%); z-index: 6; display: none; font-size: 18px; font-weight: 700; background: rgba(0,0,0,.75); border: 2px solid #8a8a8a; padding: 6px 14px; white-space: nowrap; color: #ffe14a; }
+  #penHint.on { display: block; }
+  @media (orientation: portrait) { body.touch #me { display: none !important; } body.touch #minibox { top: calc(max(10px, env(safe-area-inset-top)) + 52px); } body.touch #mini { width: 116px; height: 70px; }
+    body.touch #score { transform: scale(.72); } body.touch #wx { display: none; } body.playing.touch #mute { top: calc(max(10px, env(safe-area-inset-top)) + 148px) !important; } }
+  /* the intro: two films, an 8-bit flash between them, then PRESS START over the title */
+  #intro { position: fixed; inset: 0; z-index: 20; background: #000; overflow: hidden; cursor: pointer; }
+  #intro[hidden] { display: none; }
+  #intro .f169 { position: absolute; left: 50%; top: 50%; width: max(100vw, 177.78vh); height: max(56.25vw, 100vh); transform: translate(-50%, -50%); }
+  #intro video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
+  #v2 { visibility: hidden; } #intro.two #v2 { visibility: visible; } #intro.two #v1 { visibility: hidden; }
+  #still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; } #intro.still #still { display: block; }
+  #flash { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
+  #pressStart { position: absolute; left: 50%; top: 35.2%; transform: translate(-50%, -50%); width: 27%; height: 10.5%; display: none; place-items: center; background: #030b19; box-shadow: 0 0 1.2vw 1vw #030b19;
+                font-weight: 700; font-size: min(3.4vw, 6vh); letter-spacing: .06em; color: #f4f1e8; white-space: nowrap; text-shadow: .25vw .25vw 0 #0d3a14; }
+  #pressStart b { color: #ffe14a; font-weight: 700; } #pressStart.on { display: grid; } #pressStart.blink span { animation: blink .9s steps(2, jump-none) infinite; }
+  #pressStart small { display: block; text-align: center; font-size: .42em; letter-spacing: .14em; color: #8fd99a; margin-top: .2em; text-shadow: none; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .ibtn { position: absolute; z-index: 2; font: 700 13px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.55); border: 2px solid #8a8a8a; padding: 5px 9px; cursor: pointer; }
+  #skip { right: max(10px, env(safe-area-inset-right)); bottom: max(10px, env(safe-area-inset-bottom)); }
+  #snd { left: max(10px, env(safe-area-inset-left)); bottom: max(10px, env(safe-area-inset-bottom)); display: none; } #intro.muted #snd { display: block; }
+  #intro.done #skip { display: none; }
+  /* keycaps on the controls screen */
+  .kc { display: inline-block; min-width: 26px; padding: 1px 6px 3px; margin: 0 2px 3px 0; text-align: center; font: 700 14px "Pixelify Sans", monospace; color: #000; background: #e9e6dc; border: 2px solid #fff; border-bottom-color: #8b877c; border-right-color: #b7b3a7; box-shadow: 0 2px 0 #4a4840; }
+  .kc.w { min-width: 70px; } .kc.alt { background: #7d7a72; color: #f4f1e8; border-color: #9a978e #57554f #57554f #9a978e; font-size: 12px; }
+  .how.keys { grid-template-columns: 168px 1fr; gap: 7px 14px; align-items: center; } .how.keys dd { font-size: 14px; }
+  body.touch .how.keys { display: none; } body:not(.touch) .how.k-touch { display: none; }
+  .go { margin-top: 4px; font-size: 13px; opacity: .8; } .go .kc { font-size: 12px; }
+  #mute { position: fixed; right: max(8px, env(safe-area-inset-right)); top: max(8px, env(safe-area-inset-top)); z-index: 4; display: none; font: 700 12px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.6); border: 2px solid #8a8a8a; padding: 4px 7px; cursor: pointer; }
+  body.playing #mute { display: block; } body.playing.touch #mute { top: calc(max(10px, env(safe-area-inset-top)) + 118px); bottom: auto; }
+  @media (max-width: 700px) { #score .tn { font-size: 16px; } #score .num { font-size: 24px; min-width: 50px; } #score .clockp { font-size: 18px; } #score .crest { width: 26px; height: 30px; } #score .plate, #score .clockp { height: 38px; } }
+</style>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
+</head>
+<body>
+<div id="stage"></div>
+<div id="intro"><div class="f169"><video id="v1" src="intro1.mp4" playsinline preload="auto" poster="intro1_first.jpg"></video><video id="v2" src="intro2.mp4" playsinline preload="auto" poster="intro2_last.jpg"></video>
+  <img id="still" src="intro2_last.jpg" alt=""><div id="pressStart"><span><b>▶</b> PRESS START <b>◀</b></span></div></div>
+  <canvas id="flash" width="96" height="54"></canvas><button class="ibtn" id="skip">POMIŃ ▶▶</button><button class="ibtn" id="snd">🔊 WŁĄCZ DŹWIĘK</button></div>
+<div id="score" class="hud"><div class="plate"><svg class="crest" viewBox="0 0 34 38"><path d="M17 1 L32 6 V18 C32 28 25 34 17 37 C9 34 2 28 2 18 V6 Z" fill="#1d1f22" stroke="#e9e9ee" stroke-width="2"/><path d="M17 6 L27 9.5 V18 C27 25 22.5 29.5 17 32 Z" fill="#3fbf55"/><text x="17" y="23" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="11" font-weight="700" fill="#f4f1e8">C</text></svg><span class="tn" style="color:var(--g)">CUI</span><span class="num" id="sc">0 - 0</span><span class="tn" style="color:var(--p)">FIO</span><svg class="crest" viewBox="0 0 34 38"><path d="M17 1 L32 6 V18 C32 28 25 34 17 37 C9 34 2 28 2 18 V6 Z" fill="#4a2a78" stroke="#e9e9ee" stroke-width="2"/><path d="M17 6 L27 9.5 V18 C27 25 22.5 29.5 17 32 Z" fill="#a46ee8"/><text x="17" y="23" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="11" font-weight="700" fill="#f4f1e8">F</text></svg></div><div class="clockp"><span id="clock">2:00</span><span id="half">1P</span><span id="wx"></span></div></div>
+<div id="me" class="hud card"><canvas class="px" id="fMe" width="40" height="40"></canvas><div class="info"><div class="row1"><span class="n" id="nMe">10</span><span class="lbl" id="lMe">FW · TY</span></div><div class="meter"><i id="mMe"></i></div><div class="say" id="sayMe"></div></div></div>
+<div id="them" class="hud card"><canvas class="px" id="fThem" width="40" height="40"></canvas><div class="info"><div class="row1"><span class="n" id="nThem">11</span><span class="lbl" id="lThem">FW</span></div><div class="meter"><i id="mThem"></i></div><div class="say" id="sayThem"></div></div></div>
+<div id="minibox" class="hud"><div class="mh"><span style="color:var(--g)">CUI</span><i>MAPA</i><span style="color:var(--p)">FIO</span></div><canvas id="mini" class="px" width="210" height="126"></canvas></div>
+<div id="banner"></div>
+<button id="mute">DŹWIĘK: TAK</button>
+
+<div class="ov" id="menu" hidden>
+  <div class="panel">
+    <h1>CUIAVIA<span>SOCCER</span></h1>
+    <div class="vs"><div><div class="squad" id="sqA"></div><div class="tname" style="color:var(--g)">CUIAVIA</div></div><b>VS</b><div><div class="squad" id="sqB"></div><div class="tname" style="color:var(--p)">FIOLETOWI</div></div></div>
+    <p id="turn">Obróć telefon poziomo, będzie wygodniej.</p>
+    <dl class="how keys">
+      <dt><span class="kc">←</span><span class="kc">↑</span><span class="kc">↓</span><span class="kc">→</span></dt><dd>ruch (albo <span class="kc alt">W</span><span class="kc alt">A</span><span class="kc alt">S</span><span class="kc alt">D</span>) · dwa razy w tę samą stronę = sprint</dd>
+      <dt><span class="kc">J</span></dt><dd>podanie do najbliższego kolegi</dd>
+      <dt><span class="kc">K</span></dt><dd>strzał · w powietrzu: główka, wolej, przewrotka · bez piłki: szczupak albo szarża barkiem</dd>
+      <dt><span class="kc">L</span></dt><dd>wślizg · w powietrzu: kopnięcie z wyskoku, które powala rywala</dd>
+      <dt><span class="kc w">SPACJA</span></dt><dd>skok, także z piłką</dd>
+      <dt><span class="kc w">SPACJA</span> <span class="kc">K</span></dt><dd><b style="color:var(--o)">SUPER STRZAŁ:</b> skocz z piłką i strzel na samym szczycie skoku</dd>
+      <dt><span class="kc">↑</span><span class="kc">↓</span> <span class="kc">K</span></dt><dd>rzut karny: wybierz róg i strzel</dd>
+    </dl>
+    <dl class="how k-touch"><dt>Krzyżak</dt><dd>ruch; dwa razy w tę samą stronę = sprint</dd><dt>PODAJ · STRZAŁ</dt><dd>podanie i strzał (w powietrzu: główka, wolej, przewrotka)</dd><dt>WŚLIZG</dt><dd>wślizg · w powietrzu: kopnięcie z wyskoku</dd><dt>SKOK</dt><dd>skok, także z piłką</dd></dl>
+    <p class="note" style="margin:0 0 12px;opacity:.75">Grasz DOMINIKIEM, blondynem z 27. Bez piłki sterujesz tym, kto jest najbliżej (żółta strzałka). 2 połowy po 2:00, faul w polu karnym to karny.</p>
+    <div class="row"><button class="btn" id="play" disabled>WCZYTUJĘ…</button><span class="go k-keys">albo <span class="kc w">ENTER</span></span></div>
+  </div>
+</div>
+<div class="ov" id="end" hidden><div class="panel"><h1 id="endT">KONIEC</h1><div id="final">0 : 0</div><div class="row"><button class="btn" id="again">REWANŻ</button></div></div></div>
+<div id="penHint"></div>
+<div class="nes" id="dpad"><div class="arm h"></div><div class="arm v"></div><div class="dot"></div><div class="tri tu"></div><div class="tri td"></div><div class="tri tl"></div><div class="tri tr"></div></div>
+<div class="nes" id="btns"><div class="nb" id="nbJump"><i></i><span>SKOK</span></div><div class="nb" id="nbSlide"><i></i><span>WŚLIZG</span></div><div class="nb" id="nbPass"><i></i><span>PODAJ</span></div><div class="nb" id="nbShoot"><i></i><span>STRZAŁ</span></div></div>
+
+<script>
+{
+  const $ = (id) => document.getElementById(id);
+  const touch = matchMedia('(pointer: coarse)').matches; if (touch) document.body.classList.add('touch');
+  const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  // a big head cut from a player's front frame, pixel for pixel
+  const face = (cv, p) => { const g = cv.getContext('2d'), f = (p.keeper && p.anim.keeper ? p.anim.keeper : p.anim.front)[0], img = window.GAME.images[p.team], s = Math.min(f[2], 24), hh = Math.round(f[3] * 0.52);
+    g.clearRect(0, 0, 40, 40); g.imageSmoothingEnabled = false; g.save(); if (p.team) { g.translate(40, 0); g.scale(-1, 1); }
+    const k = 40 / Math.max(s, hh); g.drawImage(img, f[0] + (f[2] - s) / 2, f[1], s, hh, (40 - s * k) / 2, 40 - hh * k, s * k, hh * k); g.restore(); };
+  const full = (p) => { const f = p.anim.front[0], c = document.createElement('canvas'); c.width = f[2]; c.height = f[3]; c.className = 'px'; c.style.width = f[2] * 1.3 + 'px'; c.style.height = f[3] * 1.3 + 'px';
+    const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(window.GAME.images[p.team], f[0], f[1], f[2], f[3], 0, 0, f[2], f[3]); return c; };
+  let meP = null, themP = null, meMood = '', themMood = '', bannerT = 0, lastGoal = { t: -9, us: true }; const sayT = {};
+  // the face's mood, drawn over the portrait in pixels: effort, a shout, a knock, joy, gloom
+  const mood = (cv, m) => { const g = cv.getContext('2d'), R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+    if (m === 'run') { R(31, 7, 3, 2, '#bfe8ff'); R(30, 9, 5, 4, '#7cc7f2'); R(31, 9, 1, 2, '#fff'); R(15, 27, 10, 4, '#111'); R(16, 28, 8, 2, '#fff'); R(18, 28, 1, 2, '#999'); R(21, 28, 1, 2, '#999'); }
+    if (m === 'shout') { R(16, 26, 8, 6, '#111'); R(17, 27, 6, 4, '#7a1010'); R(18, 29, 4, 2, '#e04a4a'); R(17, 27, 6, 1, '#fff'); }
+    if (m === 'hurt') { R(15, 28, 2, 1, '#111'); R(17, 29, 2, 1, '#111'); R(19, 28, 2, 1, '#111'); R(21, 29, 2, 1, '#111'); R(23, 28, 2, 1, '#111'); R(12, 24, 2, 4, '#7cc7f2'); R(27, 24, 2, 4, '#7cc7f2');
+      for (const [x, y] of [[6, 4], [19, 1], [32, 4]]) { R(x + 1, y, 1, 3, '#ffe14a'); R(x, y + 1, 3, 1, '#ffe14a'); } }
+    if (m === 'happy') { R(16, 26, 8, 5, '#111'); R(17, 27, 6, 3, '#7a1010'); R(17, 27, 6, 1, '#fff'); R(9, 24, 4, 2, '#ff8a9a'); R(27, 24, 4, 2, '#ff8a9a'); }
+    if (m === 'sad') { R(16, 30, 8, 1, '#111'); R(15, 31, 1, 1, '#111'); R(24, 31, 1, 1, '#111'); for (let x = 8; x < 34; x += 5) R(x, 1, 1, 5, '#5a6aa8'); } };
+  const moodOf = (p, G) => { const t = performance.now() / 1000;
+    if (G.state === 'goal' && t - lastGoal.t < 4) return (p.team === 0) === lastGoal.us ? 'happy' : 'sad';
+    if (p.st === 'down' || p.st === 'getup' || p.st === 'dizzy') return 'hurt';
+    if (p.st === 'kick' || p.st === 'dropkick' || p.st === 'shoulder' || p.st === 'slide' || (p.st === 'jump' && p.act) || p.st === 'dive') return 'shout';
+    if (Math.hypot(p.vx, p.vz) > 7) return 'run'; return ''; };
+  window.UI = {
+    score(G) { $('sc').textContent = `${G.score[0]} - ${G.score[1]}`; $('clock').textContent = fmt(Math.ceil(G.clock)); $('half').textContent = `${G.half}P`; },
+    hud(G) {
+      const P = window.GAME.players, b = window.GAME.ball, d = (p) => Math.hypot(p.x - b.x, p.z - b.z), me = window.GAME.captain;
+      const them = b.owner && b.owner.team === 1 ? b.owner : P.filter((p) => p.team === 1).sort((a, c) => d(a) - d(c))[0];
+      const mm = moodOf(me, G), tm = moodOf(them, G);
+      if (me !== meP || mm !== meMood) { meP = me; meMood = mm; face($('fMe'), me); mood($('fMe'), mm); $('nMe').textContent = me.num; $('lMe').textContent = `${me.name} · ${me.pos}`; }
+      if (them !== themP || tm !== themMood) { themP = them; themMood = tm; face($('fThem'), them); mood($('fThem'), tm); $('nThem').textContent = them.num; $('lThem').textContent = `${them.pos} · ${them.name}`; }
+      document.body.classList.toggle('cheer', G.state === 'goal');
+      $('mMe').style.width = me.sta * 100 + '%'; $('mThem').style.width = them.sta * 100 + '%';
+    },
+    shout(p, text) { const id = p.team ? 'sayThem' : 'sayMe', el = $(id); el.textContent = `${p.num}: ${text}`; clearTimeout(sayT[id]); sayT[id] = setTimeout(() => (el.textContent = ''), 1600); },
+    pen(P, t) { const el = $('penHint'); el.classList.toggle('on', t < 7.5);
+      el.textContent = P.team === 0 ? `KARNY! ${P.taker.name}: celuj góra/dół i STRZAŁ` : 'KARNY DLA RYWALI! Wybierz stronę rzutu bramkarza: góra/dół'; clearTimeout(this._ph); this._ph = setTimeout(() => el.classList.remove('on'), 300); },
+    weather(m) { $('wx').textContent = m === 'rain' ? 'DESZCZ' : 'WIATR'; },
+    banner(text, T, kind, p) {
+      if (kind === 'goal') lastGoal = { t: performance.now() / 1000, us: T === window.GAME.teams[0] };
+      const el = $('banner'); el.className = kind === 'goal' ? 'goal' : kind === 'big' ? 'big' : ''; el.style.color = T.color;
+      el.innerHTML = kind === 'super' ? `<small>SUPER STRZAŁ · ${p.num}</small>${text}` : text;
+      void el.offsetWidth; el.classList.add('on'); clearTimeout(bannerT); bannerT = setTimeout(() => el.classList.remove('on'), kind === 'goal' ? 2600 : kind === 'big' ? 1600 : 1300);
+    },
+    end(G) { document.body.classList.remove('playing'); const [a, b] = G.score; $('final').textContent = `${a} : ${b}`; $('endT').textContent = a > b ? 'CUIAVIA WYGRYWA!' : a < b ? 'WYGRALI FIOLETOWI' : 'REMIS'; $('end').hidden = false; },
+    minimap(players, ball) {
+      const cv = $('mini'), g = cv.getContext('2d'), W = cv.width, H = cv.height, M = 9, T = 5, X = (x) => M + (x + 30) / 60 * (W - 2 * M), Z = (z) => T + (z + 18) / 36 * (H - 2 * T);
+      // mowed grass to the frame's edge, the lines a few pixels in, the goals in the margin
+      for (let i = 0; i < 12; i++) { g.fillStyle = i % 2 ? '#2b7231' : '#327f38'; g.fillRect(Math.floor(i * W / 12), 0, Math.ceil(W / 12) + 1, H); }
+      g.strokeStyle = 'rgba(255,255,255,.8)'; g.lineWidth = 1; const L = X(-30), R = X(30), Tp = Z(-18), B = Z(18), cy = (Tp + B) / 2;
+      g.strokeRect(L + .5, Tp + .5, R - L, B - Tp); g.beginPath(); g.moveTo(W / 2 + .5, Tp); g.lineTo(W / 2 + .5, B); g.stroke(); g.beginPath(); g.arc(W / 2 + .5, cy, H * 0.13, 0, 7); g.stroke();
+      const bw = (R - L) * 0.12, bh = (B - Tp) * 0.5; g.strokeRect(L + .5, cy - bh / 2 + .5, bw, bh); g.strokeRect(R - bw + .5, cy - bh / 2 + .5, bw, bh);
+      const gh = (B - Tp) * 10 / 36; g.fillStyle = 'rgba(255,255,255,.9)'; g.fillRect(L - 6, cy - gh / 2, 6, 1); g.fillRect(L - 6, cy + gh / 2, 6, 1); g.fillRect(L - 6, cy - gh / 2, 1, gh); g.fillRect(R, cy - gh / 2, 6, 1); g.fillRect(R, cy + gh / 2, 6, 1); g.fillRect(R + 5, cy - gh / 2, 1, gh);
+      const cap = window.GAME.captain;
+      for (const p of players) { const x = X(p.x), y = Z(p.z), r = p === cap ? 4.5 : 3.5; g.fillStyle = '#000'; g.beginPath(); g.arc(x, y, r + 1.2, 0, 7); g.fill();
+        g.fillStyle = p.team ? '#c9a2ff' : '#3fe060'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); if (p === cap) { g.strokeStyle = '#ffe14a'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, r + 2.4, 0, 7); g.stroke(); } }
+      g.fillStyle = '#000'; g.beginPath(); g.arc(X(ball.x), Z(ball.z), 3.4, 0, 7); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(X(ball.x), Z(ball.z), 2.3, 0, 7); g.fill();
+    },
+  };
+  let ready = false, wantStart = false;
+  window.GAME_READY = () => { const P = window.GAME.players; for (const p of P) (p.team ? $('sqB') : $('sqA')).appendChild(full(p)); $('play').disabled = false; $('play').textContent = 'GRAJ'; ready = true; if (wantStart) afterIntro(); };
+  const go = () => { $('menu').hidden = true; $('end').hidden = true; document.body.classList.add('playing'); meP = themP = null; meMood = themMood = '-'; window.GAME.start(); };
+  $('play').addEventListener('click', go); $('again').addEventListener('click', go);
+  // after PRESS START: a phone goes straight onto the pitch (the pad is on screen), a desktop first shows the keys
+  const afterIntro = () => { if (!ready) { wantStart = true; $('pressStart').firstChild.innerHTML = 'WCZYTUJĘ…'; return; }
+    $('intro').hidden = true; for (const v of [$('v1'), $('v2')]) { v.pause(); v.removeAttribute('src'); v.load(); }
+    if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
+  // ---- the intro ----
+  { const I = $('intro'), v1 = $('v1'), v2 = $('v2'), ps = $('pressStart'), fc = $('flash'), fg = fc.getContext('2d');
+    let stage = 1, flashing = false, AC = null;
+    const blip = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); const t = AC.currentTime;
+      for (const [f, d] of [[880, 0], [1320, .07], [1760, .14]]) { const o = AC.createOscillator(), g = AC.createGain(); o.type = 'square'; o.frequency.value = f; g.gain.setValueAtTime(.06, t + d); g.gain.exponentialRampToValueAtTime(.001, t + d + .16); o.connect(g).connect(AC.destination); o.start(t + d); o.stop(t + d + .18); } } catch (e) {} };
+    const play = (v) => { v.muted = I.classList.contains('muted'); return v.play().catch(() => { I.classList.add('muted'); v.muted = true; return v.play().catch(() => {}); }); };
+    const showStart = () => { if (stage === 3) return; stage = 3; I.classList.add('done', 'two'); ps.classList.add('on', 'blink'); };
+    // the flash: a white frame that breaks up into big pixels, in steps, revealing the second film
+    const flash = () => { if (flashing) return; flashing = true; blip(); const order = [], N = 16 * 9; for (let i = 0; i < N; i++) order.push(i); order.sort(() => Math.random() - .5);
+      let f = 0; const tick = () => { fg.clearRect(0, 0, 96, 54); const keep = f < 2 ? N : Math.max(0, Math.round(N * (1 - (f - 2) / 7)));
+        fg.fillStyle = f === 1 ? '#fff6b0' : '#ffffff'; for (let k = 0; k < keep; k++) { const i = order[k]; fg.fillRect((i % 16) * 6, Math.floor(i / 16) * 6, 6, 6); }
+        if (f === 1) { I.classList.add('two'); stage = 2; v1.pause(); play(v2); }
+        if (f >= 2 && f < 6) { fg.globalCompositeOperation = 'source-atop'; fg.fillStyle = f % 2 ? 'rgba(255,60,120,.35)' : 'rgba(60,220,255,.35)'; fg.fillRect(0, 0, 96, 54); fg.globalCompositeOperation = 'source-over'; }
+        if (++f < 10) setTimeout(tick, 1000 / 15); else fg.clearRect(0, 0, 96, 54); }; tick(); };
+    v1.addEventListener('timeupdate', () => { if (stage === 1 && v1.duration && v1.currentTime > v1.duration - 0.2) flash(); });
+    v1.addEventListener('ended', flash); v1.addEventListener('error', () => { if (stage === 1) flash(); });
+    v2.addEventListener('timeupdate', () => { if (stage === 2 && v2.currentTime > 4.75) showStart(); });
+    v2.addEventListener('ended', showStart); v2.addEventListener('error', showStart);
+    const skip = () => { if (stage === 3) return; v1.pause(); I.classList.add('two'); stage = 2; v2.pause(); I.classList.add('still'); showStart(); };
+    $('skip').addEventListener('click', (e) => { e.stopPropagation(); skip(); });
+    $('snd').addEventListener('click', (e) => { e.stopPropagation(); I.classList.remove('muted'); v1.muted = v2.muted = false; });
+    I.addEventListener('click', () => { if (stage === 3) { blip(); afterIntro(); } else if (I.classList.contains('muted')) { I.classList.remove('muted'); v1.muted = v2.muted = false; } });
+    // keys belong to the intro and the controls screen while they are up, not to the game behind them
+    document.addEventListener('keydown', (e) => {
+      if (!I.hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (stage === 3) { blip(); afterIntro(); } else if (['Enter', 'Escape', 'Space'].includes(e.code)) skip(); return; }
+      if (!$('menu').hidden && !$('play').disabled && (e.code === 'Enter' || e.code === 'Space')) { e.preventDefault(); e.stopPropagation(); go(); } }, true);
+    play(v1); }
+  $('mute').addEventListener('click', () => { $('mute').textContent = window.GAME.mute() ? 'DŹWIĘK: NIE' : 'DŹWIĘK: TAK'; });
+  // the 8-bit pad: a cross (8 ways; the same way twice quickly = sprint) and four buttons
+  { const pad = $('dpad'); let pid = null, dir = null, lastDir = null, lastT = 0;
+    const set = (d) => { pad.className = 'nes' + (d ? ' ' + d.cls : '') + (dash ? ' dash' : ''); window.GAME?.setStick(d ? d.v : null); };
+    let dash = false;
+    const read = (e) => { const r = pad.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+      if (Math.hypot(dx, dy) < 12) return null; const a = Math.round(Math.atan2(dy, dx) / (Math.PI / 4)), k = ((a % 8) + 8) % 8;
+      const V = [[1, 0], [0.71, 0.71], [0, 1], [-0.71, 0.71], [-1, 0], [-0.71, -0.71], [0, -1], [0.71, -0.71]][k];
+      const cls = [['on-r'], ['on-r', 'on-d'], ['on-d'], ['on-d', 'on-l'], ['on-l'], ['on-l', 'on-u'], ['on-u'], ['on-u', 'on-r']][k].join(' ');
+      return { k, v: V, cls }; };
+    const move = (e) => { const d = read(e); if ((d && d.k) !== (dir && dir.k)) { if (d && !dir) { const now = performance.now(); dash = lastDir === d.k && now - lastT < 320; lastDir = d.k; lastT = now; } if (!d) dash = false; dir = d; window.GAME?.setDash(dash); set(d); } };
+    pad.addEventListener('pointerdown', (e) => { pid = e.pointerId; pad.setPointerCapture(pid); dir = null; move(e); e.preventDefault(); });
+    pad.addEventListener('pointermove', (e) => { if (e.pointerId === pid) move(e); });
+    const end = () => { pid = null; dir = null; dash = false; window.GAME?.setDash(false); set(null); };
+    pad.addEventListener('pointerup', end); pad.addEventListener('pointercancel', end); }
+  for (const [id, btn] of [['nbPass', 'a'], ['nbShoot', 'b'], ['nbSlide', 'slide'], ['nbJump', 'jump']]) { const el = $(id);
+    el.addEventListener('pointerdown', (e) => { el.classList.add('down'); window.GAME?.press(btn); e.preventDefault(); });
+    for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, () => el.classList.remove('down')); }
+  addEventListener('contextmenu', (e) => e.preventDefault());
+}
+</script>
+<script type="module" src="./game.js"></script>
+</body>
+</html>
