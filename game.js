@@ -608,13 +608,14 @@ addEventListener('keydown', (e) => {
     if (now - (lastTap[d] || -1e9) < 280) keyDash = true;   // the same way twice: dash
     lastTap[d] = now; keys.add(e.code); return;
   }
+  if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') { padDash = true; return; }
   if (e.repeat) return;
   if (e.code === 'KeyJ' || e.code === 'KeyZ') { press('a'); e.preventDefault(); }
   if (e.code === 'KeyK' || e.code === 'KeyX') { press('b'); e.preventDefault(); }
   if (e.code === 'Space') { press('jump'); e.preventDefault(); }
   if (e.code === 'KeyL' || e.code === 'KeyC') { press('slide'); e.preventDefault(); }
 });
-addEventListener('keyup', (e) => { if (KEYMAP[e.code]) { keys.delete(e.code); if (!keys.size) keyDash = false; } });
+addEventListener('keyup', (e) => { if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') padDash = false; if (KEYMAP[e.code]) { keys.delete(e.code); if (!keys.size) keyDash = false; } });
 addEventListener('blur', () => { keys.clear(); keyDash = false; });
 function readInput(dt) {
   let x = 0, z = 0; for (const k of keys) { x += KEYMAP[k][0]; z += KEYMAP[k][1]; }
@@ -1043,12 +1044,12 @@ function draw(dt) {
 }
 
 // ---- the loop and the page's handle --------------------------------------------------------------------------------
-let last = performance.now(), auto = true;
-renderer.setAnimationLoop((now) => { if (!auto) return; const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; step(dt); });
+let last = performance.now(), auto = true, frozen = false;
+renderer.setAnimationLoop((now) => { if (!auto) return; const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; step(frozen ? 0 : dt); });
 placeKickoff(0); G.state = 'menu'; WX.set('leaves');
 window.GAME = {
   start() { G.score = [0, 0]; G.clock = 120; G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = Math.random() < 0.5 ? 'rain' : 'leaves'; setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
-  press, setStick(v) { stick = v; }, setDash(v) { padDash = v; }, mute: () => SFX.toggle(),
+  press, setStick(v) { stick = v; }, setDash(v) { padDash = v; }, freeze(v) { frozen = !!v; if (v) { keys.clear(); keyDash = false; } }, mute: () => SFX.toggle(),
   teams: TEAMS, frames: FR, images: [IMG_G, IMG_P], players, get captain() { return captain; }, get ball() { return ball; }, G,
 };
 window.__game = { goal: (t) => goalScored(t), pen: (t) => penaltyFor(t, players.find((q) => q.team === t && q.role === 'fwd')), G, ball, players, input, weather: (m) => { G.weather = m; setWeather(m); }, step(sec, fps = 30) { auto = false; for (let i = 0; i < Math.round(sec * fps); i++) step(1 / fps); }, resume() { last = performance.now(); auto = true; }, keys };

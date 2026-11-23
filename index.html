@@ -89,12 +89,14 @@
   #dpad.on-u .tu, #dpad.on-d .td, #dpad.on-l .tl, #dpad.on-r .tr { opacity: 1; border-color: transparent; }
   #dpad.on-u .tu { border-bottom-color: #ffe14a; } #dpad.on-d .td { border-top-color: #ffe14a; } #dpad.on-l .tl { border-right-color: #ffe14a; } #dpad.on-r .tr { border-left-color: #ffe14a; }
   #dpad.dash .dot { background: #e8361f; }
-  #btns { right: max(14px, env(safe-area-inset-right)); width: 196px; height: 186px; }
+  #btns { right: max(14px, env(safe-area-inset-right)); width: 282px; height: 186px; }
   .nb { position: absolute; width: 74px; text-align: center; }
-  .nb i { display: block; width: 58px; height: 58px; margin: 0 auto; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #f0453a, #b5121b 70%); border: 4px solid #2a2a2c; box-shadow: 0 0 0 5px #bdbdbd, 0 4px 0 5px #8e8e8e; }
-  .nb span { display: block; margin-top: 9px; font: 700 12px "Pixelify Sans", monospace; color: #e8361f; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; letter-spacing: .04em; }
-  .nb.down i { transform: translateY(3px); box-shadow: 0 0 0 5px #bdbdbd, 0 1px 0 5px #8e8e8e; background: radial-gradient(circle at 40% 35%, #c9302a, #8a0e15 70%); }
-  #nbJump { right: 96px; top: 0; } #nbSlide { right: 0; top: 0; } #nbPass { right: 96px; top: 98px; } #nbShoot { right: 0; top: 98px; }
+  .nb i { display: block; width: 58px; height: 58px; margin: 0 auto; border-radius: 50%; background: radial-gradient(circle at 40% 35%, var(--hi), var(--lo) 70%); border: 4px solid #2a2a2c; box-shadow: 0 0 0 5px #bdbdbd, 0 4px 0 5px #8e8e8e; }
+  #nbShoot { --hi: #f0453a; --lo: #b5121b; --tx: #ff5a4a; } #nbPass { --hi: #5be36e; --lo: #17892b; --tx: #5be36e; } #nbJump { --hi: #5aa8ff; --lo: #1a4fb5; --tx: #6ab4ff; }
+  #nbSlide { --hi: #ffe14a; --lo: #c08a00; --tx: #ffe14a; } #nbSprint { --hi: #ff9a3a; --lo: #c2510a; --tx: #ff9a3a; }
+  .nb span { display: block; margin-top: 9px; font: 700 12px "Pixelify Sans", monospace; color: var(--tx); text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; letter-spacing: .04em; }
+  .nb.down i { transform: translateY(3px); box-shadow: 0 0 0 5px #bdbdbd, 0 1px 0 5px #8e8e8e; filter: brightness(.75); }
+  #nbJump { right: 96px; top: 0; } #nbSlide { right: 0; top: 0; } #nbPass { right: 96px; top: 98px; } #nbShoot { right: 0; top: 98px; } #nbSprint { right: 190px; top: 56px; }
   /* the crowd in front of the camera, out of focus */
   #front { position: fixed; left: -4%; width: 108%; bottom: -2vh; height: 19vh; z-index: 2; pointer-events: none; filter: blur(7px) brightness(.55) saturate(.8); opacity: .92; display: none; animation: bob 1.6s ease-in-out infinite; }
   body.playing #front { display: block; }
@@ -103,7 +105,7 @@
   #wx { font-size: 13px; opacity: .85; font-weight: 400; }
   #penHint { position: fixed; left: 50%; top: 22%; transform: translateX(-50%); z-index: 6; display: none; font-size: 18px; font-weight: 700; background: rgba(0,0,0,.75); border: 2px solid #8a8a8a; padding: 6px 14px; white-space: nowrap; color: #ffe14a; }
   #penHint.on { display: block; }
-  @media (orientation: portrait) { body.touch #me { display: none !important; } body.touch #minibox { top: calc(max(10px, env(safe-area-inset-top)) + 52px); } body.touch #mini { width: 116px; height: 70px; }
+  @media (orientation: portrait) { #btns { transform: scale(.8); transform-origin: bottom right; } #dpad { transform: scale(.8); transform-origin: bottom left; } body.touch #me { display: none !important; } body.touch #minibox { top: calc(max(10px, env(safe-area-inset-top)) + 52px); } body.touch #mini { width: 116px; height: 70px; }
     body.touch #score { transform: scale(.72); } body.touch #wx { display: none; } body.playing.touch #mute { top: calc(max(10px, env(safe-area-inset-top)) + 148px) !important; } }
   /* the intro: two films, an 8-bit flash between them, then PRESS START over the title */
   #intro { position: fixed; inset: 0; z-index: 20; background: #000; overflow: hidden; cursor: pointer; }
@@ -128,6 +130,15 @@
   .how.keys { grid-template-columns: 168px 1fr; gap: 7px 14px; align-items: center; } .how.keys dd { font-size: 14px; }
   body.touch .how.keys { display: none; } body:not(.touch) .how.k-touch { display: none; }
   .go { margin-top: 4px; font-size: 13px; opacity: .8; } .go .kc { font-size: 12px; }
+  #tip { position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; background: rgba(0,0,0,.55); padding: 12px; cursor: pointer; }
+  #tip[hidden] { display: none; }
+  #tip .tbox { max-width: 560px; text-align: center; background: #000; border: 3px solid #8a8a8a; padding: 14px 18px 16px; box-shadow: 0 6px 0 rgba(0,0,0,.5); }
+  #tip small { display: block; font-size: 13px; letter-spacing: .2em; color: #8fd99a; margin-bottom: 10px; }
+  #tip .combo { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; font-weight: 700; }
+  #tip .cb { padding: 6px 12px; font-size: 20px; color: #000; background: var(--c); border: 3px solid #fff; border-radius: 22px; box-shadow: 0 3px 0 #555; }
+  #tip .combo b { font-size: 28px; } #tip .sup { font-size: clamp(24px, 5vw, 34px); font-style: italic; color: var(--o); text-shadow: 3px 3px 0 #7a3a00; }
+  #tip p { font-size: 15px; margin: 12px 0 0; } #tip p.k-keys, #tip p.k-touch { opacity: .8; font-size: 14px; } body.touch #tip p.k-keys { display: none; } body:not(.touch) #tip p.k-touch { display: none; }
+  #tip .cont { margin-top: 14px; font-weight: 700; color: #ffe14a; animation: blink .9s steps(2, jump-none) infinite; }
   #mute { position: fixed; right: max(8px, env(safe-area-inset-right)); top: max(8px, env(safe-area-inset-top)); z-index: 4; display: none; font: 700 12px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.6); border: 2px solid #8a8a8a; padding: 4px 7px; cursor: pointer; }
   body.playing #mute { display: block; } body.playing.touch #mute { top: calc(max(10px, env(safe-area-inset-top)) + 118px); bottom: auto; }
   @media (max-width: 700px) { #score .tn { font-size: 16px; } #score .num { font-size: 24px; min-width: 50px; } #score .clockp { font-size: 18px; } #score .crest { width: 26px; height: 30px; } #score .plate, #score .clockp { height: 38px; } }
@@ -156,19 +167,23 @@
       <dt><span class="kc">J</span></dt><dd>podanie do najbliższego kolegi</dd>
       <dt><span class="kc">K</span></dt><dd>strzał · w powietrzu: główka, wolej, przewrotka · bez piłki: szczupak albo szarża barkiem</dd>
       <dt><span class="kc">L</span></dt><dd>wślizg · w powietrzu: kopnięcie z wyskoku, które powala rywala</dd>
+      <dt><span class="kc w">SHIFT</span></dt><dd>sprint (przytrzymaj)</dd>
       <dt><span class="kc w">SPACJA</span></dt><dd>skok, także z piłką</dd>
       <dt><span class="kc w">SPACJA</span> <span class="kc">K</span></dt><dd><b style="color:var(--o)">SUPER STRZAŁ:</b> skocz z piłką i strzel na samym szczycie skoku</dd>
       <dt><span class="kc">↑</span><span class="kc">↓</span> <span class="kc">K</span></dt><dd>rzut karny: wybierz róg i strzel</dd>
     </dl>
-    <dl class="how k-touch"><dt>Krzyżak</dt><dd>ruch; dwa razy w tę samą stronę = sprint</dd><dt>PODAJ · STRZAŁ</dt><dd>podanie i strzał (w powietrzu: główka, wolej, przewrotka)</dd><dt>WŚLIZG</dt><dd>wślizg · w powietrzu: kopnięcie z wyskoku</dd><dt>SKOK</dt><dd>skok, także z piłką</dd></dl>
+    <dl class="how k-touch"><dt>Krzyżak</dt><dd>ruch; dwa razy w tę samą stronę = sprint</dd><dt>PODAJ · STRZAŁ</dt><dd>podanie i strzał (w powietrzu: główka, wolej, przewrotka)</dd><dt>WŚLIZG</dt><dd>wślizg · w powietrzu: kopnięcie z wyskoku</dd><dt>SKOK</dt><dd>skok, także z piłką</dd><dt>SPRINT</dt><dd>przytrzymaj, żeby biec szybciej</dd></dl>
     <p class="note" style="margin:0 0 12px;opacity:.75">Grasz DOMINIKIEM, blondynem z 27. Bez piłki sterujesz tym, kto jest najbliżej (żółta strzałka). 2 połowy po 2:00, faul w polu karnym to karny.</p>
     <div class="row"><button class="btn" id="play" disabled>WCZYTUJĘ…</button><span class="go k-keys">albo <span class="kc w">ENTER</span></span></div>
   </div>
 </div>
 <div class="ov" id="end" hidden><div class="panel"><h1 id="endT">KONIEC</h1><div id="final">0 : 0</div><div class="row"><button class="btn" id="again">REWANŻ</button></div></div></div>
 <div id="penHint"></div>
+<div id="tip" hidden><div class="tbox"><small>PODPOWIEDŹ</small><div class="combo"><span class="cb" style="--c:#5aa8ff">SKOK</span><b>+</b><span class="cb" style="--c:#f0453a">STRZAŁ</span><b>=</b><span class="sup">SUPER STRZAŁ!</span></div>
+  <p>Skocz z piłką i wciśnij STRZAŁ na samym szczycie skoku. Piłka zapłonie i poleci jak szalona.</p><p class="k-keys"><span class="kc w">SPACJA</span> potem <span class="kc">K</span> · sprint: <span class="kc w">SHIFT</span> albo dwa razy strzałka</p><p class="k-touch">Przytrzymaj SPRINT, żeby biec szybciej.</p>
+  <div class="cont">▶ DOTKNIJ ALBO WCIŚNIJ KLAWISZ, ŻEBY GRAĆ</div></div></div>
 <div class="nes" id="dpad"><div class="arm h"></div><div class="arm v"></div><div class="dot"></div><div class="tri tu"></div><div class="tri td"></div><div class="tri tl"></div><div class="tri tr"></div></div>
-<div class="nes" id="btns"><div class="nb" id="nbJump"><i></i><span>SKOK</span></div><div class="nb" id="nbSlide"><i></i><span>WŚLIZG</span></div><div class="nb" id="nbPass"><i></i><span>PODAJ</span></div><div class="nb" id="nbShoot"><i></i><span>STRZAŁ</span></div></div>
+<div class="nes" id="btns"><div class="nb" id="nbJump"><i></i><span>SKOK</span></div><div class="nb" id="nbSlide"><i></i><span>WŚLIZG</span></div><div class="nb" id="nbPass"><i></i><span>PODAJ</span></div><div class="nb" id="nbShoot"><i></i><span>STRZAŁ</span></div><div class="nb" id="nbSprint"><i></i><span>SPRINT</span></div></div>
 
 <script>
 {
@@ -233,7 +248,9 @@
   };
   let ready = false, wantStart = false;
   window.GAME_READY = () => { const P = window.GAME.players; for (const p of P) (p.team ? $('sqB') : $('sqA')).appendChild(full(p)); $('play').disabled = false; $('play').textContent = 'GRAJ'; ready = true; if (wantStart) afterIntro(); };
-  const go = () => { $('menu').hidden = true; $('end').hidden = true; document.body.classList.add('playing'); meP = themP = null; meMood = themMood = '-'; window.GAME.start(); };
+  const go = () => { $('menu').hidden = true; $('end').hidden = true; document.body.classList.add('playing'); meP = themP = null; meMood = themMood = '-'; window.GAME.start(); window.GAME.freeze(true); $('tip').hidden = false; tipT = performance.now(); };
+  let tipT = 0; const unTip = () => { if ($('tip').hidden || performance.now() - tipT < 400) return; $('tip').hidden = true; window.GAME.freeze(false); };
+  $('tip').addEventListener('pointerdown', (e) => { e.preventDefault(); unTip(); });
   $('play').addEventListener('click', go); $('again').addEventListener('click', go);
   // after PRESS START: a phone goes straight onto the pitch (the pad is on screen), a desktop first shows the keys
   const afterIntro = () => { if (!ready) { wantStart = true; $('pressStart').firstChild.innerHTML = 'WCZYTUJĘ…'; return; }
@@ -264,6 +281,7 @@
     // keys belong to the intro and the controls screen while they are up, not to the game behind them
     document.addEventListener('keydown', (e) => {
       if (!I.hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (stage === 3) { blip(); afterIntro(); } else if (['Enter', 'Escape', 'Space'].includes(e.code)) skip(); return; }
+      if (!$('tip').hidden) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) unTip(); return; }
       if (!$('menu').hidden && !$('play').disabled && (e.code === 'Enter' || e.code === 'Space')) { e.preventDefault(); e.stopPropagation(); go(); } }, true);
     play(v1); }
   $('mute').addEventListener('click', () => { $('mute').textContent = window.GAME.mute() ? 'DŹWIĘK: NIE' : 'DŹWIĘK: TAK'; });
@@ -284,6 +302,8 @@
   for (const [id, btn] of [['nbPass', 'a'], ['nbShoot', 'b'], ['nbSlide', 'slide'], ['nbJump', 'jump']]) { const el = $(id);
     el.addEventListener('pointerdown', (e) => { el.classList.add('down'); window.GAME?.press(btn); e.preventDefault(); });
     for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, () => el.classList.remove('down')); }
+  { const el = $('nbSprint'); el.addEventListener('pointerdown', (e) => { el.classList.add('down'); window.GAME?.setDash(true); e.preventDefault(); });
+    for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, () => { el.classList.remove('down'); window.GAME?.setDash(false); }); }
   addEventListener('contextmenu', (e) => e.preventDefault());
 }
 </script>

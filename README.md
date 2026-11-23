@@ -19,6 +19,7 @@ three.js jest ładowany z CDN (jsdelivr).
 | J | PODAJ | podanie |
 | K | STRZAŁ | strzał; w powietrzu główka, wolej, przewrotka |
 | L | WŚLIZG | wślizg; w powietrzu kopnięcie z wyskoku |
+| Shift | SPRINT | sprint (przytrzymaj) |
 | Spacja | SKOK | skok, także z piłką |
 
 Super strzał: skocz z piłką i strzel na samym szczycie skoku. Faul w polu karnym to rzut karny.
