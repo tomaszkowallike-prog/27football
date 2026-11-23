@@ -1,4 +1,4 @@
-# Cuiavia Soccer
+# 27football (Cuiavia Soccer)
 
 Zręcznościowa piłka nożna w stylu starych gier 8-bitowych (inspiracja: Nekketsu Soccer League). Zawodnicy to płaskie postacie pixel art, a stadion jest w 3D, z rozmyciem tilt-shift i aberracją chromatyczną.
 
@@ -6,7 +6,7 @@ Zręcznościowa piłka nożna w stylu starych gier 8-bitowych (inspiracja: Nekke
 
 Gra to statyczna strona, nic nie trzeba budować.
 
-- **GitHub Pages:** Settings → Pages → Deploy from a branch → `main` / root. Gra będzie pod `https://<login>.github.io/cuiavia-soccer/`.
+- **GitHub Pages:** Settings → Pages → Deploy from a branch → `main` / root. Gra będzie pod `https://<login>.github.io/27football/`.
 - **Lokalnie:** `python3 -m http.server` w tym folderze, potem http://localhost:8000. Otwarcie `index.html` bezpośrednio z dysku nie zadziała, bo przeglądarka blokuje wtedy wczytywanie plików.
 
 three.js jest ładowany z CDN (jsdelivr).
