@@ -13,7 +13,7 @@
     #pen[hidden] { display: none; } #penCv { width: 100%; height: 100%; display: block; object-fit: contain; image-rendering: pixelated; }
     #penBack { right: max(10px, env(safe-area-inset-right)); top: max(10px, env(safe-area-inset-top)); } #pen.single #penBack { display: none; }`;
   document.head.appendChild(st);
-  const cv = $('penCv'), g = cv.getContext('2d');
+  const cv = $('penCv'); let g = cv.getContext('2d'); const G0 = g;
   let W = 640; const H = 360;
   const img = (src) => { const i = new Image(); i.src = src; return i; };
   const ATL = img('pen.png'), BG = img('kapki_bg.jpg'); let M = null;
@@ -42,7 +42,7 @@
   };
 
   // ---- layout (logical pixels, H = 360; W follows the screen's shape) ----
-  const L = {}; const layout = () => { const r = innerWidth / innerHeight; W = Math.round(Math.max(480, Math.min(800, H * r))); cv.width = W; cv.height = H;
+  const L = {}; const layout = () => { const r = innerWidth / innerHeight; W = Math.round(Math.max(480, Math.min(800, H * r))); cv.width = W; cv.height = H; BAKED = null;
     const cx = W / 2; Object.assign(L, { cx, gx0: cx - 150, gx1: cx + 150, gtop: 118, gbot: 226, spotX: cx + 66, spotY: 340, crossY: 172 }); g.imageSmoothingEnabled = false; };
   addEventListener('resize', () => { if (!root.hidden) layout(); });
 
@@ -57,8 +57,19 @@
   const atSpot = (sheet) => { const m = M[sheet], b = m.ball || [m.w / 2, m.h]; return [L.spotX - b[0] * SC, L.spotY - b[1] * SC]; };
 
   // ---- the scene ----
-  const drawPitch = () => {
-    const bw = W, bh = W * 9 / 16; g.drawImage(BG, 0, (H - bh) / 2 - 58, bw, bh);
+  let BAKED = null;
+  const bake = () => {   // the stands and the grass go to an offscreen canvas, then out again in three colour layers, offset
+    if (!BG.complete || !BG.naturalWidth) return null;
+    const src = document.createElement('canvas'); src.width = W; src.height = H; const s = src.getContext('2d'); const keep = g;
+    g = s; s.filter = 'blur(1.2px)'; const bw = W, bh = W * 9 / 16; s.drawImage(BG, 0, (H - bh) / 2 - 58, bw, bh); s.filter = 'none'; drawGrass(); g = keep;
+    const out = document.createElement('canvas'); out.width = W; out.height = H; const o = out.getContext('2d');
+    const chan = (col) => { const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d'); x.drawImage(src, 0, 0); x.globalCompositeOperation = 'multiply'; x.fillStyle = col; x.fillRect(0, 0, W, H); return c; };
+    o.fillStyle = '#000'; o.fillRect(0, 0, W, H); o.globalCompositeOperation = 'lighter';
+    o.drawImage(chan('#ff0000'), -3, 0); o.drawImage(chan('#00ff00'), 0, 0); o.drawImage(chan('#0000ff'), 3, 1);
+    return out; };
+  const drawPitch = () => { if (!BAKED) BAKED = bake(); if (BAKED) { g.drawImage(BAKED, 0, 0); return; }
+    const bw = W, bh = W * 9 / 16; g.drawImage(BG, 0, (H - bh) / 2 - 58, bw, bh); drawGrass(); };
+  const drawGrass = () => {
     // the grass in front of the goal, in stripes that widen towards us
     const hz = 200; for (let i = 0; i < 9; i++) { const y0 = hz + (H - hz) * Math.pow(i / 9, 1.6), y1 = hz + (H - hz) * Math.pow((i + 1) / 9, 1.6);
       g.fillStyle = i % 2 ? '#2f8a3a' : '#3a9a44'; g.fillRect(0, Math.floor(y0), W, Math.ceil(y1 - y0) + 1); }
@@ -229,8 +240,8 @@
       else if (K.high) { sheet = 'gk2'; fi = K.save && S.ball && S.ball.gone ? Math.min(9, 8 + Math.floor((K.t - 0.38) * 6)) : [5, 6, 7][Math.min(2, Math.floor(k * 3))]; dx = K.side * 88 * e; dy = -Math.sin(Math.PI * Math.min(1, K.t / 0.9)) * 26; }
       else { sheet = 'gk1'; fi = K.save && S.ball && S.ball.gone ? Math.min(9, 7 + Math.floor((K.t - 0.38) * 5)) : [5, 6, 6][Math.min(2, Math.floor(k * 3))]; dx = K.side * 98 * e; dy = -Math.sin(Math.PI * Math.min(1, K.t / 0.7)) * 12; }
       if (K.knocked && K.t > 0.45) { dy += Math.min(10, (K.t - 0.45) * 30); } }
-    const m = M[sheet], x = L.cx - m.w / 2 + dx, y = L.gbot - m.h + 2 + dy;
-    shadow(L.cx + dx, L.gbot, 18); frame(sheet, fi, x, y, { flip });
+    const m = M[sheet], feet = (m.feet || m.h), x = L.cx - m.w / 2 + dx, y = L.gbot + 5 - feet + dy;
+    shadow(L.cx + dx, L.gbot + 5, 18); frame(sheet, fi, x, y, { flip });
   };
   const drawShooter = () => {
     if (!M) return; let sheet = 'kick', fi = 0;
