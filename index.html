@@ -139,9 +139,9 @@
   body.touch #bag { transform: scale(.85); transform-origin: top left; }
   #picker { position: fixed; inset: 0; z-index: 8; display: grid; place-items: start center; padding-top: max(8vh, 40px); pointer-events: none; }
   #picker[hidden] { display: none; }
-  #picker .pbox { pointer-events: auto; background: rgba(0,0,0,.82); border: 3px solid #8a8a8a; padding: 10px 14px 12px; text-align: center; box-shadow: 0 6px 0 rgba(0,0,0,.5); }
+  #picker .pbox { max-width: 96vw; max-height: 92vh; overflow: auto; pointer-events: auto; background: rgba(0,0,0,.82); border: 3px solid #8a8a8a; padding: 10px 14px 12px; text-align: center; box-shadow: 0 6px 0 rgba(0,0,0,.5); }
   #picker small { display: block; font-size: 15px; letter-spacing: .16em; color: #ffe14a; margin-bottom: 8px; animation: blink .6s steps(2, jump-none) infinite; }
-  #picker .cards { display: flex; gap: 8px; justify-content: center; }
+  #picker .cards { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: min(760px, 94vw); }
   #picker .pc { width: 112px; padding: 8px 4px 6px; background: #17181b; border: 3px solid #3a3d44; cursor: pointer; font: 700 13px "Pixelify Sans", monospace; color: #fff; line-height: 1.15; }
   #picker .pc img, #picker .pc .own { display: block; width: 40px; height: 40px; margin: 0 auto 5px; image-rendering: pixelated; }
   #picker .pc .own { font-size: 32px; line-height: 40px; }
@@ -151,7 +151,8 @@
   #picker .pbar { height: 5px; background: #333; margin-top: 9px; } #picker .pbar i { display: block; height: 100%; background: #ffe14a; animation: pbar 5s linear forwards; }
   @keyframes pbar { from { width: 100%; } to { width: 0; } }
   #picker .phint { margin-top: 7px; font-size: 13px; opacity: .8; } body.touch #picker .phint.k-keys { display: none; } body:not(.touch) #picker .phint.k-touch { display: none; }
-  body.touch #picker .pc { width: 96px; font-size: 12px; } body.touch #picker { padding-top: 10px; }
+  body.touch #picker .pc { width: 88px; font-size: 11px; padding: 5px 3px 4px; } body.touch #picker .pc img, body.touch #picker .pc .own { width: 30px; height: 30px; margin-bottom: 3px; } body.touch #picker .pc .own { font-size: 24px; line-height: 30px; } body.touch #picker .pc b { font-size: 13px; } body.touch #picker { padding-top: 6px; }
+  @media (orientation: portrait) { body.touch #picker .pc { width: calc(30vw - 10px); } }
   #modes { position: fixed; inset: 0; z-index: 19; display: grid; place-items: center; background: #02070f; overflow: hidden; }
   #modes[hidden] { display: none; }
   #modes .logo { position: absolute; left: 50%; top: 50%; width: max(100vw, 177.78vh); height: max(56.25vw, 100vh); transform: translate(-50%, -50%); object-fit: cover; opacity: .6; filter: blur(1px); pointer-events: none; }
