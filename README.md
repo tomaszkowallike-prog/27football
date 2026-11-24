@@ -31,7 +31,11 @@ Na boisku pojawiają się kolorowe kostki. Wbiegnij w nią z piłką, a do torby
 - **ROZDWOJENIE**: lecą trzy piłki naraz, a bramkarz nie wie, która jest prawdziwa.
 - **MEGA PIŁKA**: olbrzymia piłka taranuje każdego na swojej drodze.
 
-Faul w polu karnym to rzut karny.
+Faul w polu karnym to rzut karny. Na telefonie możesz też dotknąć kolegi na boisku, żeby nim sterować.
+
+## Tryb KAPKI
+
+Po PRESS START wybierasz MECZ albo KAPKI. W kapkach Dominik żongluje piłką na stadionie z intra. Na ekranie pojawiają się kółka, a na każde masz około sekundy. Jedno dotknięcie to jedna kapka. Spóźnisz się, piłka spada. Rekord zapisuje się w przeglądarce.
 
 ## Pliki
 
@@ -40,4 +44,6 @@ Faul w polu karnym to rzut karny.
 - `atlas_*.png`, `frames.json`: sprite'y zawodników
 - `fans.png`, `flag*.png`, `crowdfront.png`, `extras.json`: kibice i flagi
 - `intro*.mp4`, `intro*.jpg`: filmy intro
+- `juggle.png`, `kapki_bg.jpg`: tryb kapki
+- `btn_*.png`: ikony przycisków
 - `shout*.mp3`: okrzyki zawodników

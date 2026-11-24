@@ -87,12 +87,18 @@
   #joy.on .knob { background: radial-gradient(circle at 38% 32%, #fff6c0, #ffe14a 55%, #b08a00); }
   #btns { right: max(14px, env(safe-area-inset-right)); width: 282px; height: 186px; }
   .nb { position: absolute; width: 74px; text-align: center; }
-  .nb i { display: block; width: 58px; height: 58px; margin: 0 auto; border-radius: 50%; background: radial-gradient(circle at 40% 35%, var(--hi), var(--lo) 70%); border: 4px solid #2a2a2c; box-shadow: 0 0 0 5px #bdbdbd, 0 4px 0 5px #8e8e8e; }
+  .nb i { display: block; width: 68px; height: 68px; margin: 0 auto; background: var(--ic) center / contain no-repeat; image-rendering: pixelated; filter: drop-shadow(0 4px 0 rgba(0,0,0,.45)); }
+  .nb.down i { background-image: var(--on); transform: translateY(3px); filter: drop-shadow(0 1px 0 rgba(0,0,0,.45)); }
   #nbShoot { --hi: #f0453a; --lo: #b5121b; --tx: #ff5a4a; } #nbPass { --hi: #5be36e; --lo: #17892b; --tx: #5be36e; } #nbJump { --hi: #5aa8ff; --lo: #1a4fb5; --tx: #6ab4ff; }
   #nbSlide { --hi: #ffe14a; --lo: #c08a00; --tx: #ffe14a; } #nbSprint { --hi: #ff9a3a; --lo: #c2510a; --tx: #ff9a3a; } #nbSwap { --hi: #4ff0d4; --lo: #0d8a76; --tx: #4ff0d4; }
   .nb span { display: block; margin-top: 9px; font: 700 12px "Pixelify Sans", monospace; color: var(--tx); text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; letter-spacing: .04em; }
-  .nb.down i { transform: translateY(3px); box-shadow: 0 0 0 5px #bdbdbd, 0 1px 0 5px #8e8e8e; filter: brightness(.75); }
-  #nbJump { right: 96px; top: 0; } #nbSlide { right: 0; top: 0; } #nbPass { right: 96px; top: 98px; } #nbShoot { right: 0; top: 98px; } #nbSprint { right: 190px; top: 56px; } #nbSwap { right: 190px; top: -34px; } #nbSwap i { width: 46px; height: 46px; } #nbSwap span { margin-top: 6px; }
+  #nbJump { --ic: url(btn_jump.png); --on: url(btn_jump_on.png); }
+  #nbSlide { --ic: url(btn_slide.png); --on: url(btn_slide_on.png); }
+  #nbPass { --ic: url(btn_pass.png); --on: url(btn_pass_on.png); }
+  #nbShoot { --ic: url(btn_shoot.png); --on: url(btn_shoot_on.png); }
+  #nbSprint { --ic: url(btn_sprint.png); --on: url(btn_sprint_on.png); }
+  #nbSwap { --ic: url(btn_swap.png); --on: url(btn_swap_on.png); }
+  #nbJump { right: 96px; top: 0; } #nbSlide { right: 0; top: 0; } #nbPass { right: 96px; top: 98px; } #nbShoot { right: 0; top: 98px; } #nbSprint { right: 190px; top: 56px; } #nbSwap { right: 190px; top: -34px; } #nbSwap i { width: 54px; height: 54px; } #nbSwap span { margin-top: 6px; }
   /* the crowd in front of the camera, out of focus */
   #front { position: fixed; left: -4%; width: 108%; bottom: -2vh; height: 19vh; z-index: 2; pointer-events: none; filter: blur(7px) brightness(.55) saturate(.8); opacity: .92; display: none; animation: bob 1.6s ease-in-out infinite; }
   body.playing #front { display: block; }
@@ -146,6 +152,44 @@
   @keyframes pbar { from { width: 100%; } to { width: 0; } }
   #picker .phint { margin-top: 7px; font-size: 13px; opacity: .8; } body.touch #picker .phint.k-keys { display: none; } body:not(.touch) #picker .phint.k-touch { display: none; }
   body.touch #picker .pc { width: 96px; font-size: 12px; } body.touch #picker { padding-top: 10px; }
+  #modes { position: fixed; inset: 0; z-index: 19; display: grid; place-items: center; background: #02070f; overflow: hidden; }
+  #modes[hidden] { display: none; }
+  #modes .logo { position: absolute; left: 50%; top: 50%; width: max(100vw, 177.78vh); height: max(56.25vw, 100vh); transform: translate(-50%, -50%); object-fit: cover; opacity: .6; filter: blur(1px); pointer-events: none; }
+  #modes .mtitle { font: italic 700 clamp(40px, 9vw, 78px) "Pixelify Sans", monospace; color: #fff; text-shadow: 4px 4px 0 #000, -2px -2px 0 #000; margin-bottom: 10px; letter-spacing: -.02em; } #modes .mtitle b { color: #3fe060; }
+  #modes .mbox { position: relative; z-index: 1; text-align: center; padding: 12px; }
+  #modes small { display: inline-block; background: rgba(0,0,0,.7); padding: 3px 10px; font-size: 16px; letter-spacing: .2em; color: #8fd99a; margin-bottom: 12px; }
+  #modes .mrow { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .mb { width: 210px; padding: 14px 10px 12px; font: 700 26px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.78); border: 3px solid #5a5d66; cursor: pointer; }
+  .mb b { display: block; font-size: 40px; margin-bottom: 4px; } .mb em { display: block; font-style: normal; font-size: 13px; font-weight: 400; opacity: .8; margin-top: 4px; }
+  .mb.sel, .mb:hover { border-color: #ffe14a; transform: translateY(-3px); box-shadow: 0 6px 0 #000; }
+  .mhint { margin-top: 12px; font-size: 13px; opacity: .8; } body.touch .mhint { display: none; }
+  body.touch .mb { width: 170px; font-size: 22px; padding: 10px 8px; } body.touch .mb b { font-size: 32px; }
+  #kapki { position: fixed; inset: 0; z-index: 18; background: #02070f; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; }
+  #kapki[hidden] { display: none; }
+  #kapki .f169 { position: absolute; left: 50%; top: 50%; width: max(100vw, 177.78vh); height: max(56.25vw, 100vh); transform: translate(-50%, -50%); }
+  #kapki .f169 img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #jug { position: absolute; left: 50%; bottom: 3vh; height: min(66vh, 120vw); aspect-ratio: 147 / 150; transform: translateX(-50%); background: url(juggle.png) 0 0 / 1600% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 6px 0 rgba(0,0,0,.35)); }
+  #jug.bump { animation: bump .18s steps(3); } @keyframes bump { 50% { transform: translateX(-50%) translateY(-6px); } }
+  #kdots { position: absolute; inset: 0; }
+  .kd { position: absolute; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%; background: radial-gradient(circle, #ffe14a 0 30%, #ff8a1f 31% 44%, transparent 45%); cursor: pointer; animation: kin .12s steps(3); }
+  .kd::before { content: ''; position: absolute; inset: -16px; border-radius: 50%; border: 5px solid #fff; box-shadow: 0 0 0 3px #000, inset 0 0 0 3px #000; animation: kring var(--t) linear forwards; }
+  .kd::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 4px solid #000; }
+  @keyframes kring { from { transform: scale(1.9); opacity: .3; } to { transform: scale(.62); opacity: 1; } }
+  @keyframes kin { from { transform: scale(.3); } }
+  .kpop { position: absolute; font: 700 28px "Pixelify Sans", monospace; color: #ffe14a; text-shadow: 3px 3px 0 #000; pointer-events: none; animation: kpop .6s steps(6) forwards; }
+  @keyframes kpop { to { transform: translateY(-50px); opacity: 0; } }
+  .khud { position: absolute; left: max(12px, env(safe-area-inset-left)); top: max(10px, env(safe-area-inset-top)); display: flex; gap: 10px; }
+  .khud div { background: linear-gradient(#24272c, #101114); border: 2px solid #3a3d44; border-radius: 6px; padding: 4px 12px; text-align: center; }
+  .khud small { display: block; font-size: 11px; letter-spacing: .14em; opacity: .7; } .khud b { font-size: 30px; line-height: 1; } #kscore { color: #ffe14a; }
+  #kmsg { position: absolute; left: 50%; top: 20%; transform: translateX(-50%); text-align: center; text-shadow: 3px 3px 0 #000; pointer-events: none; }
+  #kmsg b { display: block; font-size: clamp(26px, 6vw, 44px); color: #ffe14a; animation: blink .9s steps(2, jump-none) infinite; } #kmsg span { font-size: 15px; }
+  #kend { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.5); }
+  #kend[hidden] { display: none; }
+  #kend .tbox { background: #000; border: 3px solid #8a8a8a; padding: 14px 22px; text-align: center; }
+  #kend small { letter-spacing: .2em; color: #ff8a1f; } .kres { font-size: 22px; margin: 6px 0; } .kres b { font-size: 54px; color: #ffe14a; }
+  #kend p { margin: 0 0 10px; color: #8fd99a; min-height: 1em; }
+  .btn.ghost { background: transparent; border-color: #8a8a8a; color: #fff; }
+  #kback { right: max(10px, env(safe-area-inset-right)); top: max(10px, env(safe-area-inset-top)); }
   #tip { position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; background: rgba(0,0,0,.55); padding: 12px; cursor: pointer; }
   #tip[hidden] { display: none; }
   #tip .tbox { max-height: 94vh; overflow: auto; max-width: 600px; text-align: center; background: #000; border: 3px solid #8a8a8a; padding: 14px 18px 16px; box-shadow: 0 6px 0 rgba(0,0,0,.5); }
@@ -190,7 +234,7 @@
       <dt><span class="kc w">SPACJA</span> <span class="kc">K</span></dt><dd><b style="color:var(--o)">SUPER STRZAŁ:</b> skocz z piłką i wciśnij strzał, potem wybierz, który (<span class="kc">←</span><span class="kc">→</span> i <span class="kc">K</span>). Kolorowe kostki na boisku dają nowe super strzały, wbiegnij w nie z piłką</dd>
       <dt><span class="kc">↑</span><span class="kc">↓</span> <span class="kc">K</span></dt><dd>rzut karny: wybierz róg i strzel</dd>
     </dl>
-    <dl class="how k-touch"><dt>Gałka</dt><dd>ruch</dd><dt>PODAJ · STRZAŁ</dt><dd>podanie i strzał (w powietrzu: główka, wolej, przewrotka)</dd><dt>WŚLIZG</dt><dd>wślizg · w powietrzu: kopnięcie z wyskoku</dd><dt>SKOK</dt><dd>skok, także z piłką</dd><dt>SPRINT</dt><dd>przytrzymaj, żeby biec szybciej</dd><dt>ZMIANA</dt><dd>przełącz na zawodnika najbliżej piłki</dd></dl>
+    <dl class="how k-touch"><dt>Gałka</dt><dd>ruch</dd><dt>PODAJ · STRZAŁ</dt><dd>podanie i strzał (w powietrzu: główka, wolej, przewrotka)</dd><dt>WŚLIZG</dt><dd>wślizg · w powietrzu: kopnięcie z wyskoku</dd><dt>SKOK</dt><dd>skok, także z piłką</dd><dt>SPRINT</dt><dd>przytrzymaj, żeby biec szybciej</dd><dt>ZMIANA</dt><dd>przełącz na zawodnika najbliżej piłki</dd><dt>Dotknięcie</dt><dd>dotknij kolegi na boisku, żeby nim sterować</dd></dl>
     <p class="note" style="margin:0 0 12px;opacity:.75">Grasz DOMINIKIEM, blondynem z 27. Bez piłki sterujesz tym, kto jest najbliżej (żółta strzałka). 2 połowy po 2:00, faul w polu karnym to karny.</p>
     <div class="row"><button class="btn" id="play" disabled>WCZYTUJĘ…</button><span class="go k-keys">albo <span class="kc w">ENTER</span></span></div>
   </div>
@@ -198,9 +242,17 @@
 <div class="ov" id="end" hidden><div class="panel"><h1 id="endT">KONIEC</h1><div id="final">0 : 0</div><div class="row"><button class="btn" id="again">REWANŻ</button></div></div></div>
 <div id="penHint"></div>
 <div id="bag" class="hud"></div>
+<div id="modes" hidden><div class="mbox"><img class="logo" src="kapki_bg.jpg" alt=""><div class="mtitle"><b>27</b>football</div><small>WYBIERZ TRYB</small>
+  <div class="mrow"><button class="mb" data-m="match"><b>⚽</b>MECZ<em>Cuiavia kontra Fioletowi</em></button><button class="mb" data-m="kapki"><b>🎯</b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button></div>
+  <div class="mhint k-keys"><span class="kc">←</span><span class="kc">→</span> wybierz · <span class="kc w">ENTER</span> start</div></div></div>
+<div id="kapki" hidden><div class="f169"><img src="kapki_bg.jpg" alt=""></div><div id="jug"></div><div id="kdots"></div>
+  <div class="khud"><div><small>KAPKI</small><b id="kscore">0</b></div><div><small>REKORD</small><b id="kbest">0</b></div></div>
+  <div id="kmsg"><b>DOTYKAJ KÓŁEK!</b><span>Masz chwilę na każde, inaczej piłka spadnie.</span></div>
+  <div id="kend" hidden><div class="tbox"><small>PIŁKA SPADŁA</small><div class="kres"><b id="kres">0</b> kapek</div><p id="knew"></p><div class="row"><button class="btn" id="kagain">JESZCZE RAZ</button><button class="btn ghost" id="kmenu">MENU</button></div></div></div>
+  <button class="ibtn" id="kback">✕ MENU</button></div>
 <div id="picker" hidden><div class="pbox"><small>WYBIERZ SUPER STRZAŁ</small><div class="cards" id="pcards"></div><div class="pbar"><i></i></div><div class="phint k-keys">← → wybierz · <span class="kc">K</span> strzał · albo <span class="kc">1</span>–<span class="kc">4</span></div><div class="phint k-touch">Dotknij strzału, który chcesz oddać</div></div></div>
 <div id="tip" hidden><div class="tbox"><small>PODPOWIEDŹ</small><div class="combo"><span class="cb" style="--c:#5aa8ff">SKOK</span><b>+</b><span class="cb" style="--c:#f0453a">STRZAŁ</span><b>=</b><span class="sup">SUPER STRZAŁ!</span></div>
-  <p>Skocz z piłką i wciśnij STRZAŁ. Gra się zatrzyma i wybierzesz, który super strzał oddać.</p><p>Wbiegnij z piłką w kolorową kostkę na boisku, a dostaniesz nowy: <b style="color:#ffe14a">BŁYSKAWICA</b> powala wszystkich rywali, <b style="color:#5fd8ff">ROZDWOJENIE</b> wysyła trzy piłki naraz, <b style="color:#ff6ab8">MEGA PIŁKA</b> taranuje wszystko po drodze.</p><p class="k-keys"><span class="kc w">SPACJA</span> potem <span class="kc">K</span> · sprint: <span class="kc w">SHIFT</span> · zmiana zawodnika: <span class="kc">Q</span></p><p class="k-touch">Przytrzymaj SPRINT, żeby biec szybciej. ZMIANA przełącza zawodnika.</p>
+  <p>Skocz z piłką i wciśnij STRZAŁ. Gra się zatrzyma i wybierzesz, który super strzał oddać.</p><p>Wbiegnij z piłką w kolorową kostkę na boisku, a dostaniesz nowy: <b style="color:#ffe14a">BŁYSKAWICA</b> powala wszystkich rywali, <b style="color:#5fd8ff">ROZDWOJENIE</b> wysyła trzy piłki naraz, <b style="color:#ff6ab8">MEGA PIŁKA</b> taranuje wszystko po drodze.</p><p class="k-keys"><span class="kc w">SPACJA</span> potem <span class="kc">K</span> · sprint: <span class="kc w">SHIFT</span> · zmiana zawodnika: <span class="kc">Q</span></p><p class="k-touch">Przytrzymaj SPRINT, żeby biec szybciej. Dotknij kolegi na boisku albo wciśnij ZMIANA, żeby nim sterować.</p>
   <div class="cont">▶ DOTKNIJ ALBO WCIŚNIJ KLAWISZ, ŻEBY GRAĆ</div></div></div>
 <div class="nes" id="joy"><div class="base"></div><div class="knob"></div></div>
 <div class="nes" id="btns"><div class="nb" id="nbJump"><i></i><span>SKOK</span></div><div class="nb" id="nbSlide"><i></i><span>WŚLIZG</span></div><div class="nb" id="nbPass"><i></i><span>PODAJ</span></div><div class="nb" id="nbShoot"><i></i><span>STRZAŁ</span></div><div class="nb" id="nbSprint"><i></i><span>SPRINT</span></div><div class="nb" id="nbSwap"><i></i><span>ZMIANA</span></div></div>
@@ -284,7 +336,44 @@
   // after PRESS START: a phone goes straight onto the pitch (the pad is on screen), a desktop first shows the keys
   const afterIntro = () => { if (!ready) { wantStart = true; $('pressStart').firstChild.innerHTML = 'WCZYTUJĘ…'; return; }
     $('intro').hidden = true; for (const v of [$('v1'), $('v2')]) { v.pause(); v.removeAttribute('src'); v.load(); }
-    if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
+    showModes(); };
+  // ---- the mode screen: a match, or keepy-uppy on the stadium from the intro ----
+  let modeSel = 0;
+  const showModes = () => { $('modes').hidden = false; modeSel = 0; markMode(); };
+  const markMode = () => document.querySelectorAll('#modes .mb').forEach((b, i) => b.classList.toggle('sel', i === modeSel));
+  const pickMode = (m) => { $('modes').hidden = true; if (m === 'kapki') K.start(); else if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
+  document.querySelectorAll('#modes .mb').forEach((b) => b.addEventListener('click', () => pickMode(b.dataset.m)));
+  // keepy-uppy: a dot appears, you have about a second to tap it; every tap is a touch on the ball
+  const K = (() => {
+    const FW = 16, jug = $('jug'), dots = $('kdots'); let score = 0, best = 0, alive = false, timer = 0, AC = null, airT = 0, pairI = 0;
+    try { best = +localStorage.getItem('kapki_best') || 0; } catch (e) {}
+    const PAIRS = [[1, 3], [2, 4], [5, 7], [6, 10], [8, 11], [9, 0], [13, 4], [14, 7]];
+    const frame = (i) => { jug.style.backgroundPosition = `${(i / (FW - 1)) * 100}% 0`; };
+    const tone = (f, d = 0.09, type = 'square', v = 0.06) => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + 0.02); } catch (e) {} };
+    const shout = () => { try { const a = new Audio(`shout${1 + ((Math.random() * 5) | 0)}.mp3`); a.volume = 0.8; a.play().catch(() => {}); } catch (e) {} };
+    const win = () => Math.max(0.62, 1.05 - score * 0.012);   // seconds you have for each dot
+    const spawn = () => { dots.innerHTML = ''; const d = document.createElement('div'); d.className = 'kd'; const t = win(); d.style.setProperty('--t', t + 's');
+      const W = innerWidth, H = innerHeight; let x, y; const jr = jug.getBoundingClientRect();
+      for (let k = 0; k < 12; k++) { x = 60 + Math.random() * (W - 120); y = Math.max(90, H * 0.12) + Math.random() * (H * 0.72 - 90); if (!(x > jr.left - 30 && x < jr.right + 30 && y > jr.top + jr.height * 0.25)) break; }
+      d.style.left = x + 'px'; d.style.top = y + 'px';
+      d.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); hit(d, x, y); });
+      dots.appendChild(d); clearTimeout(timer); timer = setTimeout(miss, t * 1000); };
+    const hit = (d, x, y) => { if (!alive) return; clearTimeout(timer); d.remove(); score++; $('kscore').textContent = score; $('kmsg').hidden = true;
+      const pr = PAIRS[pairI++ % PAIRS.length]; frame(pr[0]); clearTimeout(airT); airT = setTimeout(() => frame(pr[1]), 140);
+      jug.classList.remove('bump'); void jug.offsetWidth; jug.classList.add('bump');
+      tone(520 + Math.min(score, 40) * 18, 0.08); if (score % 10 === 0) { tone(1320, 0.25, 'square', 0.05); shout(); }
+      const pop = document.createElement('div'); pop.className = 'kpop'; pop.textContent = score % 10 === 0 ? score + '!' : '+1'; pop.style.left = x - 20 + 'px'; pop.style.top = y - 30 + 'px'; $('kapki').appendChild(pop); setTimeout(() => pop.remove(), 650);
+      setTimeout(() => alive && spawn(), 120); };
+    const miss = () => { if (!alive) return; alive = false; dots.innerHTML = ''; frame(12); setTimeout(() => frame(15), 450); tone(220, 0.35, 'sawtooth', 0.06); setTimeout(() => tone(140, 0.4, 'sawtooth', 0.06), 160);
+      const rec = score > best; if (rec) { best = score; try { localStorage.setItem('kapki_best', best); } catch (e) {} }
+      $('kbest').textContent = best; $('kres').textContent = score; $('knew').textContent = rec && score ? 'NOWY REKORD!' : best ? `Rekord: ${best}` : '';
+      setTimeout(() => { $('kend').hidden = false; }, 700); };
+    const start = () => { $('kapki').hidden = false; $('kend').hidden = true; $('kmsg').hidden = false; score = 0; pairI = (Math.random() * 8) | 0; $('kscore').textContent = 0; $('kbest').textContent = best; frame(0); alive = true; setTimeout(() => alive && spawn(), 900); };
+    const stop = () => { alive = false; clearTimeout(timer); dots.innerHTML = ''; $('kapki').hidden = true; showModes(); };
+    $('kagain').addEventListener('click', start); $('kmenu').addEventListener('click', stop); $('kback').addEventListener('click', stop);
+    return { start, stop };
+  })();
   // ---- the intro ----
   { const I = $('intro'), v1 = $('v1'), v2 = $('v2'), ps = $('pressStart'), fc = $('flash'), fg = fc.getContext('2d');
     let stage = 1, flashing = false, AC = null;
@@ -310,6 +399,8 @@
     // keys belong to the intro and the controls screen while they are up, not to the game behind them
     document.addEventListener('keydown', (e) => {
       if (!I.hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (stage === 3) { blip(); afterIntro(); } else if (['Enter', 'Escape', 'Space'].includes(e.code)) skip(); return; }
+      if (!$('modes').hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'KeyA' || e.code === 'KeyD') { modeSel ^= 1; markMode(); } else if (e.code === 'Digit1') pickMode('match'); else if (e.code === 'Digit2') pickMode('kapki'); else if (e.code === 'Enter' || e.code === 'Space') pickMode(modeSel ? 'kapki' : 'match'); return; }
+      if (!$('kapki').hidden) { e.preventDefault(); e.stopPropagation(); if (e.code === 'Escape') K.stop(); else if (!$('kend').hidden && (e.code === 'Enter' || e.code === 'Space') && !e.repeat) K.start(); return; }
       if (!$('tip').hidden) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) unTip(); return; }
       if (!$('menu').hidden && !$('play').disabled && (e.code === 'Enter' || e.code === 'Space')) { e.preventDefault(); e.stopPropagation(); go(); } }, true);
     play(v1); }
@@ -330,6 +421,7 @@
   { const el = $('nbSprint'); el.addEventListener('pointerdown', (e) => { el.classList.add('down'); window.GAME?.setDash(true); e.preventDefault(); });
     for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, () => { el.classList.remove('down'); window.GAME?.setDash(false); }); }
   $('pcards').addEventListener('pointerdown', (e) => { const c = e.target.closest('.pc'); if (c) { e.preventDefault(); window.GAME?.pick(+c.dataset.i); } });
+  $('stage').addEventListener('pointerdown', (e) => { if (document.body.classList.contains('playing')) window.GAME?.tapAt(e.clientX, e.clientY); });
   addEventListener('contextmenu', (e) => e.preventDefault());
 }
 </script>

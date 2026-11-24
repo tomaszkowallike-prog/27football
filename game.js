@@ -21,7 +21,7 @@ const TEAMS = [
   { name: 'CUIAVIA', short: 'CUI', img: IMG_G, color: '#3fbf55', dir: 1,
     squad: [
       { sheet: '10', num: 1, name: 'MAREK', role: 'gk', pos: 'GK', keeper: true },
-      { sheet: '10', num: 10, name: 'KUBA', role: 'def', pos: 'DF', home: [9, 0], super: { name: 'SOLANKOWY ZYGZAK', kind: 'zigzag' } },
+      { sheet: '99', num: 99, name: 'KUBA', role: 'def', pos: 'DF', home: [9, 0], super: { name: 'SOLANKOWY ZYGZAK', kind: 'zigzag' } },
       { sheet: '9', num: 9, name: 'BARTEK', role: 'mid', pos: 'MF', home: [19, -8], super: { name: 'KUJAWSKA TRĄBA', kind: 'tornado' } },
       { sheet: '7', num: 7, name: 'KAMIL', role: 'mid', pos: 'MF', home: [19, 8], super: { name: 'BANAN Z INOWROCŁAWIA', kind: 'curve' } },
       { sheet: '27', num: 27, name: 'DOMINIK', role: 'fwd', pos: 'FW', home: [26, 0], super: { name: 'KUJAWSKA PETARDA', kind: 'fire' }, captain: true },
@@ -1169,7 +1169,13 @@ renderer.setAnimationLoop((now) => { if (!auto) return; const dt = Math.min(0.05
 placeKickoff(0); G.state = 'menu'; WX.set('leaves');
 window.GAME = {
   start() { G.inv = { lightning: 0, split: 0, mega: 0 }; PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = 120; G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = Math.random() < 0.5 ? 'rain' : 'leaves'; setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
-  press, pick: (i) => doPick(i), pickMove, powers: POWERS, icons: PU.icons, setStick(v) { stick = v; }, setDash(v) { padDash = v; }, freeze(v) { frozen = !!v; if (v) { keys.clear(); keyDash = false; } }, mute: () => SFX.toggle(),
+  press, pick: (i) => doPick(i), pickMove,
+  // a finger on a teammate takes control of him (not while you are the one with the ball)
+  tapAt(cx, cy) { if (G.state !== 'play' && G.state !== 'kickoff') return false; if (ball.owner === captain) return false;
+    const r = renderer.domElement.getBoundingClientRect(); let best = null, bd = 64; const v = new THREE.Vector3();
+    for (const q of players) { if (q.team !== 0 || q.keeper || q.st === 'down') continue; v.set(q.x, q.y + 1.1, q.z).project(camera);
+      const d = Math.hypot(r.left + (v.x + 1) / 2 * r.width - cx, r.top + (1 - v.y) / 2 * r.height - cy); if (d < bd) { bd = d; best = q; } }
+    if (!best || best === captain) return false; captain = best; switchT = 2.2; SFX.menu(); G.ca = Math.max(G.ca, 0.3); FX.emit('curve', best.x, 0.4, best.z, 10, 3, 0.25, 4); return true; }, powers: POWERS, icons: PU.icons, setStick(v) { stick = v; }, setDash(v) { padDash = v; }, freeze(v) { frozen = !!v; if (v) { keys.clear(); keyDash = false; } }, mute: () => SFX.toggle(),
   teams: TEAMS, frames: FR, images: [IMG_G, IMG_P], players, get captain() { return captain; }, get ball() { return ball; }, G,
 };
 window.__game = { goal: (t) => goalScored(t), pen: (t) => penaltyFor(t, players.find((q) => q.team === t && q.role === 'fwd')), G, ball, players, input, weather: (m) => { G.weather = m; setWeather(m); }, step(sec, fps = 30) { auto = false; for (let i = 0; i < Math.round(sec * fps); i++) step(1 / fps); }, resume() { last = performance.now(); auto = true; }, keys };
