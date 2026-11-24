@@ -178,7 +178,18 @@
   #modes .mtitle { font: italic 700 clamp(40px, 9vw, 78px) "Pixelify Sans", monospace; color: #fff; text-shadow: 4px 4px 0 #000, -2px -2px 0 #000; margin-bottom: 10px; letter-spacing: -.02em; } #modes .mtitle b { color: #3fe060; }
   #modes .mbox { position: relative; z-index: 1; text-align: center; padding: 12px; }
   #modes small { display: inline-block; background: rgba(0,0,0,.7); padding: 3px 10px; font-size: 16px; letter-spacing: .2em; color: #8fd99a; margin-bottom: 12px; }
-  #modes .mback { position: static; margin-top: 12px; }
+  #modes .sbg.tb { position: absolute; inset: -20px; background: url(tablica.jpg) center / cover; filter: blur(12px) brightness(.45); }
+  #modes .tbox2 { position: absolute; left: 50%; top: 50%; width: min(100vw, 177.7vh); aspect-ratio: 1672 / 941; transform: translate(-50%, -50%); }
+  #modes .tbox2 > img { width: 100%; height: 100%; display: block; }
+  #modes .tbox2 small { position: absolute; left: 6%; width: 50%; top: 64.5%; text-align: center; margin: 0; font-size: clamp(10px, 1.5vw, 18px); color: #ffe14a; background: rgba(0,0,0,.65); }
+  #modes .tbox2 .mrow { position: absolute; left: 7%; width: 48%; top: 23%; height: 38%; display: flex; flex-direction: column; justify-content: space-around; align-items: center; gap: 0; }
+  #modes .tbox2 .mb { width: auto; min-width: 46%; padding: .1em .7em; background: rgba(255,240,250,.93); border: 3px solid #2a2a6a; border-radius: 10px; color: #1a1a5a;
+    font-size: clamp(16px, 3.6vw, 44px); box-shadow: 0 .25em 0 rgba(40,20,80,.45); animation: float 2.4s ease-in-out infinite; display: flex; align-items: center; gap: .35em; }
+  #modes .tbox2 .mb:nth-child(2) { animation-delay: -.8s; color: #c21a1a; } #modes .tbox2 .mb:nth-child(1) { color: #127a2a; } #modes .tbox2 .mb:nth-child(3) { animation-delay: -1.6s; color: #2a3ab0; }
+  #modes .tbox2 .mb b { font-size: .8em; margin: 0; } #modes .tbox2 .mb em { display: none; }
+  #modes .tbox2 .mb.sel, #modes .tbox2 .mb:hover { border-color: #ffb800; box-shadow: 0 0 0 3px #ffe14a, 0 .25em 0 rgba(40,20,80,.45); }
+  @keyframes float { 0%, 100% { transform: translateY(-.12em) rotate(-1deg); } 50% { transform: translateY(.12em) rotate(1deg); } }
+  #modes .mback { left: 1.5%; bottom: 3%; top: auto; right: auto; }
   #modes .mrow { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
   .mb { width: 190px; padding: 14px 10px 12px; font: 700 26px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.78); border: 3px solid #5a5d66; cursor: pointer; }
   .mb b { display: block; font-size: 40px; margin-bottom: 4px; } .mb em { display: block; font-style: normal; font-size: 13px; font-weight: 400; opacity: .8; margin-top: 4px; }
@@ -290,10 +301,10 @@
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <div class="stitle">WYBIERZ KAPITANA</div></div></div>
-<div id="modes" hidden><div class="mbox"><img class="logo" src="kapki_bg.jpg" alt=""><div class="mtitle"><b>27</b>football</div><small id="mq">CO ROBIMY?</small>
+<div id="modes" hidden><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt="">
+  <small id="mq">CO ROBIMY?</small>
   <div class="mrow"><button class="mb" data-m="match"><b>⚽</b>MECZ<em>Cuiavia kontra Fioletowi</em></button><button class="mb" data-m="karne"><b>🥅</b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b>🎯</b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button></div>
-  <button class="ibtn mback" data-m="back">◀ SZATNIA</button>
-  <div class="mhint k-keys"><span class="kc">←</span><span class="kc">→</span> wybierz · <span class="kc w">ENTER</span> start</div></div></div>
+  <button class="ibtn mback" data-m="back">◀ SZATNIA</button></div></div></div>
 <div id="kapki" hidden><div class="f169"><img src="kapki_bg.jpg" alt=""></div><div id="jug"></div><div id="kdots"></div>
   <div class="khud"><div><small>KAPKI</small><b id="kscore">0</b></div><div><small>REKORD</small><b id="kbest">0</b></div></div>
   <div id="kmsg"><b>DOTYKAJ KÓŁEK!</b><span>Masz chwilę na każde, inaczej piłka spadnie.</span></div>
