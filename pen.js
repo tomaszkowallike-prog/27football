@@ -20,6 +20,7 @@
   fetch('pen.json').then((r) => r.json()).then((j) => (M = j));
 
   // ---- sound ----
+  const MUS = new Audio('karne.mp3'); MUS.loop = true; MUS.volume = 0.45;   // the penalty tune
   let AC = null;
   const ac = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) {} return AC; };
   const tone = (f0, f1, d, type = 'square', v = 0.05, delay = 0) => { const a = ac(); if (!a) return; const t = a.currentTime + delay, o = a.createOscillator(), gn = a.createGain();
@@ -321,8 +322,8 @@
   };
   let last = 0, raf = 0;
   const loop = (now) => { if (!S.on) return; const dt = Math.min(0.05, (now - (last || now)) / 1000); last = now; update(dt); draw(); raf = requestAnimationFrame(loop); };
-  const open = (mode, done) => { S.mode = mode; S.done = done; root.hidden = false; root.classList.toggle('single', mode === 'single'); layout(); reset(); newKick(); S.on = true; last = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); };
-  const close = () => { S.on = false; cancelAnimationFrame(raf); root.hidden = true; if (S.mode === 'shootout' && S.onExit) S.onExit(); };
+  const open = (mode, done) => { S.mode = mode; S.done = done; root.hidden = false; root.classList.toggle('single', mode === 'single'); layout(); reset(); newKick(); S.on = true; last = 0; try { window.MATCH_MUSIC && window.MATCH_MUSIC.stop(); } catch (e) {} MUS.currentTime = 0; MUS.play().catch(() => {}); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); };
+  const close = () => { MUS.pause(); if (S.mode === 'single') { try { window.MATCH_MUSIC && window.MATCH_MUSIC.start(); } catch (e) {} } S.on = false; cancelAnimationFrame(raf); root.hidden = true; if (S.mode === 'shootout' && S.onExit) S.onExit(); };
   window.PEN = { start(onExit) { S.onExit = onExit; open('shootout', null); }, single(done) { S.onExit = null; open('single', done); }, get open() { return !root.hidden; },
     _S: S };
 })();
