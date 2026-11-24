@@ -269,9 +269,9 @@
     const apply = () => { for (const [el, base] of L) { try { el.volume = base * v; } catch (e) {} } lbl(); };
     // phones only let a track start if it was touched during a tap: on every tap, prime the tracks not yet primed
     const prime = () => { for (const [el] of L) { if (!el.play || el._primed) continue; el._primed = true; if (!el.paused) continue;
-        const m = el.muted; el.muted = true; const p = el.play(); if (p && p.then) p.then(() => { if (!el._want) el.pause(); el.muted = m; }).catch(() => { el.muted = m; el._primed = false; }); } };
+        el.muted = true; const p = el._P(); if (p && p.then) p.then(() => { if (!el._want) { el._Q(); el.currentTime = 0; } el.muted = false; }).catch(() => { el.muted = false; el._primed = false; }); } };
     ['pointerdown', 'touchend', 'click', 'keydown'].forEach((ev) => addEventListener(ev, prime, true));
-    return { get v() { return v; }, reg(el, base) { L.push([el, base]); if (el.play) { const P = el.play.bind(el), Q = el.pause.bind(el); el.play = () => { el._want = true; el.muted = false; return P(); }; el.pause = () => { el._want = false; return Q(); }; } try { el.volume = base * v; } catch (e) {} return el; },
+    return { get v() { return v; }, reg(el, base) { L.push([el, base]); if (el.play) { const P = el.play.bind(el), Q = el.pause.bind(el); el._P = P; el._Q = Q; el.play = () => { el._want = true; el.muted = false; return P(); }; el.pause = () => { el._want = false; return Q(); }; } try { el.volume = base * v; } catch (e) {} return el; },
       next() { v = v >= 1 ? 0.6 : v >= 0.6 ? 0.3 : v > 0 ? 0 : 1; try { localStorage.setItem('musvol', v); } catch (e) {} apply(); }, lbl }; })();
 </script>
 </head>
