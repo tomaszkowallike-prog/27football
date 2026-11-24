@@ -172,8 +172,8 @@
   #jug { position: absolute; left: 50%; bottom: 3vh; height: min(66vh, 120vw); aspect-ratio: 147 / 150; transform: translateX(-50%); background: url(juggle.png) 0 0 / 1600% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 6px 0 rgba(0,0,0,.35)); }
   #jug.bump { animation: bump .18s steps(3); } @keyframes bump { 50% { transform: translateX(-50%) translateY(-6px); } }
   #kdots { position: absolute; inset: 0; }
-  .kd { position: absolute; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%; background: radial-gradient(circle, #ffe14a 0 30%, #ff8a1f 31% 44%, transparent 45%); cursor: pointer; animation: kin .12s steps(3); }
-  .kd::before { content: ''; position: absolute; inset: -16px; border-radius: 50%; border: 5px solid #fff; box-shadow: 0 0 0 3px #000, inset 0 0 0 3px #000; animation: kring var(--t) linear forwards; }
+  .kd { position: absolute; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%; background: radial-gradient(circle, var(--c1, #ffe14a) 0 30%, var(--c2, #ff8a1f) 31% 44%, transparent 45%); cursor: pointer; animation: kin .12s steps(3); }
+  .kd::before { content: ''; position: absolute; inset: -16px; border-radius: 50%; border: 5px solid var(--r, #fff); box-shadow: 0 0 0 3px #000, inset 0 0 0 3px #000, 0 0 14px var(--c1, transparent); animation: kring var(--t) linear forwards; }
   .kd::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 4px solid #000; }
   @keyframes kring { from { transform: scale(1.9); opacity: .3; } to { transform: scale(.62); opacity: 1; } }
   @keyframes kin { from { transform: scale(.3); } }
@@ -379,8 +379,12 @@
       };
     })();
     const actx = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) {} return AC; };
-    const win = () => Math.max(0.62, 1.05 - score * 0.012);   // seconds you have for each dot
+    const win = () => Math.max(0.36, 1.1 * Math.pow(0.968, score));   // seconds you have for each dot: less and less, down to about a third
     const spawn = () => { dots.innerHTML = ''; const d = document.createElement('div'); d.className = 'kd'; const t = win(); d.style.setProperty('--t', t + 's');
+      // the colours run round the wheel as the count climbs, faster the further you get; past 30 every dot is a new colour
+      const hue = (48 + score * (score < 10 ? 9 : score < 30 ? 23 : 61)) % 360, lv = Math.min(1, score / 40);
+      d.style.setProperty('--c1', `hsl(${hue} 100% ${62 - lv * 6}%)`); d.style.setProperty('--c2', `hsl(${(hue + 40) % 360} 95% ${52 - lv * 8}%)`);
+      d.style.setProperty('--r', score < 10 ? '#fff' : `hsl(${(hue + 180) % 360} 100% 80%)`);
       const W = innerWidth, H = innerHeight; let x, y; const jr = jug.getBoundingClientRect();
       for (let k = 0; k < 12; k++) { x = 60 + Math.random() * (W - 120); y = Math.max(90, H * 0.12) + Math.random() * (H * 0.72 - 90); if (!(x > jr.left - 30 && x < jr.right + 30 && y > jr.top + jr.height * 0.25)) break; }
       d.style.left = x + 'px'; d.style.top = y + 'px';
