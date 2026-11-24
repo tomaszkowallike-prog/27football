@@ -245,6 +245,8 @@
   #dog.hop { animation: dhop .35s steps(3); } @keyframes dhop { 50% { transform: translateY(-14%); } }
   #szatnia .hot { position: absolute; background: transparent; border: 0; cursor: pointer; }
   #szatnia .hot:hover, #szatnia .hot:focus-visible { outline: 3px solid #ffe14a; border-radius: 10px; }
+  #mvol { position: fixed; z-index: 40; left: 50%; top: max(4px, env(safe-area-inset-top)); transform: translateX(-50%); font: 700 13px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.6); border: 2px solid #8a8a8a; border-radius: 6px; padding: 2px 9px; cursor: pointer; }
+  body.playing #mvol { left: auto; right: max(8px, env(safe-area-inset-right)); top: calc(max(10px, env(safe-area-inset-top)) + 150px); transform: none; }
   #tip { position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; background: rgba(0,0,0,.55); padding: 12px; cursor: pointer; }
   #tip[hidden] { display: none; }
   #tip .tbox { max-height: 94vh; overflow: auto; max-width: 600px; text-align: center; background: #000; border: 3px solid #8a8a8a; padding: 14px 18px 16px; box-shadow: 0 6px 0 rgba(0,0,0,.5); }
@@ -260,6 +262,14 @@
   @media (max-width: 700px) { #score .tn { font-size: 16px; } #score .num { font-size: 24px; min-width: 50px; } #score .clockp { font-size: 18px; } #score .crest { width: 26px; height: 30px; } #score .plate, #score .clockp { height: 38px; } }
 </style>
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
+<script>
+  // music volume for every track (match, locker room, penalties, keepy-uppy): 100 / 60 / 30 / off, remembered
+  window.MV = (() => { const L = []; let v = 1; try { const s = localStorage.getItem('musvol'); if (s !== null) v = +s; } catch (e) {}
+    const lbl = () => { const b = document.getElementById('mvol'); if (b) b.textContent = v ? `♪ ${Math.round(v * 100)}%` : '♪ WYŁ'; };
+    const apply = () => { for (const [el, base] of L) { try { el.volume = base * v; } catch (e) {} } lbl(); };
+    return { get v() { return v; }, reg(el, base) { L.push([el, base]); try { el.volume = base * v; } catch (e) {} return el; },
+      next() { v = v >= 1 ? 0.6 : v >= 0.6 ? 0.3 : v > 0 ? 0 : 1; try { localStorage.setItem('musvol', v); } catch (e) {} apply(); }, lbl }; })();
+</script>
 </head>
 <body>
 <div id="stage"></div>
@@ -403,13 +413,14 @@
   // ---- the mode screen: a match, or keepy-uppy on the stadium from the intro ----
   let modeSel = 0;
   const NAMES = { 14: 'SOWA', 10: 'ARTUR', 7: 'SZYMON', 27: 'DOMINIK' };
-  const showModes = () => { $('modes').hidden = false; modeSel = 0; markMode(); $('mq').textContent = `${window.CAPTAIN} ${NAMES[window.CAPTAIN] || ''}: CO ROBIMY?`; };
+  const TMUS = MV.reg(new Audio('tablica.mp3'), 0.5); TMUS.loop = true;   // the board's tune, from 1:54 of the user's track
+  const showModes = () => { TMUS.currentTime = 0; TMUS.play().catch(() => {}); $('modes').hidden = false; modeSel = 0; markMode(); $('mq').textContent = `${window.CAPTAIN} ${NAMES[window.CAPTAIN] || ''}: CO ROBIMY?`; };
   const markMode = () => document.querySelectorAll('#modes .mb').forEach((b, i) => b.classList.toggle('sel', i === modeSel));
   window.CAPTAIN = 27;
-  const pickMode = (m) => { $('modes').hidden = true; if (m === 'back') { SZ.show(); return; } if (m === 'karne') window.PEN.start(showModes, window.CAPTAIN); else if (m === 'kapki') K.start(); else if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
+  const pickMode = (m) => { TMUS.pause(); $('modes').hidden = true; if (m === 'back') { SZ.show(); return; } if (m === 'karne') window.PEN.start(showModes, window.CAPTAIN); else if (m === 'kapki') K.start(); else if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
   // ---- the locker room: pick the captain, who plays in the middle and kicks off ----
   const SZ = (() => {
-    const MUS = new Audio('szatnia.mp3'); MUS.loop = true; MUS.volume = 0.5;   // the locker-room tune, from 0:08 of the user's track
+    const MUS = MV.reg(new Audio('szatnia.mp3'), 0.5); MUS.loop = true;   // the locker-room tune, from 0:08 of the user's track
     const musOff = () => { MUS.pause(); };
     const SQ = [{ num: 14, name: 'SOWA', pos: 'POMOCNIK', sup: 'SOWIA SPIRALA', st: [3, 4, 3, 3, 3], face: 0 }, { num: 10, name: 'ARTUR', pos: 'NAPASTNIK', sup: 'ARTUROWA TRĄBA', st: [3, 3, 4, 2, 4], face: 1 },
       { num: 7, name: 'SZYMON', pos: 'OBROŃCA', sup: 'SZYMONOWY ZYGZAK', st: [2, 3, 2, 5, 3], face: 2 }, { num: 27, name: 'DOMINIK', pos: 'NAPASTNIK', sup: 'KUJAWSKA PETARDA', st: [5, 3, 4, 2, 4], face: 3 }];
@@ -465,7 +476,7 @@
           if (i % 2 === 1) hit(next, 0.04, 0.05, 7000); if (i % 8 === 4) hit(next, 0.12, 0.12, 1500); if (i % 8 === 0) osc('sine', 120, next, 0.12, 0.25);
           next += STEP; step++; } };
       return {
-        start(c) { ctx = c; if (!ctx || on) return; on = true; out = ctx.createGain(); out.gain.value = 0.8; out.connect(ctx.destination);
+        start(c) { ctx = c; if (!ctx || on) return; on = true; out = ctx.createGain(); MV.reg({ set volume(x) { out.gain.value = x; } }, 0.8); out.connect(ctx.destination);
           noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate); const d = noiseBuf.getChannelData(0); for (let k = 0; k < d.length; k++) d[k] = Math.random() * 2 - 1;
           step = 0; next = ctx.currentTime + 0.08; tick(); timer = setInterval(tick, 50); },
         stop() { if (!on) return; on = false; clearInterval(timer); const g = out; try { g.gain.setTargetAtTime(0, ctx.currentTime, 0.08); setTimeout(() => g.disconnect(), 400); } catch (e) {} },
@@ -562,6 +573,10 @@
   $('stage').addEventListener('pointerdown', (e) => { if (document.body.classList.contains('playing')) window.GAME?.tapAt(e.clientX, e.clientY); });
   addEventListener('contextmenu', (e) => e.preventDefault());
 }
+</script>
+<button id="mvol" aria-label="Głośność muzyki">♪ 100%</button>
+<script>
+  document.getElementById('mvol').addEventListener('click', (e) => { e.stopPropagation(); MV.next(); }); MV.lbl();
 </script>
 <script src="./pen.js"></script>
 <script type="module" src="./game.js"></script>

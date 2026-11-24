@@ -20,7 +20,7 @@
   fetch('pen.json').then((r) => r.json()).then((j) => (M = j));
 
   // ---- sound ----
-  const MUS = new Audio('karne.mp3'); MUS.loop = true; MUS.volume = 0.45;   // the penalty tune
+  const MUS = window.MV ? MV.reg(new Audio('karne.mp3'), 0.45) : new Audio('karne.mp3'); MUS.loop = true;   // the penalty tune
   let AC = null;
   const ac = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) {} return AC; };
   const tone = (f0, f1, d, type = 'square', v = 0.05, delay = 0) => { const a = ac(); if (!a) return; const t = a.currentTime + delay, o = a.createOscillator(), gn = a.createGain();
