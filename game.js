@@ -524,12 +524,12 @@ const SFX = (() => {
 
 // ---- voices: the user's recorded shouts, cut into five clips; a rival's shout is played a little lower ---------------
 const VOICE = (() => {
-  const urls = [1, 2, 3, 4, 5].map((i) => `./shout${i}.mp3`), raw = urls.map((u) => fetch(u).then((r) => r.arrayBuffer()).catch(() => null));
+  const raw = [];
   let bufs = null, last = -1, nextT = 0;
   const load = async (a) => { if (bufs) return; bufs = []; const ab = await Promise.all(raw); for (const b of ab) bufs.push(b ? await a.decodeAudioData(b.slice(0)).catch(() => null) : null); };
   return {
     // kind: 'super' | 'shot' | 'hit' | 'goal'; chance thins out the common ones so the shouts stay special
-    say(p, kind, chance = 1) { const a = SFX.unlock(); if (!a || SFX.muted) return; if (!bufs) { load(a); return; }
+    say(p, kind, chance = 1) { return; const a = SFX.unlock(); if (!a || SFX.muted) return; if (!bufs) { load(a); return; }
       const now = a.currentTime; if (now < nextT && kind !== 'goal') return; if (Math.random() > chance) return;
       const pool = bufs.map((b, i) => (b && i !== last ? i : -1)).filter((i) => i >= 0); if (!pool.length) return;
       const i = kind === 'goal' && bufs[0] && last !== 0 ? 0 : pool[Math.floor(Math.random() * pool.length)]; last = i;
@@ -537,7 +537,7 @@ const VOICE = (() => {
       g.gain.value = kind === 'shot' ? 0.55 : 0.75; let out = g;
       if (a.createStereoPanner && p) { const pan = a.createStereoPanner(); pan.pan.value = Math.max(-0.6, Math.min(0.6, (p.x - cam.x) / 25)); g.connect(pan); out = pan; }
       s.connect(g); out.connect(a.destination); s.start(); nextT = now + bufs[i].duration * 0.8 + 0.4; },
-    prime() { const a = SFX.unlock(); if (a) load(a); },
+    prime() {},
   };
 })();
 

@@ -35,7 +35,7 @@ Faul w polu karnym to rzut karny. Na telefonie możesz też dotknąć kolegi na 
 
 ## Tryb KAPKI
 
-Po PRESS START wybierasz MECZ albo KAPKI. W kapkach Dominik żongluje piłką na stadionie z intra. Na ekranie pojawiają się kółka, a na każde masz około sekundy. Jedno dotknięcie to jedna kapka. Spóźnisz się, piłka spada. Rekord zapisuje się w przeglądarce.
+Po PRESS START wybierasz MECZ albo KAPKI. W kapkach Dominik żongluje piłką na stadionie z intra. Na ekranie pojawiają się kółka, a na każde masz około sekundy. Jedno dotknięcie to jedna kapka. Spóźnisz się, piłka spada. Do tego gra 8-bitowa muzyka. Rekord zapisuje się w przeglądarce.
 
 ## Pliki
 
@@ -46,4 +46,3 @@ Po PRESS START wybierasz MECZ albo KAPKI. W kapkach Dominik żongluje piłką na
 - `intro*.mp4`, `intro*.jpg`: filmy intro
 - `juggle.png`, `kapki_bg.jpg`: tryb kapki
 - `btn_*.png`: ikony przycisków
-- `shout*.mp3`: okrzyki zawodników
