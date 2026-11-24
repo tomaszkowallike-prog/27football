@@ -394,6 +394,8 @@
   const pickMode = (m) => { $('modes').hidden = true; if (m === 'karne') window.PEN.start(showModes); else if (m === 'kapki') K.start(); else SZ.show(); };
   // ---- the locker room: pick the captain, who plays in the middle and kicks off ----
   const SZ = (() => {
+    const MUS = new Audio('szatnia.mp3'); MUS.loop = true; MUS.volume = 0.5;   // the locker-room tune, from 0:08 of the user's track
+    const musOff = () => { MUS.pause(); };
     const SQ = [{ num: 14, name: 'SOWA', pos: 'POMOCNIK', sup: 'SOWIA SPIRALA', st: [3, 4, 3, 3, 3], face: 0 }, { num: 10, name: 'ARTUR', pos: 'NAPASTNIK', sup: 'ARTUROWA TRĄBA', st: [3, 3, 4, 2, 4], face: 1 },
       { num: 7, name: 'SZYMON', pos: 'OBROŃCA', sup: 'SZYMONOWY ZYGZAK', st: [2, 3, 2, 5, 3], face: 2 }, { num: 27, name: 'DOMINIK', pos: 'NAPASTNIK', sup: 'KUJAWSKA PETARDA', st: [5, 3, 4, 2, 4], face: 3 }];
     const FACE = [[20.2, 49], [41, 50], [60.4, 48], [79, 51]];   // head centres in % of the picture
@@ -413,10 +415,10 @@
       const stepDog = () => { if ($('szatnia').hidden) { t = setTimeout(stepDog, 500); return; } const [f, d, c] = SEQ[i++ % SEQ.length]; show(f, c); t = setTimeout(stepDog, d); };
       stepDog();
       dog.addEventListener('click', (e) => { e.stopPropagation(); clearTimeout(t); show(2, 'hop'); try { tone(520, 0.07); setTimeout(() => tone(700, 0.08), 110); } catch (_) {} t = setTimeout(stepDog, 1300); }); }
-    const play = () => { const q = SQ[sel]; try { localStorage.setItem('captain', q.num); } catch (e) {} $('szatnia').hidden = true; window.GAME.setCaptain(q.num); if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
-    const back = () => { $('szatnia').hidden = true; showModes(); };
+    const play = () => { const q = SQ[sel]; try { localStorage.setItem('captain', q.num); } catch (e) {} $('szatnia').hidden = true; musOff(); window.GAME.setCaptain(q.num); if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
+    const back = () => { $('szatnia').hidden = true; musOff(); showModes(); };
     $('sgo').addEventListener('click', play); $('sback').addEventListener('click', back);
-    return { show() { $('szatnia').hidden = false; mark(); }, key(e) { if (e.code === 'ArrowLeft' || e.code === 'KeyA') choose((sel + 3) % 4); else if (e.code === 'ArrowRight' || e.code === 'KeyD') choose((sel + 1) % 4);
+    return { show() { $('szatnia').hidden = false; mark(); MUS.currentTime = 0; MUS.play().catch(() => {}); }, key(e) { if (e.code === 'ArrowLeft' || e.code === 'KeyA') choose((sel + 3) % 4); else if (e.code === 'ArrowRight' || e.code === 'KeyD') choose((sel + 1) % 4);
       else if (e.code === 'Enter' || e.code === 'Space') play(); else if (e.code === 'Escape' || e.code === 'Backspace') back(); } };
   })();
   document.querySelectorAll('#modes .mb').forEach((b) => b.addEventListener('click', () => pickMode(b.dataset.m)));

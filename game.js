@@ -557,7 +557,8 @@ const VOICE = (() => {
 })();
 
 // ---- music: an original chiptune loop, played live (pulse lead, pulse arpeggio, triangle bass, noise drums) -----------
-const MUSIC = (() => {
+const CHIP = (() => {   // the old chiptune loop, kept as a fallback
+
   let ac = null, on = false, muted = false, timer = 0, step = 0, next = 0, out = null, noiseBuf = null;
   const BPM = 152, STEP = 60 / BPM / 4;                                    // 16th notes
   const f = (m) => 440 * Math.pow(2, (m - 69) / 12);
@@ -601,6 +602,17 @@ const MUSIC = (() => {
     mute(m) { muted = m; if (out) out.gain.value = m ? 0 : 0.9; },
   };
 })();
+// the match music: the user's track, looped; the chiptune plays if the file cannot
+const MUSIC = (() => {
+  const a = new Audio('./mecz.mp3'); a.loop = true; a.volume = 0.45; let on = false, muted = false, ok = true;
+  a.addEventListener('error', () => { ok = false; });
+  return {
+    start(ctx) { on = true; if (!ok) { CHIP.start(ctx); return; } a.muted = muted; a.currentTime = 0; a.play().catch(() => { ok = false; CHIP.start(ctx); }); },
+    stop() { on = false; a.pause(); CHIP.stop(); },
+    mute(m) { muted = m; a.muted = m; CHIP.mute(m); },
+  };
+})();
+window.MATCH_MUSIC = MUSIC;
 
 // ---- game state ----------------------------------------------------------------------------------------------------
 const ui = window.UI || {};
