@@ -15,14 +15,23 @@ three.js jest ładowany z CDN (jsdelivr).
 
 | Klawiatura | Telefon | Akcja |
 |---|---|---|
-| Strzałki / WASD | krzyżak | ruch, dwa razy w tę samą stronę = sprint |
+| Strzałki / WASD | gałka | ruch |
 | J | PODAJ | podanie |
 | K | STRZAŁ | strzał; w powietrzu główka, wolej, przewrotka |
 | L | WŚLIZG | wślizg; w powietrzu kopnięcie z wyskoku |
 | Shift | SPRINT | sprint (przytrzymaj) |
+| Q | ZMIANA | zmiana zawodnika na najbliższego piłki |
 | Spacja | SKOK | skok, także z piłką |
 
-Super strzał: skocz z piłką i strzel na samym szczycie skoku. Faul w polu karnym to rzut karny.
+Super strzał: skocz z piłką i wciśnij strzał. Gra się zatrzyma i wybierasz, który super strzał oddać (strzałki i K, cyfry 1–4 albo dotknięcie karty).
+
+Na boisku pojawiają się kolorowe kostki. Wbiegnij w nią z piłką, a do torby trafia nowy super strzał:
+
+- **BŁYSKAWICA**: pioruny z nieba powalają wszystkich rywali, a ty biegniesz dalej z piłką.
+- **ROZDWOJENIE**: lecą trzy piłki naraz, a bramkarz nie wie, która jest prawdziwa.
+- **MEGA PIŁKA**: olbrzymia piłka taranuje każdego na swojej drodze.
+
+Faul w polu karnym to rzut karny.
 
 ## Pliki
 

@@ -79,24 +79,20 @@
   /* the pad: an 8-bit controller, a cross and four red buttons */
   .nes { position: fixed; z-index: 5; display: none; bottom: max(14px, env(safe-area-inset-bottom)); touch-action: none; }
   body.playing.touch .nes { display: block; }
-  #dpad { left: max(16px, env(safe-area-inset-left)); width: 138px; height: 138px; }
-  #dpad .arm { position: absolute; background: #1c1c1e; box-shadow: inset 0 3px 0 #3a3a3e, inset 0 -3px 0 #050505; }
-  #dpad .h { left: 0; top: 46px; width: 138px; height: 46px; border-radius: 6px; } #dpad .v { left: 46px; top: 0; width: 46px; height: 138px; border-radius: 6px; }
-  #dpad .dot { position: absolute; left: 59px; top: 59px; width: 20px; height: 20px; border-radius: 50%; background: #0d0d0e; box-shadow: inset 0 2px 3px #000; }
-  #dpad .tri { position: absolute; width: 0; height: 0; border: 7px solid transparent; opacity: .55; }
-  #dpad .tu { left: 62px; top: 8px; border-bottom-color: #8a8a90; } #dpad .td { left: 62px; bottom: 8px; border-top-color: #8a8a90; }
-  #dpad .tl { top: 62px; left: 8px; border-right-color: #8a8a90; } #dpad .tr { top: 62px; right: 8px; border-left-color: #8a8a90; }
-  #dpad.on-u .tu, #dpad.on-d .td, #dpad.on-l .tl, #dpad.on-r .tr { opacity: 1; border-color: transparent; }
-  #dpad.on-u .tu { border-bottom-color: #ffe14a; } #dpad.on-d .td { border-top-color: #ffe14a; } #dpad.on-l .tl { border-right-color: #ffe14a; } #dpad.on-r .tr { border-left-color: #ffe14a; }
-  #dpad.dash .dot { background: #e8361f; }
+  /* the analog stick: a round well and a knob that follows the thumb */
+  #joy { left: max(18px, env(safe-area-inset-left)); width: 150px; height: 150px; }
+  #joy .base { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 50% 45%, #2c2c30, #111113 70%); border: 4px solid #2a2a2c; box-shadow: 0 0 0 5px #bdbdbd, 0 4px 0 5px #8e8e8e, inset 0 0 0 10px rgba(255,255,255,.04); }
+  #joy .base::after { content: ''; position: absolute; inset: 34px; border-radius: 50%; border: 2px dashed rgba(255,255,255,.14); }
+  #joy .knob { position: absolute; left: 41px; top: 41px; width: 68px; height: 68px; border-radius: 50%; background: radial-gradient(circle at 38% 32%, #f4f4f6, #a9a9b0 60%, #6a6a70); border: 3px solid #1a1a1c; box-shadow: 0 5px 0 #0008; will-change: transform; }
+  #joy.on .knob { background: radial-gradient(circle at 38% 32%, #fff6c0, #ffe14a 55%, #b08a00); }
   #btns { right: max(14px, env(safe-area-inset-right)); width: 282px; height: 186px; }
   .nb { position: absolute; width: 74px; text-align: center; }
   .nb i { display: block; width: 58px; height: 58px; margin: 0 auto; border-radius: 50%; background: radial-gradient(circle at 40% 35%, var(--hi), var(--lo) 70%); border: 4px solid #2a2a2c; box-shadow: 0 0 0 5px #bdbdbd, 0 4px 0 5px #8e8e8e; }
   #nbShoot { --hi: #f0453a; --lo: #b5121b; --tx: #ff5a4a; } #nbPass { --hi: #5be36e; --lo: #17892b; --tx: #5be36e; } #nbJump { --hi: #5aa8ff; --lo: #1a4fb5; --tx: #6ab4ff; }
-  #nbSlide { --hi: #ffe14a; --lo: #c08a00; --tx: #ffe14a; } #nbSprint { --hi: #ff9a3a; --lo: #c2510a; --tx: #ff9a3a; }
+  #nbSlide { --hi: #ffe14a; --lo: #c08a00; --tx: #ffe14a; } #nbSprint { --hi: #ff9a3a; --lo: #c2510a; --tx: #ff9a3a; } #nbSwap { --hi: #4ff0d4; --lo: #0d8a76; --tx: #4ff0d4; }
   .nb span { display: block; margin-top: 9px; font: 700 12px "Pixelify Sans", monospace; color: var(--tx); text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; letter-spacing: .04em; }
   .nb.down i { transform: translateY(3px); box-shadow: 0 0 0 5px #bdbdbd, 0 1px 0 5px #8e8e8e; filter: brightness(.75); }
-  #nbJump { right: 96px; top: 0; } #nbSlide { right: 0; top: 0; } #nbPass { right: 96px; top: 98px; } #nbShoot { right: 0; top: 98px; } #nbSprint { right: 190px; top: 56px; }
+  #nbJump { right: 96px; top: 0; } #nbSlide { right: 0; top: 0; } #nbPass { right: 96px; top: 98px; } #nbShoot { right: 0; top: 98px; } #nbSprint { right: 190px; top: 56px; } #nbSwap { right: 190px; top: -34px; } #nbSwap i { width: 46px; height: 46px; } #nbSwap span { margin-top: 6px; }
   /* the crowd in front of the camera, out of focus */
   #front { position: fixed; left: -4%; width: 108%; bottom: -2vh; height: 19vh; z-index: 2; pointer-events: none; filter: blur(7px) brightness(.55) saturate(.8); opacity: .92; display: none; animation: bob 1.6s ease-in-out infinite; }
   body.playing #front { display: block; }
@@ -105,7 +101,7 @@
   #wx { font-size: 13px; opacity: .85; font-weight: 400; }
   #penHint { position: fixed; left: 50%; top: 22%; transform: translateX(-50%); z-index: 6; display: none; font-size: 18px; font-weight: 700; background: rgba(0,0,0,.75); border: 2px solid #8a8a8a; padding: 6px 14px; white-space: nowrap; color: #ffe14a; }
   #penHint.on { display: block; }
-  @media (orientation: portrait) { #btns { transform: scale(.8); transform-origin: bottom right; } #dpad { transform: scale(.8); transform-origin: bottom left; } body.touch #me { display: none !important; } body.touch #minibox { top: calc(max(10px, env(safe-area-inset-top)) + 52px); } body.touch #mini { width: 116px; height: 70px; }
+  @media (orientation: portrait) { #btns { transform: scale(.8); transform-origin: bottom right; } #joy { transform: scale(.8); transform-origin: bottom left; } body.touch #me { display: none !important; } body.touch #minibox { top: calc(max(10px, env(safe-area-inset-top)) + 52px); } body.touch #mini { width: 116px; height: 70px; }
     body.touch #score { transform: scale(.72); } body.touch #wx { display: none; } body.playing.touch #mute { top: calc(max(10px, env(safe-area-inset-top)) + 148px) !important; } }
   /* the intro: two films, an 8-bit flash between them, then PRESS START over the title */
   #intro { position: fixed; inset: 0; z-index: 20; background: #000; overflow: hidden; cursor: pointer; }
@@ -130,14 +126,35 @@
   .how.keys { grid-template-columns: 168px 1fr; gap: 7px 14px; align-items: center; } .how.keys dd { font-size: 14px; }
   body.touch .how.keys { display: none; } body:not(.touch) .how.k-touch { display: none; }
   .go { margin-top: 4px; font-size: 13px; opacity: .8; } .go .kc { font-size: 12px; }
+  #bag { left: max(10px, env(safe-area-inset-left)); top: calc(max(10px, env(safe-area-inset-top)) + 50px); gap: 6px; }
+  #bag .it { display: flex; align-items: center; gap: 3px; padding: 2px 6px 2px 2px; background: linear-gradient(#24272c, #101114); border: 2px solid #3a3d44; border-radius: 5px; font-weight: 700; font-size: 15px; }
+  #bag .it img { width: 24px; height: 24px; image-rendering: pixelated; } #bag .it.zero { opacity: .35; } #bag .it.new { animation: pop .5s steps(4); }
+  @keyframes pop { 0% { transform: scale(1.8); } 100% { transform: none; } }
+  body.touch #bag { transform: scale(.85); transform-origin: top left; }
+  #picker { position: fixed; inset: 0; z-index: 8; display: grid; place-items: start center; padding-top: max(8vh, 40px); pointer-events: none; }
+  #picker[hidden] { display: none; }
+  #picker .pbox { pointer-events: auto; background: rgba(0,0,0,.82); border: 3px solid #8a8a8a; padding: 10px 14px 12px; text-align: center; box-shadow: 0 6px 0 rgba(0,0,0,.5); }
+  #picker small { display: block; font-size: 15px; letter-spacing: .16em; color: #ffe14a; margin-bottom: 8px; animation: blink .6s steps(2, jump-none) infinite; }
+  #picker .cards { display: flex; gap: 8px; justify-content: center; }
+  #picker .pc { width: 112px; padding: 8px 4px 6px; background: #17181b; border: 3px solid #3a3d44; cursor: pointer; font: 700 13px "Pixelify Sans", monospace; color: #fff; line-height: 1.15; }
+  #picker .pc img, #picker .pc .own { display: block; width: 40px; height: 40px; margin: 0 auto 5px; image-rendering: pixelated; }
+  #picker .pc .own { font-size: 32px; line-height: 40px; }
+  #picker .pc b { display: block; margin-top: 3px; font-size: 15px; color: var(--c); }
+  #picker .pc.sel { border-color: var(--c); background: #2a2b30; transform: translateY(-4px); box-shadow: 0 0 0 2px #000, 0 6px 0 #000; }
+  #picker .pc.off { opacity: .3; cursor: default; }
+  #picker .pbar { height: 5px; background: #333; margin-top: 9px; } #picker .pbar i { display: block; height: 100%; background: #ffe14a; animation: pbar 5s linear forwards; }
+  @keyframes pbar { from { width: 100%; } to { width: 0; } }
+  #picker .phint { margin-top: 7px; font-size: 13px; opacity: .8; } body.touch #picker .phint.k-keys { display: none; } body:not(.touch) #picker .phint.k-touch { display: none; }
+  body.touch #picker .pc { width: 96px; font-size: 12px; } body.touch #picker { padding-top: 10px; }
   #tip { position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; background: rgba(0,0,0,.55); padding: 12px; cursor: pointer; }
   #tip[hidden] { display: none; }
-  #tip .tbox { max-width: 560px; text-align: center; background: #000; border: 3px solid #8a8a8a; padding: 14px 18px 16px; box-shadow: 0 6px 0 rgba(0,0,0,.5); }
+  #tip .tbox { max-height: 94vh; overflow: auto; max-width: 600px; text-align: center; background: #000; border: 3px solid #8a8a8a; padding: 14px 18px 16px; box-shadow: 0 6px 0 rgba(0,0,0,.5); }
   #tip small { display: block; font-size: 13px; letter-spacing: .2em; color: #8fd99a; margin-bottom: 10px; }
   #tip .combo { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; font-weight: 700; }
   #tip .cb { padding: 6px 12px; font-size: 20px; color: #000; background: var(--c); border: 3px solid #fff; border-radius: 22px; box-shadow: 0 3px 0 #555; }
   #tip .combo b { font-size: 28px; } #tip .sup { font-size: clamp(24px, 5vw, 34px); font-style: italic; color: var(--o); text-shadow: 3px 3px 0 #7a3a00; }
   #tip p { font-size: 15px; margin: 12px 0 0; } #tip p.k-keys, #tip p.k-touch { opacity: .8; font-size: 14px; } body.touch #tip p.k-keys { display: none; } body:not(.touch) #tip p.k-touch { display: none; }
+  body.touch #tip p { font-size: 12px; margin-top: 7px; } body.touch #tip .cb { font-size: 15px; padding: 4px 9px; } body.touch #tip .sup { font-size: 24px; } body.touch #tip .tbox { padding: 9px 14px 10px; }
   #tip .cont { margin-top: 14px; font-weight: 700; color: #ffe14a; animation: blink .9s steps(2, jump-none) infinite; }
   #mute { position: fixed; right: max(8px, env(safe-area-inset-right)); top: max(8px, env(safe-area-inset-top)); z-index: 4; display: none; font: 700 12px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.6); border: 2px solid #8a8a8a; padding: 4px 7px; cursor: pointer; }
   body.playing #mute { display: block; } body.playing.touch #mute { top: calc(max(10px, env(safe-area-inset-top)) + 118px); bottom: auto; }
@@ -168,22 +185,25 @@
       <dt><span class="kc">K</span></dt><dd>strzał · w powietrzu: główka, wolej, przewrotka · bez piłki: szczupak albo szarża barkiem</dd>
       <dt><span class="kc">L</span></dt><dd>wślizg · w powietrzu: kopnięcie z wyskoku, które powala rywala</dd>
       <dt><span class="kc w">SHIFT</span></dt><dd>sprint (przytrzymaj)</dd>
+      <dt><span class="kc">Q</span></dt><dd>zmiana zawodnika na najbliższego piłki</dd>
       <dt><span class="kc w">SPACJA</span></dt><dd>skok, także z piłką</dd>
-      <dt><span class="kc w">SPACJA</span> <span class="kc">K</span></dt><dd><b style="color:var(--o)">SUPER STRZAŁ:</b> skocz z piłką i strzel na samym szczycie skoku</dd>
+      <dt><span class="kc w">SPACJA</span> <span class="kc">K</span></dt><dd><b style="color:var(--o)">SUPER STRZAŁ:</b> skocz z piłką i wciśnij strzał, potem wybierz, który (<span class="kc">←</span><span class="kc">→</span> i <span class="kc">K</span>). Kolorowe kostki na boisku dają nowe super strzały, wbiegnij w nie z piłką</dd>
       <dt><span class="kc">↑</span><span class="kc">↓</span> <span class="kc">K</span></dt><dd>rzut karny: wybierz róg i strzel</dd>
     </dl>
-    <dl class="how k-touch"><dt>Krzyżak</dt><dd>ruch; dwa razy w tę samą stronę = sprint</dd><dt>PODAJ · STRZAŁ</dt><dd>podanie i strzał (w powietrzu: główka, wolej, przewrotka)</dd><dt>WŚLIZG</dt><dd>wślizg · w powietrzu: kopnięcie z wyskoku</dd><dt>SKOK</dt><dd>skok, także z piłką</dd><dt>SPRINT</dt><dd>przytrzymaj, żeby biec szybciej</dd></dl>
+    <dl class="how k-touch"><dt>Gałka</dt><dd>ruch</dd><dt>PODAJ · STRZAŁ</dt><dd>podanie i strzał (w powietrzu: główka, wolej, przewrotka)</dd><dt>WŚLIZG</dt><dd>wślizg · w powietrzu: kopnięcie z wyskoku</dd><dt>SKOK</dt><dd>skok, także z piłką</dd><dt>SPRINT</dt><dd>przytrzymaj, żeby biec szybciej</dd><dt>ZMIANA</dt><dd>przełącz na zawodnika najbliżej piłki</dd></dl>
     <p class="note" style="margin:0 0 12px;opacity:.75">Grasz DOMINIKIEM, blondynem z 27. Bez piłki sterujesz tym, kto jest najbliżej (żółta strzałka). 2 połowy po 2:00, faul w polu karnym to karny.</p>
     <div class="row"><button class="btn" id="play" disabled>WCZYTUJĘ…</button><span class="go k-keys">albo <span class="kc w">ENTER</span></span></div>
   </div>
 </div>
 <div class="ov" id="end" hidden><div class="panel"><h1 id="endT">KONIEC</h1><div id="final">0 : 0</div><div class="row"><button class="btn" id="again">REWANŻ</button></div></div></div>
 <div id="penHint"></div>
+<div id="bag" class="hud"></div>
+<div id="picker" hidden><div class="pbox"><small>WYBIERZ SUPER STRZAŁ</small><div class="cards" id="pcards"></div><div class="pbar"><i></i></div><div class="phint k-keys">← → wybierz · <span class="kc">K</span> strzał · albo <span class="kc">1</span>–<span class="kc">4</span></div><div class="phint k-touch">Dotknij strzału, który chcesz oddać</div></div></div>
 <div id="tip" hidden><div class="tbox"><small>PODPOWIEDŹ</small><div class="combo"><span class="cb" style="--c:#5aa8ff">SKOK</span><b>+</b><span class="cb" style="--c:#f0453a">STRZAŁ</span><b>=</b><span class="sup">SUPER STRZAŁ!</span></div>
-  <p>Skocz z piłką i wciśnij STRZAŁ na samym szczycie skoku. Piłka zapłonie i poleci jak szalona.</p><p class="k-keys"><span class="kc w">SPACJA</span> potem <span class="kc">K</span> · sprint: <span class="kc w">SHIFT</span> albo dwa razy strzałka</p><p class="k-touch">Przytrzymaj SPRINT, żeby biec szybciej.</p>
+  <p>Skocz z piłką i wciśnij STRZAŁ. Gra się zatrzyma i wybierzesz, który super strzał oddać.</p><p>Wbiegnij z piłką w kolorową kostkę na boisku, a dostaniesz nowy: <b style="color:#ffe14a">BŁYSKAWICA</b> powala wszystkich rywali, <b style="color:#5fd8ff">ROZDWOJENIE</b> wysyła trzy piłki naraz, <b style="color:#ff6ab8">MEGA PIŁKA</b> taranuje wszystko po drodze.</p><p class="k-keys"><span class="kc w">SPACJA</span> potem <span class="kc">K</span> · sprint: <span class="kc w">SHIFT</span> · zmiana zawodnika: <span class="kc">Q</span></p><p class="k-touch">Przytrzymaj SPRINT, żeby biec szybciej. ZMIANA przełącza zawodnika.</p>
   <div class="cont">▶ DOTKNIJ ALBO WCIŚNIJ KLAWISZ, ŻEBY GRAĆ</div></div></div>
-<div class="nes" id="dpad"><div class="arm h"></div><div class="arm v"></div><div class="dot"></div><div class="tri tu"></div><div class="tri td"></div><div class="tri tl"></div><div class="tri tr"></div></div>
-<div class="nes" id="btns"><div class="nb" id="nbJump"><i></i><span>SKOK</span></div><div class="nb" id="nbSlide"><i></i><span>WŚLIZG</span></div><div class="nb" id="nbPass"><i></i><span>PODAJ</span></div><div class="nb" id="nbShoot"><i></i><span>STRZAŁ</span></div><div class="nb" id="nbSprint"><i></i><span>SPRINT</span></div></div>
+<div class="nes" id="joy"><div class="base"></div><div class="knob"></div></div>
+<div class="nes" id="btns"><div class="nb" id="nbJump"><i></i><span>SKOK</span></div><div class="nb" id="nbSlide"><i></i><span>WŚLIZG</span></div><div class="nb" id="nbPass"><i></i><span>PODAJ</span></div><div class="nb" id="nbShoot"><i></i><span>STRZAŁ</span></div><div class="nb" id="nbSprint"><i></i><span>SPRINT</span></div><div class="nb" id="nbSwap"><i></i><span>ZMIANA</span></div></div>
 
 <script>
 {
@@ -224,6 +244,13 @@
     shout(p, text) { const id = p.team ? 'sayThem' : 'sayMe', el = $(id); el.textContent = `${p.num}: ${text}`; clearTimeout(sayT[id]); sayT[id] = setTimeout(() => (el.textContent = ''), 1600); },
     pen(P, t) { const el = $('penHint'); el.classList.toggle('on', t < 7.5);
       el.textContent = P.team === 0 ? `KARNY! ${P.taker.name}: celuj góra/dół i STRZAŁ` : 'KARNY DLA RYWALI! Wybierz stronę rzutu bramkarza: góra/dół'; clearTimeout(this._ph); this._ph = setTimeout(() => el.classList.remove('on'), 300); },
+    inv(inv) { const el = $('bag'), G = window.GAME; if (!G || !G.icons) return; const prev = this._inv || {};
+      el.innerHTML = Object.keys(G.powers).map((k) => `<div class="it${inv[k] ? '' : ' zero'}${inv[k] > (prev[k] || 0) ? ' new' : ''}" title="${G.powers[k].name}"><img src="${G.icons[k]}" alt="">×${inv[k]}</div>`).join('');
+      this._inv = { ...inv }; },
+    picker(P) { const el = $('picker'); if (!P) { el.hidden = true; this._pk = null; return; } const G = window.GAME;
+      if (this._pk !== P.opts) { this._pk = P.opts; el.hidden = false; const bar = el.querySelector('.pbar i'); bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = '';
+        $('pcards').innerHTML = P.opts.map((o, i) => `<div class="pc${o.n === 0 ? ' off' : ''}" data-i="${i}" style="--c:${o.col}">${o.id === 'own' ? '<span class="own">🔥</span>' : `<img src="${G.icons[o.id]}" alt="">`}${o.name}<b>${o.n < 0 ? '∞' : '×' + o.n}</b></div>`).join(''); }
+      el.querySelectorAll('.pc').forEach((c, i) => c.classList.toggle('sel', i === P.sel)); },
     weather(m) { $('wx').textContent = m === 'rain' ? 'DESZCZ' : 'WIATR'; },
     banner(text, T, kind, p) {
       if (kind === 'goal') lastGoal = { t: performance.now() / 1000, us: T === window.GAME.teams[0] };
@@ -243,11 +270,13 @@
       const cap = window.GAME.captain;
       for (const p of players) { const x = X(p.x), y = Z(p.z), r = p === cap ? 4.5 : 3.5; g.fillStyle = '#000'; g.beginPath(); g.arc(x, y, r + 1.2, 0, 7); g.fill();
         g.fillStyle = p.team ? '#c9a2ff' : '#3fe060'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); if (p === cap) { g.strokeStyle = '#ffe14a'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, r + 2.4, 0, 7); g.stroke(); } }
+      const G = window.GAME.G; if (G.pu && G.pu.on && Math.floor(performance.now() / 250) % 2) { const c = window.GAME.powers[G.pu.kind].col; g.fillStyle = '#000'; g.fillRect(X(G.pu.x) - 4, Z(G.pu.z) - 4, 8, 8); g.fillStyle = c; g.fillRect(X(G.pu.x) - 3, Z(G.pu.z) - 3, 6, 6); }
+      for (const d of G.fakes || []) { g.fillStyle = '#000'; g.beginPath(); g.arc(X(d.x), Z(d.z), 3.4, 0, 7); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(X(d.x), Z(d.z), 2.3, 0, 7); g.fill(); }
       g.fillStyle = '#000'; g.beginPath(); g.arc(X(ball.x), Z(ball.z), 3.4, 0, 7); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(X(ball.x), Z(ball.z), 2.3, 0, 7); g.fill();
     },
   };
   let ready = false, wantStart = false;
-  window.GAME_READY = () => { const P = window.GAME.players; for (const p of P) (p.team ? $('sqB') : $('sqA')).appendChild(full(p)); $('play').disabled = false; $('play').textContent = 'GRAJ'; ready = true; if (wantStart) afterIntro(); };
+  window.GAME_READY = () => { const P = window.GAME.players; for (const p of P) (p.team ? $('sqB') : $('sqA')).appendChild(full(p)); $('play').disabled = false; $('play').textContent = 'GRAJ'; ready = true; window.UI.inv(window.GAME.G.inv); if (wantStart) afterIntro(); };
   const go = () => { $('menu').hidden = true; $('end').hidden = true; document.body.classList.add('playing'); meP = themP = null; meMood = themMood = '-'; window.GAME.start(); window.GAME.freeze(true); $('tip').hidden = false; tipT = performance.now(); };
   let tipT = 0; const unTip = () => { if ($('tip').hidden || performance.now() - tipT < 400) return; $('tip').hidden = true; window.GAME.freeze(false); };
   $('tip').addEventListener('pointerdown', (e) => { e.preventDefault(); unTip(); });
@@ -286,24 +315,21 @@
     play(v1); }
   $('mute').addEventListener('click', () => { $('mute').textContent = window.GAME.mute() ? 'DŹWIĘK: NIE' : 'DŹWIĘK: TAK'; });
   // the 8-bit pad: a cross (8 ways; the same way twice quickly = sprint) and four buttons
-  { const pad = $('dpad'); let pid = null, dir = null, lastDir = null, lastT = 0;
-    const set = (d) => { pad.className = 'nes' + (d ? ' ' + d.cls : '') + (dash ? ' dash' : ''); window.GAME?.setStick(d ? d.v : null); };
-    let dash = false;
-    const read = (e) => { const r = pad.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
-      if (Math.hypot(dx, dy) < 12) return null; const a = Math.round(Math.atan2(dy, dx) / (Math.PI / 4)), k = ((a % 8) + 8) % 8;
-      const V = [[1, 0], [0.71, 0.71], [0, 1], [-0.71, 0.71], [-1, 0], [-0.71, -0.71], [0, -1], [0.71, -0.71]][k];
-      const cls = [['on-r'], ['on-r', 'on-d'], ['on-d'], ['on-d', 'on-l'], ['on-l'], ['on-l', 'on-u'], ['on-u'], ['on-u', 'on-r']][k].join(' ');
-      return { k, v: V, cls }; };
-    const move = (e) => { const d = read(e); if ((d && d.k) !== (dir && dir.k)) { if (d && !dir) { const now = performance.now(); dash = lastDir === d.k && now - lastT < 320; lastDir = d.k; lastT = now; } if (!d) dash = false; dir = d; window.GAME?.setDash(dash); set(d); } };
-    pad.addEventListener('pointerdown', (e) => { pid = e.pointerId; pad.setPointerCapture(pid); dir = null; move(e); e.preventDefault(); });
-    pad.addEventListener('pointermove', (e) => { if (e.pointerId === pid) move(e); });
-    const end = () => { pid = null; dir = null; dash = false; window.GAME?.setDash(false); set(null); };
-    pad.addEventListener('pointerup', end); pad.addEventListener('pointercancel', end); }
-  for (const [id, btn] of [['nbPass', 'a'], ['nbShoot', 'b'], ['nbSlide', 'slide'], ['nbJump', 'jump']]) { const el = $(id);
+  // the analog stick: the knob follows the thumb inside the well; how far it goes is how fast you run (sprint is its own button)
+  { const joy = $('joy'), knob = joy.querySelector('.knob'); let pid = null; const R = 52;
+    const move = (e) => { const r = joy.getBoundingClientRect(), k = r.width / 150; let dx = (e.clientX - (r.left + r.width / 2)) / k, dy = (e.clientY - (r.top + r.height / 2)) / k;
+      const l = Math.hypot(dx, dy); if (l > R) { dx *= R / l; dy *= R / l; } knob.style.transform = `translate(${dx}px, ${dy}px)`;
+      const on = l > R * 0.2; joy.classList.toggle('on', on); window.GAME?.setStick(on ? [dx / R * 0.9, dy / R * 0.9] : null); };
+    joy.addEventListener('pointerdown', (e) => { pid = e.pointerId; joy.setPointerCapture(pid); move(e); e.preventDefault(); });
+    joy.addEventListener('pointermove', (e) => { if (e.pointerId === pid) move(e); });
+    const end = () => { pid = null; knob.style.transform = ''; joy.classList.remove('on'); window.GAME?.setStick(null); };
+    joy.addEventListener('pointerup', end); joy.addEventListener('pointercancel', end); }
+  for (const [id, btn] of [['nbPass', 'a'], ['nbShoot', 'b'], ['nbSlide', 'slide'], ['nbJump', 'jump'], ['nbSwap', 'swap']]) { const el = $(id);
     el.addEventListener('pointerdown', (e) => { el.classList.add('down'); window.GAME?.press(btn); e.preventDefault(); });
     for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, () => el.classList.remove('down')); }
   { const el = $('nbSprint'); el.addEventListener('pointerdown', (e) => { el.classList.add('down'); window.GAME?.setDash(true); e.preventDefault(); });
     for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, () => { el.classList.remove('down'); window.GAME?.setDash(false); }); }
+  $('pcards').addEventListener('pointerdown', (e) => { const c = e.target.closest('.pc'); if (c) { e.preventDefault(); window.GAME?.pick(+c.dataset.i); } });
   addEventListener('contextmenu', (e) => e.preventDefault());
 }
 </script>
