@@ -47,12 +47,19 @@
     const cx = W / 2; Object.assign(L, { cx, gx0: cx - 150, gx1: cx + 150, gtop: 118, gbot: 226, spotX: cx + 66, spotY: 340, crossY: 172 }); g.imageSmoothingEnabled = false; };
   addEventListener('resize', () => { if (!root.hidden) layout(); });
 
-  const frame = (sheet, i, x, y, { flip = false, alpha = 1, scale = 1, add = false } = {}) => {   // x, y = the frame's top-left
+  // colour ghosts for the chromatic aberration: the sprite in red and in blue, a few pixels apart, behind the real one
+  const TINT = document.createElement('canvas'), tg = TINT.getContext('2d');
+  const tinted = (sx, sy, w, h, col) => { TINT.width = w; TINT.height = h; tg.globalCompositeOperation = 'source-over'; tg.clearRect(0, 0, w, h);
+    tg.drawImage(ATL, sx, sy, w, h, 0, 0, w, h); tg.globalCompositeOperation = 'source-in'; tg.fillStyle = col; tg.fillRect(0, 0, w, h); return TINT; };
+  let CA = 3;   // pixels; grows on a shot
+  const frame = (sheet, i, x, y, { flip = false, alpha = 1, scale = 1, add = false, ca = true } = {}) => {   // x, y = the frame's top-left
     if (!M) return; const m = M[sheet], [sx, sy] = m.f[Math.max(0, Math.min(m.f.length - 1, i))];
-    g.save(); g.globalAlpha = alpha; if (add) g.globalCompositeOperation = 'lighter';
-    if (flip) { g.translate(x + m.w * scale, y); g.scale(-1, 1); g.drawImage(ATL, sx, sy, m.w, m.h, 0, 0, m.w * scale, m.h * scale); }
-    else g.drawImage(ATL, sx, sy, m.w, m.h, x, y, m.w * scale, m.h * scale);
-    g.restore(); };
+    const put = (img, ix, iy, dx) => { g.save(); if (flip) { g.translate(x + dx + m.w * scale, y); g.scale(-1, 1); g.drawImage(img, ix, iy, m.w, m.h, 0, 0, m.w * scale, m.h * scale); }
+      else g.drawImage(img, ix, iy, m.w, m.h, x + dx, y, m.w * scale, m.h * scale); g.restore(); };
+    if (ca && !add) { const d = CA * (0.85 + Math.random() * 0.3);
+      g.save(); g.globalAlpha = alpha * 0.7; g.globalCompositeOperation = 'lighter';
+      put(tinted(sx, sy, m.w, m.h, '#ff2a2a'), 0, 0, -d); put(tinted(sx, sy, m.w, m.h, '#2a6aff'), 0, 0, d); g.restore(); }
+    g.save(); g.globalAlpha = alpha; if (add) g.globalCompositeOperation = 'lighter'; put(ATL, sx, sy, 0); g.restore(); };
   // a sheet placed so its frame-0 ball sits on the penalty spot
   const SC = 0.8;   // the taker's sheets are drawn at this scale
   const atSpot = (sheet) => { const m = M[sheet], b = m.ball || [m.w / 2, m.h]; return [L.spotX - b[0] * SC, L.spotY - b[1] * SC]; };
@@ -178,7 +185,7 @@
 
   // ---- update ----
   const update = (dt) => {
-    S.t += dt; S.flash = Math.max(0, S.flash - dt * 3); S.shake = Math.max(0, S.shake - dt); if (S.bannerT > 0) S.bannerT -= dt; stepP(dt);
+    S.t += dt; CA += ((S.phase === 'fly' || S.phase === 'powerfly' || S.phase === 'power' || S.shake > 0 ? 6 : 3) - CA) * Math.min(1, dt * 6); S.flash = Math.max(0, S.flash - dt * 3); S.shake = Math.max(0, S.shake - dt); if (S.bannerT > 0) S.bannerT -= dt; stepP(dt);
     if (S.netFire > 0) { S.netFire -= dt; for (let i = 0; i < 3; i++) { const r = Math.random(); const x = r < 0.25 ? L.gx0 : r < 0.5 ? L.gx1 : L.gx0 + Math.random() * (L.gx1 - L.gx0), y = r < 0.5 ? L.gtop + Math.random() * (L.gbot - L.gtop) : (Math.random() < 0.4 ? L.gtop : L.gtop + Math.random() * (L.gbot - L.gtop));
       P.push({ x, y, vx: (Math.random() - 0.5) * 20, vy: -30 - Math.random() * 50, life: 0.5 + Math.random() * 0.5, kind: 'fire' }); } }
     for (const r of S.rings) r.t += dt; S.rings = S.rings.filter((r) => r.t < 1);
