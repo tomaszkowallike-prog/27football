@@ -35,6 +35,14 @@ Na boisku pojawiają się kolorowe kostki. Wbiegnij w nią z piłką, a do torby
 
 Faul w polu karnym to rzut karny. Na telefonie możesz też dotknąć kolegi na boisku, żeby nim sterować.
 
+## Szatnia i kapitan
+
+Przed meczem wybierasz w szatni kapitana: 14 SOWA, 10 ARTUR, 7 SZYMON albo 27 DOMINIK. Kapitan gra w środku, rozpoczyna mecz i strzela karne. Każdy ma statystyki (strzał, podanie, drybling, obrona, prędkość), które działają w grze. DOMINIK ma najmocniejszy strzał.
+
+## Tryb KARNE
+
+Widok zza pleców strzelca. Przed każdym strzałem na środku jest duży krzyżyk: zatrzymaj czerwoną kropkę na środku, potem niebieską. Jeśli obie trafisz idealnie, losuje się moc: SMOK, ELEKTRYCZNY STRZAŁ albo HALLAND, i taki strzał zawsze wpada. W innym wypadku celujesz w miejsce w bramce i zatrzymujesz pasek siły. Seria 5 karnych na 5 (rywala gra komputer), potem dogrywka. Karne dla Cuiavii w meczu też wyglądają w ten sposób.
+
 ## Tryb KAPKI
 
 Po PRESS START wybierasz MECZ albo KAPKI. W kapkach Dominik żongluje piłką na stadionie z intra. Na ekranie pojawiają się kółka, a na każde masz około sekundy. Jedno dotknięcie to jedna kapka. Spóźnisz się, piłka spada. Do tego gra 8-bitowa muzyka. Rekord zapisuje się w przeglądarce.
@@ -48,4 +56,6 @@ Po PRESS START wybierasz MECZ albo KAPKI. W kapkach Dominik żongluje piłką na
 - `intro*.mp4`, `intro*.jpg`: filmy intro
 - `juggle.png`, `kapki_bg.jpg`: tryb kapki
 - `btn_*.png`: ikony przycisków
+- `pen.js`, `pen.png`, `pen.json`: tryb karnych
+- `szatnia.jpg`: szatnia
 - `creatures.png`, `creatures.json`: wilk i smok

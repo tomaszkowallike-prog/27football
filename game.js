@@ -22,10 +22,11 @@ const TEAMS = [
   { name: 'CUIAVIA', short: 'CUI', img: IMG_G, color: '#3fbf55', dir: 1,
     squad: [
       { sheet: '10', num: 1, name: 'MAREK', role: 'gk', pos: 'GK', keeper: true },
-      { sheet: '99', num: 99, name: 'KUBA', role: 'def', pos: 'DF', home: [9, 0], super: { name: 'SOLANKOWY ZYGZAK', kind: 'zigzag' } },
-      { sheet: '9', num: 9, name: 'BARTEK', role: 'mid', pos: 'MF', home: [19, -8], super: { name: 'KUJAWSKA TRĄBA', kind: 'tornado' } },
-      { sheet: '7', num: 7, name: 'KAMIL', role: 'mid', pos: 'MF', home: [19, 8], super: { name: 'BANAN Z INOWROCŁAWIA', kind: 'curve' } },
-      { sheet: '27', num: 27, name: 'DOMINIK', role: 'fwd', pos: 'FW', home: [26, 0], super: { name: 'KUJAWSKA PETARDA', kind: 'fire' }, captain: true },
+      // stats 1-5: st shot, pa pass, dr dribble, ob defence, sp speed; the captain chosen in the locker room plays in the middle
+      { sheet: '7', num: 7, name: 'SZYMON', role: 'def', pos: 'DF', home: [9, 0], super: { name: 'SZYMONOWY ZYGZAK', kind: 'zigzag' }, stats: { st: 2, pa: 3, dr: 2, ob: 5, sp: 3 } },
+      { sheet: 's14', num: 14, name: 'SOWA', role: 'mid', pos: 'MF', home: [19, -8], super: { name: 'SOWIA SPIRALA', kind: 'curve' }, stats: { st: 3, pa: 4, dr: 3, ob: 3, sp: 3 } },
+      { sheet: 's10', num: 10, name: 'ARTUR', role: 'mid', pos: 'MF', home: [19, 8], super: { name: 'ARTUROWA TRĄBA', kind: 'tornado' }, stats: { st: 3, pa: 3, dr: 4, ob: 2, sp: 4 } },
+      { sheet: '27', num: 27, name: 'DOMINIK', role: 'fwd', pos: 'FW', home: [26, 0], super: { name: 'KUJAWSKA PETARDA', kind: 'fire' }, captain: true, stats: { st: 5, pa: 3, dr: 4, ob: 2, sp: 4 } },
     ] },
   { name: 'FIOLETOWI', short: 'FIO', img: IMG_P, color: '#a46ee8', dir: -1,
     squad: [
@@ -399,7 +400,17 @@ TEAMS.forEach((T, ti) => T.squad.forEach((def) => {
   p.stars = [0, 1, 2].map(() => { const m = label(STAR, 0.34, 0.34); m.visible = false; return m; });
   players.push(p);
 }));
-let captain = players.find((p) => p.captain);   // the player you steer now: switches itself to the team-mate nearest the ball
+for (const p of players) p.spd = p.stats ? 0.9 + p.stats.sp * 0.035 : 1;
+let captain = players.find((p) => p.captain);
+// the captain picked in the locker room: he takes the middle (FW slot, kick-offs, penalties); the rest fill the others,
+// the best defender at the back
+function setCaptain(num) {
+  const sq = players.filter((p) => p.team === 0 && !p.keeper), c = sq.find((p) => p.num === num) || sq.find((p) => p.num === 27);
+  for (const p of sq) p.captain = false; Object.assign(c, { captain: true, role: 'fwd', pos: 'FW', home: [26, 0] });
+  const rest = sq.filter((p) => p !== c).sort((a, b) => b.stats.ob - a.stats.ob);
+  Object.assign(rest[0], { role: 'def', pos: 'DF', home: [9, 0] }); Object.assign(rest[1], { role: 'mid', pos: 'MF', home: [19, -8] }); Object.assign(rest[2], { role: 'mid', pos: 'MF', home: [19, 8] });
+  captain = c;
+}   // the player you steer now: switches itself to the team-mate nearest the ball
 let switchT = 0;
 const ARROW = pixTex(['kkkkkkkkk', 'kyyyyyyyk', 'kyyyyyyyk', '.kyyyyyk.', '..kyyyk..', '...kyk...', '....k....'], { k: '#111', y: '#ffe14a' });
 const capMark = label(ARROW, 0.95, 0.74);
@@ -821,11 +832,11 @@ function shoot(p, power, sup = null, { header = false } = {}) {
     S.decoys = lanes.slice(1).map((z) => { const dx = gx - ball.x, dz = z - ball.z, d = Math.hypot(dx, dz) || 1; return { x: ball.x, z: ball.z, vx: dx / d * 23, vz: dz / d * 23, on: true }; });
     S.fakeZ = lanes[(Math.random() * 3) | 0]; return; }
   if (sup) kick(p, gx, aimZ * 0.5, sup.kind === 'tornado' ? 15 : sup.kind === 'fire' ? 34 : sup.kind === 'mega' ? 19 : 25, sup.kind === 'tornado' ? 10 : 0, sup);
-  else { kick(p, gx, aimZ, (header ? 15 : 17) + power * 13, header ? 1 : 1.6 + power * 3.2); VOICE.say(p, 'shot', p === captain ? 0.45 : 0.2); }
+  else { const st = p.stats ? p.stats.st : 3; kick(p, gx, aimZ * (st >= 5 ? 1.1 : 1), (header ? 15 : 17) + power * (13 + (st - 3) * 2.6) + (st - 3) * 1.2, header ? 1 : 1.6 + power * 3.2); VOICE.say(p, 'shot', p === captain ? 0.45 : 0.2); }
 }
 function pass(p, to) {
   const tx = to.x + to.vx * 0.35, tz = to.z + to.vz * 0.35, d = Math.hypot(tx - ball.x, tz - ball.z);
-  kick(p, tx, tz, Math.min(24, 10 + d * 0.72), d > 12 ? 4.5 : 1.2); SFX.pass();
+  kick(p, tx, tz, Math.min(24, 10 + d * 0.72) * (1 + ((p.stats ? p.stats.pa : 3) - 3) * 0.05), d > 12 ? 4.5 : 1.2); SFX.pass();
 }
 function bestMate(p, dx = 0, dz = 0) {
   let best = null, bs = -1e9;
@@ -866,6 +877,11 @@ function setupPenalty() {
   }
   if (P.team === 0) captain = P.taker;
   G.state = 'penAim'; G.penT = 0; FX.clear();
+  // Cuiavia's own penalties are taken in the behind-the-taker view (pen.js); the match waits for the result
+  if (P.team === 0 && window.PEN) { G.state = 'penExt'; window.PEN.single((goal) => {
+    const kp = players.find((q) => q.keeper && q.team === 1);
+    if (goal) { Object.assign(ball, { x: goalX(0) + 0.8, z: (Math.random() - 0.5) * 6, y: 0.6, vx: 0, vz: 0, vy: 0, owner: null, last: P.taker }); G.state = 'play'; goalScored(0); }
+    else { G.state = 'play'; ball.owner = kp; kp.hold = 0; G.safe = 1.2; } }); }
 }
 function penShoot(aim) {
   const P = G.pen, def = 1 - P.team, kp = players.find((q) => q.keeper && q.team === def);
@@ -938,6 +954,7 @@ function press(btn) {
 
 // ---- the AI ----------------------------------------------------------------------------------------------------------
 function steer(p, tx, tz, dt, speed) {
+  speed *= p.spd || 1;
   const dx = tx - p.x, dz = tz - p.z, d = Math.hypot(dx, dz), s = d < 0.25 ? 0 : Math.min(speed, d * 5);
   const wx = d ? dx / d * s : 0, wz = d ? dz / d * s : 0, a = Math.min(1, dt * 9);
   p.vx += (wx - p.vx) * a; p.vz += (wz - p.vz) * a;
@@ -1122,7 +1139,7 @@ function physics(p, dt, control) {
   if (p.st === 'run' || (p.st === 'jump' && p.y > 0 && control)) {
     if (control) {
       if (p.sta < 0.06) input.dash = false;
-      const sp = input.dash ? DASH : WALK, a = Math.min(1, dt * (p.y > 0 ? 2 : 12));
+      const sp = (input.dash ? DASH : WALK) * (p.spd || 1), a = Math.min(1, dt * (p.y > 0 ? 2 : 12));
       p.dash = input.dash;
       p.vx += (input.x * sp * (ball.owner === p ? 0.92 : 1) - p.vx) * a; p.vz += (input.z * sp - p.vz) * a;
       if (input.x && p.y <= 0) p.face = Math.sign(input.x);
@@ -1142,6 +1159,7 @@ function step(dt) {
   FX.update(dt); BOLTS.update(dt); TRAIL.update(dt); dragonUpdate(dt); goalFireUpdate(dt);
   if (WOLF.on && G.state !== 'play') { WOLF.t += dt; if (WOLF.phase !== 'back') { WOLF.phase = 'back'; WOLF.t = 0; } else if (WOLF.t > 0.6) wolfEnd(); } PU.update(dt, performance.now() / 1000); updateLines(dt); updateStands(dt, performance.now() / 1000); WX.update(dt, performance.now() / 1000); G.shake = Math.max(0, G.shake - dt); G.flash = Math.max(0, G.flash - dt * 2.5);
   if (G.charge) { if (ball.owner !== captain || G.state !== 'play') G.charge = 0; else { G.charge += dt; if (G.charge > 1.1) press('Bup'); } }
+  if (G.state === 'penExt') { draw(dt); return; }
   if (G.state === 'dragon') { for (const p of players) physics(p, dt, false); draw(dt); return; }
   if (G.state === 'pick') { PICK.t += dt; if (PICK.t > 5) doPick(); draw(dt); return; }
   if (G.state === 'penalty') { G.pause -= dt; for (const p of players) physics(p, dt, false); if (G.pause <= 0) setupPenalty(); draw(dt); return; }
@@ -1283,7 +1301,7 @@ renderer.setAnimationLoop((now) => { if (!auto) return; const dt = Math.min(0.05
 placeKickoff(0); G.state = 'menu'; WX.set('leaves');
 window.GAME = {
   start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0 }; PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = 120; G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = Math.random() < 0.5 ? 'rain' : 'leaves'; setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
-  press, pick: (i) => doPick(i), pickMove,
+  press, setCaptain, pick: (i) => doPick(i), pickMove,
   // a finger on a teammate takes control of him (not while you are the one with the ball)
   ctx() { const c = captain, has = ball.owner === c, air = !has && !ball.owner && Math.hypot(ball.x - c.x, ball.z - c.z) < 4.5 && ball.y > 0.5 && ball.y < 2.6;
     let n = 0; for (const k in G.inv) n += G.inv[k];

@@ -179,11 +179,11 @@
   #modes .mbox { position: relative; z-index: 1; text-align: center; padding: 12px; }
   #modes small { display: inline-block; background: rgba(0,0,0,.7); padding: 3px 10px; font-size: 16px; letter-spacing: .2em; color: #8fd99a; margin-bottom: 12px; }
   #modes .mrow { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-  .mb { width: 210px; padding: 14px 10px 12px; font: 700 26px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.78); border: 3px solid #5a5d66; cursor: pointer; }
+  .mb { width: 190px; padding: 14px 10px 12px; font: 700 26px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.78); border: 3px solid #5a5d66; cursor: pointer; }
   .mb b { display: block; font-size: 40px; margin-bottom: 4px; } .mb em { display: block; font-style: normal; font-size: 13px; font-weight: 400; opacity: .8; margin-top: 4px; }
   .mb.sel, .mb:hover { border-color: #ffe14a; transform: translateY(-3px); box-shadow: 0 6px 0 #000; }
   .mhint { margin-top: 12px; font-size: 13px; opacity: .8; } body.touch .mhint { display: none; }
-  body.touch .mb { width: 170px; font-size: 22px; padding: 10px 8px; } body.touch .mb b { font-size: 32px; }
+  body.touch .mb { width: 150px; font-size: 20px; padding: 8px 6px; } body.touch .mb b { font-size: 32px; }
   #kapki { position: fixed; inset: 0; z-index: 18; background: #02070f; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; }
   #kapki[hidden] { display: none; }
   #kapki .f169 { position: absolute; left: 50%; top: 50%; width: max(100vw, 177.78vh); height: max(56.25vw, 100vh); transform: translate(-50%, -50%); }
@@ -210,6 +210,26 @@
   #kend p { margin: 0 0 10px; color: #8fd99a; min-height: 1em; }
   .btn.ghost { background: transparent; border-color: #8a8a8a; color: #fff; }
   #kback { right: max(10px, env(safe-area-inset-right)); top: max(10px, env(safe-area-inset-top)); }
+  /* the locker room: the user's picture, contained, with hot spots on the four boys */
+  #szatnia { position: fixed; inset: 0; z-index: 19; background: #120a24; overflow: hidden; }
+  #szatnia[hidden] { display: none; }
+  #szatnia .sbg { position: absolute; inset: -20px; background: url(szatnia.jpg) center / cover; filter: blur(12px) brightness(.45); }
+  #szatnia .sbox { position: absolute; left: 50%; top: 50%; width: min(100vw, 177.7vh); aspect-ratio: 1672 / 941; transform: translate(-50%, -50%); }
+  #szatnia .sbox > img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+  #szatnia .kid { position: absolute; top: 31%; height: 42%; cursor: pointer; border-radius: 8px; }
+  #szatnia .kid.sel { box-shadow: 0 0 0 3px #ffe14a, 0 0 22px 6px rgba(255,225,74,.55); background: rgba(255,225,74,.08); }
+  #szatnia .pick { position: absolute; top: 24.5%; transform: translateX(-50%); font-size: clamp(18px, 3.4vw, 40px); color: #ffe14a; text-shadow: 3px 3px 0 #000; animation: hop .6s steps(2) infinite; pointer-events: none; }
+  @keyframes hop { 50% { transform: translate(-50%, -6px); } }
+  #szatnia .stitle { position: absolute; left: 50%; top: 12.5%; transform: translateX(-50%); font-size: clamp(11px, 1.7vw, 20px); letter-spacing: .18em; color: #ffe14a; background: rgba(0,0,0,.75); padding: 2px 12px; white-space: nowrap; }
+  #szatnia .spanel { position: absolute; left: 11.4%; top: 75.8%; width: 59.8%; height: 20.4%; background: linear-gradient(#1b1640, #0e0b26); border: 3px solid #5a4aa8; border-radius: 6px; display: flex; align-items: center; gap: 2%; padding: 0 2%; box-sizing: border-box; }
+  #szatnia .face { height: 92%; aspect-ratio: 1; background: url(szatnia.jpg) no-repeat; background-size: 900% auto; image-rendering: pixelated; border-radius: 4px; flex: none; align-self: flex-end; }
+  #szatnia .who { flex: 1; display: flex; flex-direction: column; gap: .15em; font-size: clamp(9px, 1.25vw, 16px); white-space: nowrap; overflow: hidden; }
+  #szatnia .who b { font-size: 2.2em; line-height: 1; } #szatnia .who em { font-style: normal; color: #ffe14a; font-size: .85em; } #szatnia .who i { font-style: normal; color: #ff8a1f; font-size: .85em; }
+  #szatnia .bars { display: grid; grid-template-columns: auto auto; gap: .25em .8em; align-items: center; font-size: clamp(8px, 1.15vw, 15px); }
+  #szatnia .bars span { color: #b8b0e8; } #szatnia .bars i { display: flex; gap: 2px; } #szatnia .bars i u { width: 1.6em; height: .7em; background: #3a3270; text-decoration: none; }
+  #szatnia .bars i u.on { background: #ffc21a; } #szatnia .bars i.max u.on { background: #ff5a1a; box-shadow: 0 0 6px #ff8a1f; }
+  #szatnia .hot { position: absolute; background: transparent; border: 0; cursor: pointer; }
+  #szatnia .hot:hover, #szatnia .hot:focus-visible { outline: 3px solid #ffe14a; border-radius: 10px; }
   #tip { position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; background: rgba(0,0,0,.55); padding: 12px; cursor: pointer; }
   #tip[hidden] { display: none; }
   #tip .tbox { max-height: 94vh; overflow: auto; max-width: 600px; text-align: center; background: #000; border: 3px solid #8a8a8a; padding: 14px 18px 16px; box-shadow: 0 6px 0 rgba(0,0,0,.5); }
@@ -258,8 +278,16 @@
 <div class="ov" id="end" hidden><div class="panel"><h1 id="endT">KONIEC</h1><div id="final">0 : 0</div><div class="row"><button class="btn" id="again">REWANŻ</button></div></div></div>
 <div id="penHint"></div>
 <div id="bag" class="hud"></div>
+<div id="szatnia" hidden><div class="sbg"></div><div class="sbox"><img src="szatnia.jpg" alt="">
+  <div class="kid" data-i="0" style="left:14.5%;width:12.5%"></div><div class="kid" data-i="1" style="left:34.5%;width:12.5%"></div>
+  <div class="kid" data-i="2" style="left:54.5%;width:12.5%"></div><div class="kid" data-i="3" style="left:73.5%;width:12.5%"></div>
+  <div class="pick" id="spick">▼</div>
+  <div class="spanel"><div class="face" id="sface"></div><div class="who"><b id="sname"></b><span id="spos"></span><em>KAPITAN · ROZGRYWAJĄCY</em><i id="ssup"></i></div><div class="bars" id="sbars"></div></div>
+  <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
+  <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
+  <div class="stitle">WYBIERZ KAPITANA</div></div></div>
 <div id="modes" hidden><div class="mbox"><img class="logo" src="kapki_bg.jpg" alt=""><div class="mtitle"><b>27</b>football</div><small>WYBIERZ TRYB</small>
-  <div class="mrow"><button class="mb" data-m="match"><b>⚽</b>MECZ<em>Cuiavia kontra Fioletowi</em></button><button class="mb" data-m="kapki"><b>🎯</b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button></div>
+  <div class="mrow"><button class="mb" data-m="match"><b>⚽</b>MECZ<em>Cuiavia kontra Fioletowi</em></button><button class="mb" data-m="karne"><b>🥅</b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b>🎯</b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button></div>
   <div class="mhint k-keys"><span class="kc">←</span><span class="kc">→</span> wybierz · <span class="kc w">ENTER</span> start</div></div></div>
 <div id="kapki" hidden><div class="f169"><img src="kapki_bg.jpg" alt=""></div><div id="jug"></div><div id="kdots"></div>
   <div class="khud"><div><small>KAPKI</small><b id="kscore">0</b></div><div><small>REKORD</small><b id="kbest">0</b></div></div>
@@ -360,7 +388,27 @@
   let modeSel = 0;
   const showModes = () => { $('modes').hidden = false; modeSel = 0; markMode(); };
   const markMode = () => document.querySelectorAll('#modes .mb').forEach((b, i) => b.classList.toggle('sel', i === modeSel));
-  const pickMode = (m) => { $('modes').hidden = true; if (m === 'kapki') K.start(); else if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
+  const pickMode = (m) => { $('modes').hidden = true; if (m === 'karne') window.PEN.start(showModes); else if (m === 'kapki') K.start(); else SZ.show(); };
+  // ---- the locker room: pick the captain, who plays in the middle and kicks off ----
+  const SZ = (() => {
+    const SQ = [{ num: 14, name: 'SOWA', pos: 'POMOCNIK', sup: 'SOWIA SPIRALA', st: [3, 4, 3, 3, 3], face: 0 }, { num: 10, name: 'ARTUR', pos: 'NAPASTNIK', sup: 'ARTUROWA TRĄBA', st: [3, 3, 4, 2, 4], face: 1 },
+      { num: 7, name: 'SZYMON', pos: 'OBROŃCA', sup: 'SZYMONOWY ZYGZAK', st: [2, 3, 2, 5, 3], face: 2 }, { num: 27, name: 'DOMINIK', pos: 'NAPASTNIK', sup: 'KUJAWSKA PETARDA', st: [5, 3, 4, 2, 4], face: 3 }];
+    const FACE = [[20.2, 49], [41, 50], [60.4, 48], [79, 51]];   // head centres in % of the picture
+    let sel = 3; try { const v = +localStorage.getItem('captain'); const i = SQ.findIndex((q) => q.num === v); if (i >= 0) sel = i; } catch (e) {}
+    const kids = [...document.querySelectorAll('#szatnia .kid')];
+    const mark = () => { const q = SQ[sel]; kids.forEach((k, i) => k.classList.toggle('sel', i === sel));
+      $('spick').style.left = (parseFloat(kids[sel].style.left) + parseFloat(kids[sel].style.width) / 2) + '%';
+      $('sname').textContent = `${q.num} ${q.name}`; $('spos').textContent = q.pos; $('ssup').textContent = '★ ' + q.sup;
+      const [fx, fy] = FACE[q.face]; $('sface').style.backgroundPosition = `${(fx - 5.6) / (100 - 11.1) * 100}% ${(fy - 9.9) / (100 - 19.8) * 100}%`;
+      $('sbars').innerHTML = ['STRZAŁ', 'PODANIE', 'DRYBLING', 'OBRONA', 'PRĘDKOŚĆ'].map((n, i) => `<span>${n}</span><i class="${q.st[i] >= 5 ? 'max' : ''}">${[1, 2, 3, 4, 5].map((k) => `<u class="${k <= q.st[i] ? 'on' : ''}"></u>`).join('')}</i>`).join(''); };
+    const choose = (i) => { if (i === sel) return; sel = i; mark(); try { tone && tone(880, 0.05); } catch (e) {} };
+    kids.forEach((k, i) => k.addEventListener('click', () => choose(i)));
+    const play = () => { const q = SQ[sel]; try { localStorage.setItem('captain', q.num); } catch (e) {} $('szatnia').hidden = true; window.GAME.setCaptain(q.num); if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
+    const back = () => { $('szatnia').hidden = true; showModes(); };
+    $('sgo').addEventListener('click', play); $('sback').addEventListener('click', back);
+    return { show() { $('szatnia').hidden = false; mark(); }, key(e) { if (e.code === 'ArrowLeft' || e.code === 'KeyA') choose((sel + 3) % 4); else if (e.code === 'ArrowRight' || e.code === 'KeyD') choose((sel + 1) % 4);
+      else if (e.code === 'Enter' || e.code === 'Space') play(); else if (e.code === 'Escape' || e.code === 'Backspace') back(); } };
+  })();
   document.querySelectorAll('#modes .mb').forEach((b) => b.addEventListener('click', () => pickMode(b.dataset.m)));
   // keepy-uppy: a dot appears, you have about a second to tap it; every tap is a touch on the ball
   const K = (() => {
@@ -448,7 +496,8 @@
     // keys belong to the intro and the controls screen while they are up, not to the game behind them
     document.addEventListener('keydown', (e) => {
       if (!I.hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (stage === 3) { blip(); afterIntro(); } else if (['Enter', 'Escape', 'Space'].includes(e.code)) skip(); return; }
-      if (!$('modes').hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'KeyA' || e.code === 'KeyD') { modeSel ^= 1; markMode(); } else if (e.code === 'Digit1') pickMode('match'); else if (e.code === 'Digit2') pickMode('kapki'); else if (e.code === 'Enter' || e.code === 'Space') pickMode(modeSel ? 'kapki' : 'match'); return; }
+      if (!$('modes').hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'KeyA' || e.code === 'KeyD') { modeSel = (modeSel + (e.code === 'ArrowLeft' || e.code === 'KeyA' ? 2 : 1)) % 3; markMode(); } else if (e.code === 'Digit1') pickMode('match'); else if (e.code === 'Digit2') pickMode('karne'); else if (e.code === 'Digit3') pickMode('kapki'); else if (e.code === 'Enter' || e.code === 'Space') pickMode(['match', 'karne', 'kapki'][modeSel]); return; }
+      if (!$('szatnia').hidden) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) SZ.key(e); return; }
       if (!$('kapki').hidden) { e.preventDefault(); e.stopPropagation(); if (e.code === 'Escape') K.stop(); else if (!$('kend').hidden && (e.code === 'Enter' || e.code === 'Space') && !e.repeat) K.start(); return; }
       if (!$('tip').hidden) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) unTip(); return; }
       if (!$('menu').hidden && !$('play').disabled && (e.code === 'Enter' || e.code === 'Space')) { e.preventDefault(); e.stopPropagation(); go(); } }, true);
@@ -487,6 +536,7 @@
   addEventListener('contextmenu', (e) => e.preventDefault());
 }
 </script>
+<script src="./pen.js"></script>
 <script type="module" src="./game.js"></script>
 </body>
 </html>

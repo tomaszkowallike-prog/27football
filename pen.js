@@ -1,0 +1,317 @@
+// ---- RZUTY KARNE: a penalty seen from behind the taker, on its own canvas -------------------------------------------
+// Before every kick a big cross: stop the dot on the vertical line, then the one on the horizontal line. Both dead
+// centre and a power is drawn: SMOK, ELEKTRYCZNY STRZAŁ or HALLAND, and a power shot always goes in. Otherwise you
+// aim at a spot in the goal and stop the power bar. Used as its own mode (5 kicks each, CPU kicks simulated) and for
+// the penalties Cuiavia wins during a match.
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const root = document.createElement('div'); root.id = 'pen'; root.hidden = true;
+  root.innerHTML = '<canvas id="penCv"></canvas><button class="ibtn" id="penBack">✕ MENU</button>';
+  document.body.appendChild(root);
+  const st = document.createElement('style');
+  st.textContent = `#pen { position: fixed; inset: 0; z-index: 18; background: #02070f; touch-action: none; user-select: none; -webkit-user-select: none; }
+    #pen[hidden] { display: none; } #penCv { width: 100%; height: 100%; display: block; object-fit: contain; image-rendering: pixelated; }
+    #penBack { right: max(10px, env(safe-area-inset-right)); top: max(10px, env(safe-area-inset-top)); } #pen.single #penBack { display: none; }`;
+  document.head.appendChild(st);
+  const cv = $('penCv'), g = cv.getContext('2d');
+  let W = 640; const H = 360;
+  const img = (src) => { const i = new Image(); i.src = src; return i; };
+  const ATL = img('pen.png'), BG = img('kapki_bg.jpg'); let M = null;
+  fetch('pen.json').then((r) => r.json()).then((j) => (M = j));
+
+  // ---- sound ----
+  let AC = null;
+  const ac = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) {} return AC; };
+  const tone = (f0, f1, d, type = 'square', v = 0.05, delay = 0) => { const a = ac(); if (!a) return; const t = a.currentTime + delay, o = a.createOscillator(), gn = a.createGain();
+    o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + d); gn.gain.setValueAtTime(v, t); gn.gain.exponentialRampToValueAtTime(0.0008, t + d);
+    o.connect(gn).connect(a.destination); o.start(t); o.stop(t + d + 0.02); };
+  const noise = (d, v = 0.2, hp = 400, delay = 0) => { const a = ac(); if (!a) return; const t = a.currentTime + delay, b = a.createBuffer(1, a.sampleRate * d, a.sampleRate), c = b.getChannelData(0);
+    for (let i = 0; i < c.length; i++) c[i] = (Math.random() * 2 - 1) * (1 - i / c.length); const s = a.createBufferSource(), f = a.createBiquadFilter(), gn = a.createGain();
+    s.buffer = b; f.type = 'highpass'; f.frequency.value = hp; gn.gain.value = v; s.connect(f).connect(gn).connect(a.destination); s.start(t); };
+  const SND = {
+    tick: () => tone(880, 880, 0.03, 'square', 0.03), stop: () => tone(660, 440, 0.08),
+    perfect: () => [988, 1319, 1760].forEach((f, i) => tone(f, f, 0.1, 'square', 0.05, i * 0.07)),
+    whistle: () => { tone(2600, 2500, 0.18, 'sine', 0.06); tone(2600, 2500, 0.35, 'sine', 0.06, 0.22); },
+    kick: () => { tone(160, 50, 0.12, 'sine', 0.3); noise(0.05, 0.15, 2000); },
+    net: () => noise(0.4, 0.12, 900), crowd: () => { noise(1.6, 0.16, 300); [523, 659, 784, 1047].forEach((f, i) => tone(f, f, 0.16, 'square', 0.04, 0.1 + i * 0.09)); },
+    groan: () => { tone(300, 120, 0.7, 'sawtooth', 0.05); noise(0.6, 0.08, 200); },
+    save: () => { tone(200, 90, 0.15, 'square', 0.12); noise(0.1, 0.2, 800); },
+    roll: () => tone(1200, 1200, 0.025, 'square', 0.03), zap: () => { noise(0.5, 0.25, 3000); tone(1800, 300, 0.4, 'sawtooth', 0.06); },
+    roar: () => { noise(1, 0.28, 150); tone(140, 50, 1, 'sawtooth', 0.12); }, hum: () => { tone(110, 220, 1.4, 'sine', 0.12); tone(220, 440, 1.4, 'triangle', 0.04); },
+    boom: () => { tone(90, 30, 0.6, 'sine', 0.4); noise(0.5, 0.3, 200); },
+  };
+
+  // ---- layout (logical pixels, H = 360; W follows the screen's shape) ----
+  const L = {}; const layout = () => { const r = innerWidth / innerHeight; W = Math.round(Math.max(480, Math.min(800, H * r))); cv.width = W; cv.height = H;
+    const cx = W / 2; Object.assign(L, { cx, gx0: cx - 150, gx1: cx + 150, gtop: 118, gbot: 226, spotX: cx + 66, spotY: 340, crossY: 172 }); g.imageSmoothingEnabled = false; };
+  addEventListener('resize', () => { if (!root.hidden) layout(); });
+
+  const frame = (sheet, i, x, y, { flip = false, alpha = 1, scale = 1, add = false } = {}) => {   // x, y = the frame's top-left
+    if (!M) return; const m = M[sheet], [sx, sy] = m.f[Math.max(0, Math.min(m.f.length - 1, i))];
+    g.save(); g.globalAlpha = alpha; if (add) g.globalCompositeOperation = 'lighter';
+    if (flip) { g.translate(x + m.w * scale, y); g.scale(-1, 1); g.drawImage(ATL, sx, sy, m.w, m.h, 0, 0, m.w * scale, m.h * scale); }
+    else g.drawImage(ATL, sx, sy, m.w, m.h, x, y, m.w * scale, m.h * scale);
+    g.restore(); };
+  // a sheet placed so its frame-0 ball sits on the penalty spot
+  const SC = 0.8;   // the taker's sheets are drawn at this scale
+  const atSpot = (sheet) => { const m = M[sheet], b = m.ball || [m.w / 2, m.h]; return [L.spotX - b[0] * SC, L.spotY - b[1] * SC]; };
+
+  // ---- the scene ----
+  const drawPitch = () => {
+    const bw = W, bh = W * 9 / 16; g.drawImage(BG, 0, (H - bh) / 2 - 58, bw, bh);
+    // the grass in front of the goal, in stripes that widen towards us
+    const hz = 200; for (let i = 0; i < 9; i++) { const y0 = hz + (H - hz) * Math.pow(i / 9, 1.6), y1 = hz + (H - hz) * Math.pow((i + 1) / 9, 1.6);
+      g.fillStyle = i % 2 ? '#2f8a3a' : '#3a9a44'; g.fillRect(0, Math.floor(y0), W, Math.ceil(y1 - y0) + 1); }
+    g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(0, hz, W, 3);
+    g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 2;
+    const line = (pts) => { g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.stroke(); };
+    line([[0, L.gbot + 1], [W, L.gbot + 1]]);                                                // the goal line
+    line([[L.cx - 190, L.gbot + 1], [L.cx - 215, 262], [L.cx + 215, 262], [L.cx + 190, L.gbot + 1]]);   // the six-yard box
+    line([[L.cx - 330, L.gbot + 1], [L.cx - 420, H + 10]]); line([[L.cx + 330, L.gbot + 1], [L.cx + 420, H + 10]]);
+    g.fillStyle = '#fff'; g.fillRect(L.spotX - 5, L.spotY + 3, 10, 3);
+  };
+  const drawGoalBack = () => {   // the net, behind the keeper
+    const { gx0, gx1, gtop, gbot } = L, d = 16;
+    g.fillStyle = 'rgba(10,20,15,.35)'; g.fillRect(gx0 + d, gtop + d * 0.6, gx1 - gx0 - 2 * d, gbot - gtop - d * 0.6);
+    g.strokeStyle = 'rgba(235,240,245,.55)'; g.lineWidth = 1;
+    for (let x = gx0 + d; x <= gx1 - d; x += 8) { g.beginPath(); g.moveTo(x + .5, gtop + d * 0.6); g.lineTo(x + .5, gbot); g.stroke(); }
+    for (let y = gtop + d * 0.6; y <= gbot; y += 8) { g.beginPath(); g.moveTo(gx0 + d, y + .5); g.lineTo(gx1 - d, y + .5); g.stroke(); }
+    for (const [ax, bx] of [[gx0, gx0 + d], [gx1, gx1 - d]]) for (let y = gtop; y <= gbot; y += 8) { g.beginPath(); g.moveTo(ax, y + .5); g.lineTo(bx, y * 0.98 + gtop * 0.02 + d * 0.5 + .5); g.stroke(); }
+    for (let x = gx0; x <= gx1; x += 8) { g.beginPath(); g.moveTo(x + .5, gtop); g.lineTo(gx0 + d + (x - gx0) * (gx1 - gx0 - 2 * d) / (gx1 - gx0) + .5, gtop + d * 0.6); g.stroke(); }
+  };
+  const drawGoalFront = () => {   // posts and bar in front of everything that is in the goal
+    const { gx0, gx1, gtop, gbot } = L;
+    g.fillStyle = '#111'; g.fillRect(gx0 - 4, gtop - 4, 8, gbot - gtop + 4); g.fillRect(gx1 - 4, gtop - 4, 8, gbot - gtop + 4); g.fillRect(gx0 - 4, gtop - 4, gx1 - gx0 + 8, 8);
+    g.fillStyle = '#f4f4f0'; g.fillRect(gx0 - 3, gtop - 3, 6, gbot - gtop + 3); g.fillRect(gx1 - 3, gtop - 3, 6, gbot - gtop + 3); g.fillRect(gx0 - 3, gtop - 3, gx1 - gx0 + 6, 6);
+    g.fillStyle = '#c9c9c2'; g.fillRect(gx0 + 1, gtop + 1, 2, gbot - gtop - 1); g.fillRect(gx1 + 1, gtop + 1, 2, gbot - gtop - 1); g.fillRect(gx0 - 1, gtop + 1, gx1 - gx0 + 2, 2);
+  };
+  const drawBall = (x, y, r, tint) => {
+    g.fillStyle = '#000'; g.beginPath(); g.arc(x, y, r + 1, 0, 7); g.fill();
+    g.fillStyle = tint || '#fff'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
+    g.fillStyle = '#111'; g.beginPath(); g.arc(x - r * 0.15, y - r * 0.1, r * 0.33, 0, 7); g.fill();
+    for (const a of [0.6, 2.2, 3.8, 5.3]) { g.beginPath(); g.arc(x + Math.cos(a) * r * 0.78, y + Math.sin(a) * r * 0.78, r * 0.2, 0, 7); g.fill(); }
+  };
+  const shadow = (x, y, w) => { g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(x, y, w, w * 0.28, 0, 0, 7); g.fill(); };
+
+  // ---- particles ----
+  const P = [];
+  const emit = (x, y, n, kind) => { for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, s = 20 + Math.random() * 120;
+    P.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - (kind === 'fire' ? 60 : 0), life: 0.4 + Math.random() * 0.6, max: 1, kind }); } };
+  const COL = { fire: ['#fff3a0', '#ffb02a', '#ff5a1a', '#c21a0a'], zap: ['#ffffff', '#bfe6ff', '#4aa8ff', '#1a4aff'], void: ['#ffd6ff', '#e08aff', '#a03aff', '#5a10b0'],
+    grass: ['#8fdc7a', '#3a9a44'], confetti: ['#3fe060', '#ffffff', '#ffe14a', '#111111'] };
+  const stepP = (dt) => { for (let i = P.length - 1; i >= 0; i--) { const p = P[i]; p.life -= dt; if (p.life <= 0) { P.splice(i, 1); continue; }
+    p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.kind === 'confetti' ? 40 : p.kind === 'fire' ? -30 : 90) * dt; p.vx *= 0.98; } };
+  const drawP = () => { for (const p of P) { const c = COL[p.kind] || COL.fire, k = Math.min(c.length - 1, Math.floor((1 - p.life) * c.length)); g.fillStyle = c[k];
+    const s = p.kind === 'confetti' ? 3 : 2 + p.life * 3; g.fillRect(Math.round(p.x), Math.round(p.y), s, s); } };
+  const bolts = [];   // lightning strokes in the net
+  const drawBolts = () => { for (const b of bolts) { if (Math.random() < 0.3) continue; g.strokeStyle = Math.random() < 0.5 ? '#ffffff' : '#7cc4ff'; g.lineWidth = 2; g.beginPath();
+    let x = b.x, y = L.gtop; g.moveTo(x, y); while (y < L.gbot) { y += 8 + Math.random() * 8; x += (Math.random() - 0.5) * 18; g.lineTo(x, y); } g.stroke(); } };
+
+  // ---- game state ----
+  const S = { on: false, mode: 'shootout', phase: 'idle', t: 0, round: 0, us: [], them: [], done: null,
+    dotV: 0, dotH: 0, stopV: null, stopH: null, aim: [0, 0.5], pow: 0, power: null, roll: 0, rollT: 0, rollK: 0,
+    ball: null, keeper: null, result: '', banner: '', bannerT: 0, flash: 0, shake: 0, netFire: 0, rings: [] };
+  const KICKS = 5;
+  const reset = () => { Object.assign(S, { round: 0, us: [], them: [] }); };
+  const newKick = () => { Object.assign(S, { phase: 'intro', t: 0, stopV: null, stopH: null, power: null, ball: null, result: '', netFire: 0, rings: [], dotV: 0, dotH: 0, aim: [0, 0.45] });
+    S.keeper = { st: 'idle', side: 0, high: false, t: 0, save: false, x: 0, y: 0 }; bolts.length = 0; SND.whistle(); };
+  // the dots ride the cross at a steady speed, back and forth
+  const CROSS_V = 58, CROSS_H = 140, PERFECT = 7;
+  const tri = (t, amp, sp) => { const p = (t * sp / (amp * 2)) % 2; return (p < 1 ? -1 + 2 * p : 3 - 2 * p) * amp; };
+
+  // the keeper's choice and whether he gets there
+  const keeperFor = (tx, ty, power, forced) => {
+    const sideOf = (x) => (x < L.cx - 50 ? -1 : x > L.cx + 50 ? 1 : 0);
+    const bs = sideOf(tx), high = ty < L.gtop + 38;
+    let side; if (forced) side = bs === 0 ? (Math.random() < 0.5 ? -1 : 1) : -bs;
+    else { const r = Math.random(); side = r < 0.42 ? bs : r < 0.75 ? (bs === 0 ? -1 : 0) : (bs === 0 ? 1 : -bs); }
+    const reachX = L.cx + side * 105, reachY = high ? L.gtop + 26 : L.gbot - 28, R = 38 + (power < 0.4 ? 22 : 0) + (side === 0 ? 4 : 0);
+    const save = !forced && Math.hypot((tx - reachX) * 0.85, ty - reachY) < R && sideOf(tx) === side;
+    return { st: 'dive', side, high: high && side !== 0, t: 0, save, x: 0, y: 0 };
+  };
+  const shoot = (tx, ty, dur, power, kind) => {
+    S.ball = { x0: L.spotX, y0: L.spotY - 6, tx, ty, t: 0, dur, kind, power, gone: false };
+    S.keeper = keeperFor(tx, ty, power, !!kind); S.phase = 'fly'; S.t = 0; SND.kick();
+    if (kind) { S.flash = 1; S.shake = 0.4; }
+  };
+
+  // ---- input ----
+  const act = (lx, ly) => {
+    ac();
+    if (S.phase === 'cross1') { S.stopV = S.dotV; S.phase = 'cross2'; S.t = 0; Math.abs(S.stopV) <= PERFECT ? SND.perfect() : SND.stop(); return; }
+    if (S.phase === 'cross2') { S.stopH = S.dotH; S.phase = 'judge'; S.t = 0; Math.abs(S.stopH) <= PERFECT ? SND.perfect() : SND.stop(); return; }
+    if (S.phase === 'aim') {
+      if (lx != null) { const u = (lx - L.cx) / ((L.gx1 - L.gx0) / 2 + 20), v = (L.gbot - ly) / (L.gbot - L.gtop + 20); S.aim = [Math.max(-1.15, Math.min(1.15, u)), Math.max(0, Math.min(1.2, v))]; }
+      S.phase = 'force'; S.t = 0; SND.stop(); return; }
+    if (S.phase === 'force') { S.phase = 'run'; S.t = 0; S.pow = powNow(); return; }
+    if (S.phase === 'end') { if (S.mode === 'shootout') { reset(); newKick(); } }
+  };
+  const powNow = () => tri(S.t + 0.55, 0.5, 1.15) + 0.5;
+  cv.addEventListener('pointerdown', (e) => { e.preventDefault(); const r = cv.getBoundingClientRect(), sc = Math.min(r.width / W, r.height / H), ox = r.left + (r.width - W * sc) / 2, oy = r.top + (r.height - H * sc) / 2;
+    act((e.clientX - ox) / sc, (e.clientY - oy) / sc); });
+  addEventListener('keydown', (e) => { if (root.hidden) return; e.preventDefault(); e.stopPropagation(); if (e.repeat) return;
+    if (e.code === 'Escape' && S.mode === 'shootout') { close(); return; }
+    if (S.phase === 'aim' && /Arrow|Key[WASD]/.test(e.code)) { const d = { ArrowLeft: [-0.25, 0], KeyA: [-0.25, 0], ArrowRight: [0.25, 0], KeyD: [0.25, 0], ArrowUp: [0, 0.25], KeyW: [0, 0.25], ArrowDown: [0, -0.25], KeyS: [0, -0.25] }[e.code];
+      S.aim = [Math.max(-1.15, Math.min(1.15, S.aim[0] + d[0])), Math.max(0, Math.min(1.2, S.aim[1] + d[1]))]; SND.tick(); return; }
+    if (['Space', 'Enter', 'KeyK', 'KeyX', 'KeyJ'].includes(e.code)) act(); }, true);
+  $('penBack').addEventListener('click', () => close());
+
+  // ---- the frame timings for the three powers: [sheet, frames, seconds per frame, release index] ----
+  const POWERS = {
+    smok: { name: 'SMOK', col: '#ff5a1a', ink: '#5a1408', sheet: 'dragon', seq: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], dt: [.12, .12, .12, .14, .14, .14, .16, .2, .2, .16, .1, .1, .1, .1], rel: 9, fx: 'fire', snd: 'roar' },
+    zap: { name: 'ELEKTRYCZNY STRZAŁ', col: '#4aa8ff', ink: '#0a1a5a', sheet: 'electric', seq: [0, 1, 2, 3, 4, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14], dt: [.12, .1, .1, .1, .1, .08, .08, .12, .1, .1, .1, .08, .08, .08, .1, .5], rel: 12, fx: 'zap', snd: 'zap' },
+    halland: { name: 'HALLAND', col: '#c06aff', ink: '#2a0a5a', sheet: 'halland', seq: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 6, 7, 8, 9, 10, 11, 12], dt: [.25, .14, .14, .14, .12, .1, .1, .1, .1, .1, .09, .09, .09, .09, .09, .08, .08], rel: 16, fx: 'void', snd: 'hum' },
+  };
+  const ORDER = ['smok', 'zap', 'halland'];
+
+  // ---- update ----
+  const update = (dt) => {
+    S.t += dt; S.flash = Math.max(0, S.flash - dt * 3); S.shake = Math.max(0, S.shake - dt); if (S.bannerT > 0) S.bannerT -= dt; stepP(dt);
+    if (S.netFire > 0) { S.netFire -= dt; for (let i = 0; i < 3; i++) { const r = Math.random(); const x = r < 0.25 ? L.gx0 : r < 0.5 ? L.gx1 : L.gx0 + Math.random() * (L.gx1 - L.gx0), y = r < 0.5 ? L.gtop + Math.random() * (L.gbot - L.gtop) : (Math.random() < 0.4 ? L.gtop : L.gtop + Math.random() * (L.gbot - L.gtop));
+      P.push({ x, y, vx: (Math.random() - 0.5) * 20, vy: -30 - Math.random() * 50, life: 0.5 + Math.random() * 0.5, kind: 'fire' }); } }
+    for (const r of S.rings) r.t += dt; S.rings = S.rings.filter((r) => r.t < 1);
+    for (const b of bolts) b.life -= dt; for (let i = bolts.length - 1; i >= 0; i--) if (bolts[i].life <= 0) bolts.splice(i, 1);
+    const K = S.keeper; if (K) K.t += dt;
+    switch (S.phase) {
+      case 'intro': if (S.t > 0.9) { S.phase = 'cross1'; S.t = 0; } break;
+      case 'cross1': S.dotV = tri(S.t, CROSS_V, 150); break;
+      case 'cross2': S.dotH = tri(S.t, CROSS_H, 205); break;
+      case 'judge': if (S.t > 0.8) { const ok = Math.abs(S.stopV) <= PERFECT && Math.abs(S.stopH) <= PERFECT;
+        if (ok) { S.phase = 'roll'; S.t = 0; S.rollK = Math.floor(Math.random() * 3); S.roll = 0; S.rollT = 0; S.rollN = 15 + S.rollK; S.roll = 0; }
+        else { S.phase = 'aim'; S.t = 0; } } break;
+      case 'roll': S.rollT -= dt; if (S.rollN > 0 && S.rollT <= 0) { S.roll = (S.roll + 1) % 3; S.rollN--; S.rollT = 0.05 + (14 - Math.min(14, S.rollN)) * 0.0 + (S.rollN < 6 ? (6 - S.rollN) * 0.06 : 0); SND.roll(); if (!S.rollN) { SND.perfect(); S.t = 0; } }
+        if (!S.rollN && S.t > 0.9) { S.power = ORDER[S.roll]; S.phase = 'power'; S.t = 0; S.pi = 0; S.pt = 0; SND[POWERS[S.power].snd](); } break;
+      case 'power': { const Pw = POWERS[S.power]; S.pt += dt; while (S.pi < Pw.seq.length - 1 && S.pt > Pw.dt[S.pi]) { S.pt -= Pw.dt[S.pi]; S.pi++;
+          if (S.pi === Pw.rel) { const tx = L.cx + (Math.random() < 0.5 ? -1 : 1) * (70 + Math.random() * 30), ty = L.gtop + 14 + Math.random() * 30; shoot(tx, ty, 0.36, 1, S.power); S.phase = 'powerfly'; } }
+        if (Math.random() < 0.5) { const [x, y] = atSpot(Pw.sheet); emit(x + M[Pw.sheet].w * SC * (0.3 + Math.random() * 0.4), y + M[Pw.sheet].h * SC * (0.2 + Math.random() * 0.6), 1, Pw.fx); } break; }
+      case 'powerfly': case 'fly': {
+        if (S.phase === 'powerfly') { const Pw = POWERS[S.power]; S.pt += dt; while (S.pi < Pw.seq.length - 1 && S.pt > Pw.dt[S.pi]) { S.pt -= Pw.dt[S.pi]; S.pi++; } }
+        const B = S.ball; B.t += dt; const k = Math.min(1, B.t / B.dur);
+        if (B.kind && Math.random() < 0.9) { const [x, y] = ballAt(B, k); emit(x, y, 3, POWERS[B.kind].fx); }
+        if (!K.save && k >= 1 && !B.gone) arrive();
+        if (K.save && k >= 0.9 && !B.gone) { B.gone = true; S.result = 'save'; SND.save(); banner('OBRONA!', '#ffe14a'); S.phase = 'after'; S.t = 0; S.shake = 0.2; }
+        break; }
+      case 'run': { // the run-up: frames 0..13, the ball leaves at frame 9
+        S.ki = Math.min(13, Math.floor(S.t * 15)); if (S.ki >= 10 && !S.ball) { const sp = S.pow, over = sp > 0.86 ? (sp - 0.86) * 260 : 0, jit = 6 + sp * 14;
+          const tx = L.cx + S.aim[0] * ((L.gx1 - L.gx0) / 2) + (Math.random() - 0.5) * jit, ty = L.gbot - 8 - S.aim[1] * (L.gbot - L.gtop - 12) - over + (Math.random() - 0.5) * jit * 0.6;
+          shoot(tx, ty, 0.62 - sp * 0.3, sp, null); S.phase = 'fly'; } break; }
+      case 'after': if (S.t > 2.2) next(); break;
+    }
+  };
+  const ballAt = (B, k) => { const e = 1 - Math.pow(1 - k, 1.6), x = B.x0 + (B.tx - B.x0) * e, y = B.y0 + (B.ty - B.y0) * e - Math.sin(Math.PI * k) * (B.kind ? 10 : 22); return [x, y, 6 - 2.6 * e]; };
+  const arrive = () => { const B = S.ball; B.gone = true; S.phase = 'after'; S.t = 0;
+    const inside = B.tx > L.gx0 + 3 && B.tx < L.gx1 - 3 && B.ty > L.gtop + 3 && B.ty < L.gbot;
+    if (!inside) { S.result = 'miss'; SND.groan(); banner(B.ty <= L.gtop + 3 ? 'NAD POPRZECZKĄ!' : 'OBOK!', '#ff8a6a'); return; }
+    S.result = 'goal'; SND.net(); SND.crowd(); banner('GOOOL!', '#3fe060'); S.shake = 0.35; B.inNet = [B.tx, B.ty];
+    emit(B.tx, B.ty, 26, B.kind ? POWERS[B.kind].fx : 'grass'); for (let i = 0; i < 40; i++) P.push({ x: Math.random() * W, y: -10, vx: (Math.random() - 0.5) * 60, vy: 40 + Math.random() * 80, life: 2.2, kind: 'confetti' });
+    if (B.kind === 'smok') { S.netFire = 3.2; SND.boom(); S.flash = 1; }
+    if (B.kind === 'zap') { for (let i = 0; i < 7; i++) bolts.push({ x: L.gx0 + 10 + Math.random() * (L.gx1 - L.gx0 - 20), life: 1.4 }); S.flash = 1; }
+    if (B.kind === 'halland') { S.rings.push({ x: B.tx, y: B.ty, t: 0 }, { x: B.tx, y: B.ty, t: -0.25 }, { x: B.tx, y: B.ty, t: -0.5 }); SND.boom(); }
+    if (B.kind) S.keeper.knocked = true;
+  };
+  const banner = (txt, col) => { S.banner = txt; S.bannerCol = col; S.bannerT = 1.8; };
+  // after a kick: the CPU answers (simulated), then the next round or the end
+  const next = () => {
+    if (S.mode === 'single') { const goal = S.result === 'goal'; close(); S.done && S.done(goal); return; }
+    S.us.push(S.result === 'goal'); const cpu = Math.random() < 0.7; S.them.push(cpu); S.cpuT = 1.6; S.cpuGoal = cpu;
+    const a = S.us.filter(Boolean).length, b = S.them.filter(Boolean).length, n = S.us.length;
+    const left = Math.max(0, KICKS - n), decided = n <= KICKS ? (a + left < b || b + left < a) : a !== b;
+    if (decided || (n >= KICKS && a !== b)) { S.phase = 'end'; S.t = 0; S.win = a > b; setTimeout(() => (S.win ? SND.crowd() : SND.groan()), 900); return; }
+    newKick(); S.phase = 'cpu'; S.t = 0;
+  };
+
+  // ---- draw ----
+  const drawKeeper = () => {
+    if (!M) return; const K = S.keeper, gk1 = M.gk1, gk2 = M.gk2; let sheet = 'gk2', fi = Math.floor(performance.now() / 260) % 5, dx = 0, dy = 0, flip = false;
+    if (S.phase === 'cpu' || S.phase === 'end') return;
+    if (K && K.st === 'dive') { const k = Math.min(1, K.t / 0.42), e = 1 - Math.pow(1 - k, 2); flip = K.side < 0;
+      if (K.side === 0) { sheet = 'gk1'; fi = K.save ? (S.ball && S.ball.gone ? 11 : 10) : 3; }
+      else if (K.high) { sheet = 'gk2'; fi = K.save && S.ball && S.ball.gone ? Math.min(9, 8 + Math.floor((K.t - 0.38) * 6)) : [5, 6, 7][Math.min(2, Math.floor(k * 3))]; dx = K.side * 88 * e; dy = -Math.sin(Math.PI * Math.min(1, K.t / 0.9)) * 26; }
+      else { sheet = 'gk1'; fi = K.save && S.ball && S.ball.gone ? Math.min(9, 7 + Math.floor((K.t - 0.38) * 5)) : [5, 6, 6][Math.min(2, Math.floor(k * 3))]; dx = K.side * 98 * e; dy = -Math.sin(Math.PI * Math.min(1, K.t / 0.7)) * 12; }
+      if (K.knocked && K.t > 0.45) { dy += Math.min(10, (K.t - 0.45) * 30); } }
+    const m = M[sheet], x = L.cx - m.w / 2 + dx, y = L.gbot - m.h + 2 + dy;
+    shadow(L.cx + dx, L.gbot, 18); frame(sheet, fi, x, y, { flip });
+  };
+  const drawShooter = () => {
+    if (!M) return; let sheet = 'kick', fi = 0;
+    if (S.phase === 'run' || (S.phase === 'fly' && !S.power) || (S.phase === 'after' && !S.power)) fi = S.phase === 'run' ? S.ki : 13;
+    if (S.power) { const Pw = POWERS[S.power]; sheet = Pw.sheet; fi = Pw.seq[S.pi || 0]; }
+    const [x, y] = atSpot(sheet), m = M[sheet];
+    let alpha = 1, ox = 0, oy = 0;
+    if (S.power === 'smok' && S.pi >= 10) { const k = (S.pi - 10 + S.pt / 0.1) / 4; ox = k * 60; oy = -k * 90; alpha = Math.max(0, 1 - k * 0.8); }
+    if (S.power === 'halland') { oy = -Math.min(30, (S.pi || 0) * 2.2); if (S.phase === 'after') alpha = Math.max(0, 1 - S.t * 1.5); }
+    if (S.power === 'smok' && S.phase === 'after') alpha = 0;
+    shadow(L.spotX - 30, L.spotY + 8, 30);
+    frame(sheet, fi, x + ox, y + oy, { alpha, scale: SC });
+    const ballOnSpot = S.phase !== 'fly' && S.phase !== 'after' && S.phase !== 'powerfly' && !(S.phase === 'run' && S.ki >= 9);
+    if (sheet === 'kick' && ballOnSpot && S.phase !== 'run') return;   // the drawn frames carry their own ball before the kick
+  };
+  const drawCross = () => {
+    const cx = L.cx, cy = L.crossY, glow = (S.phase === 'cross1' || S.phase === 'cross2');
+    g.save(); g.globalAlpha = 0.92;
+    const bar = (x, y, w, h) => { g.fillStyle = '#000'; g.fillRect(x - 2, y - 2, w + 4, h + 4); g.fillStyle = '#fff'; g.fillRect(x, y, w, h); };
+    bar(cx - 2, cy - CROSS_V - 8, 4, CROSS_V * 2 + 16); bar(cx - CROSS_H - 8, cy - 2, CROSS_H * 2 + 16, 4);
+    g.strokeStyle = '#000'; g.lineWidth = 6; g.beginPath(); g.arc(cx, cy, PERFECT + 4, 0, 7); g.stroke(); g.strokeStyle = '#ffe14a'; g.lineWidth = 3; g.beginPath(); g.arc(cx, cy, PERFECT + 4, 0, 7); g.stroke();
+    const dot = (x, y, col, live) => { g.fillStyle = '#000'; g.beginPath(); g.arc(x, y, 8, 0, 7); g.fill(); g.fillStyle = col; g.beginPath(); g.arc(x, y, 6, 0, 7); g.fill();
+      if (live) { g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 11 + Math.sin(performance.now() / 80) * 2, 0, 7); g.stroke(); } };
+    const v = S.stopV != null ? S.stopV : S.dotV, h = S.stopH != null ? S.stopH : S.dotH;
+    dot(cx, cy + v, Math.abs(v) <= PERFECT && S.stopV != null ? '#3fe060' : '#ff4a3a', S.phase === 'cross1');
+    if (S.phase !== 'cross1') dot(cx + h, cy, Math.abs(h) <= PERFECT && S.stopH != null ? '#3fe060' : '#4aa8ff', S.phase === 'cross2');
+    g.restore(); void glow;
+  };
+  const txt = (s, x, y, size, col = '#fff', align = 'center') => { g.font = `700 ${size}px "Pixelify Sans", monospace`; g.textAlign = align; g.textBaseline = 'middle';
+    g.fillStyle = '#000'; for (const [a, b] of [[2, 2], [-2, 2], [2, -2], [-2, -2], [0, 3]]) g.fillText(s, x + a, y + b); g.fillStyle = col; g.fillText(s, x, y); };
+  const drawHud = () => {
+    if (S.mode === 'shootout') {   // two rows of five dots, like a TV score bug
+      const x0 = 12, y0 = 12; g.fillStyle = 'rgba(0,0,0,.72)'; g.fillRect(x0, y0, 186, 46); g.strokeStyle = '#3a3d44'; g.lineWidth = 2; g.strokeRect(x0, y0, 186, 46);
+      const row = (name, col, arr, y) => { txt(name, x0 + 24, y, 13, col); const n = Math.max(KICKS, arr.length);
+        for (let i = 0; i < Math.min(n, 8); i++) { const x = x0 + 54 + i * 16; g.fillStyle = '#000'; g.fillRect(x - 6, y - 6, 12, 12);
+          g.fillStyle = i >= arr.length ? '#3a3d44' : arr[i] ? '#3fe060' : '#e8361f'; g.fillRect(x - 5, y - 5, 10, 10); } };
+      row('CUI', '#3fe060', S.us, y0 + 14); row('FIO', '#c9a2ff', S.them, y0 + 32);
+    }
+    const hint = { intro: '', cross1: 'ZATRZYMAJ CZERWONĄ KROPKĘ NA ŚRODKU', cross2: 'TERAZ NIEBIESKĄ', judge: '', aim: 'DOTKNIJ MIEJSCA W BRAMCE', force: 'ZATRZYMAJ SIŁĘ', roll: 'LOSOWANIE MOCY!' }[S.phase];
+    if (hint) txt(hint, W / 2, H - 16, 16, '#ffe14a');
+    if (S.phase === 'intro') txt(S.mode === 'single' ? 'RZUT KARNY!' : `SERIA ${S.us.length + 1}`, W / 2, 70, 30, '#fff');
+    if (S.phase === 'judge') { const ok = Math.abs(S.stopV) <= PERFECT && Math.abs(S.stopH) <= PERFECT; txt(ok ? 'IDEALNIE!' : 'PRAWIE...', W / 2, 70, 32, ok ? '#3fe060' : '#ff8a6a'); }
+    if (S.phase === 'aim') { const [u, v] = S.aim, x = L.cx + u * ((L.gx1 - L.gx0) / 2), y = L.gbot - 8 - v * (L.gbot - L.gtop - 12), r = 10 + Math.sin(performance.now() / 120) * 2;
+      g.strokeStyle = '#000'; g.lineWidth = 5; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); g.strokeStyle = '#ffe14a'; g.lineWidth = 2.5; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke();
+      g.fillStyle = '#ffe14a'; g.fillRect(x - 1, y - r - 6, 2, 6); g.fillRect(x - 1, y + r, 2, 6); g.fillRect(x - r - 6, y - 1, 6, 2); g.fillRect(x + r, y - 1, 6, 2); }
+    if (S.phase === 'force') { const p = powNow(), x = W - 40, y0 = 90, h = 170; g.fillStyle = '#000'; g.fillRect(x - 3, y0 - 3, 26, h + 6);
+      const grd = g.createLinearGradient(0, y0 + h, 0, y0); grd.addColorStop(0, '#3fe060'); grd.addColorStop(0.7, '#ffe14a'); grd.addColorStop(0.86, '#ff8a1f'); grd.addColorStop(1, '#e8361f');
+      g.fillStyle = '#222'; g.fillRect(x, y0, 20, h); g.fillStyle = grd; g.fillRect(x, y0 + h * (1 - p), 20, h * p);
+      g.fillStyle = '#fff'; g.fillRect(x - 6, y0 + h * 0.14, 32, 2); txt('SIŁA', x + 10, y0 - 14, 12, '#fff'); }
+    if (S.phase === 'roll' || ((S.phase === 'power') && S.t < 0.5)) { const cw = 150, gap = 10, tot = cw * 3 + gap * 2, x0 = W / 2 - tot / 2, y = 60;
+      ORDER.forEach((k, i) => { const Pw = POWERS[k], sel = S.roll === i || (S.phase === 'power' && S.power === k), x = x0 + i * (cw + gap);
+        g.fillStyle = sel ? Pw.col : 'rgba(0,0,0,.75)'; g.fillRect(x, y, cw, 50); g.strokeStyle = sel ? '#fff' : Pw.col; g.lineWidth = 3; g.strokeRect(x, y, cw, 50);
+        txt(Pw.name, x + cw / 2, y + 25, k === 'zap' ? 13 : 20, sel ? '#fff' : Pw.col); }); }
+    if (S.phase === 'power' || S.phase === 'powerfly') txt(POWERS[S.power].name + '!', W / 2, 48, 28, POWERS[S.power].col);
+    if (S.bannerT > 0) { const k = Math.min(1, (1.8 - S.bannerT) * 6), s = S.banner === 'GOOOL!' ? 64 : 40; txt(S.banner, W / 2, 72, Math.round(s * (0.6 + 0.4 * k)), S.bannerCol); }
+    if (S.phase === 'cpu') { g.fillStyle = 'rgba(0,0,0,.7)'; g.fillRect(0, 0, W, H); txt('FIOLETOWI STRZELAJĄ…', W / 2, 140, 22, '#c9a2ff');
+      if (S.t > 0.8) txt(S.cpuGoal ? 'GOL' : 'PUDŁO!', W / 2, 186, 40, S.cpuGoal ? '#c9a2ff' : '#3fe060'); if (S.t > 1.7) { S.phase = 'intro'; S.t = 0; SND.whistle(); } }
+    if (S.phase === 'end') { g.fillStyle = 'rgba(0,0,0,.75)'; g.fillRect(0, 0, W, H); const a = S.us.filter(Boolean).length, b = S.them.filter(Boolean).length;
+      txt(S.win ? 'WYGRANA!' : 'PRZEGRANA', W / 2, 120, 48, S.win ? '#3fe060' : '#ff6a4a'); txt(`${a} : ${b}`, W / 2, 178, 40, '#fff'); txt('DOTKNIJ, ŻEBY ZAGRAĆ JESZCZE RAZ', W / 2, 236, 15, '#ffe14a'); }
+  };
+  const draw = () => {
+    g.save(); if (S.shake > 0) g.translate((Math.random() - 0.5) * 10 * S.shake, (Math.random() - 0.5) * 10 * S.shake);
+    drawPitch(); drawGoalBack();
+    const B = S.ball, behind = B && B.inNet;
+    if (behind) drawBall(B.inNet[0], B.inNet[1], 3.6, B.kind ? POWERS[B.kind].col : null);
+    drawKeeper(); drawGoalFront(); drawBolts();
+    for (const r of S.rings) if (r.t > 0) { g.strokeStyle = `rgba(200,110,255,${1 - r.t})`; g.lineWidth = 4; g.beginPath(); g.ellipse(r.x, r.y, 20 + r.t * 160, 8 + r.t * 60, 0, 0, 7); g.stroke(); }
+    drawShooter();
+    if (S.phase === 'cross1' || S.phase === 'cross2' || S.phase === 'judge') drawCross();
+    if (B && !B.gone) { const [x, y, r] = ballAt(B, Math.min(1, B.t / B.dur)); drawBall(x, y, r, B.kind ? POWERS[B.kind].col : null);
+      if (B.kind) { g.globalCompositeOperation = 'lighter'; g.fillStyle = POWERS[B.kind].col; g.globalAlpha = 0.5; g.beginPath(); g.arc(x, y, r * 2.4, 0, 7); g.fill(); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; } }
+    if (B && B.gone && !B.inNet && S.result === 'miss') { /* gone over / wide */ }
+    drawP();
+    g.restore();
+    if (S.flash > 0) { g.fillStyle = `rgba(255,255,255,${Math.min(0.85, S.flash)})`; g.fillRect(0, 0, W, H); }
+    drawHud();
+  };
+  let last = 0, raf = 0;
+  const loop = (now) => { if (!S.on) return; const dt = Math.min(0.05, (now - (last || now)) / 1000); last = now; update(dt); draw(); raf = requestAnimationFrame(loop); };
+  const open = (mode, done) => { S.mode = mode; S.done = done; root.hidden = false; root.classList.toggle('single', mode === 'single'); layout(); reset(); newKick(); S.on = true; last = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); };
+  const close = () => { S.on = false; cancelAnimationFrame(raf); root.hidden = true; if (S.mode === 'shootout' && S.onExit) S.onExit(); };
+  window.PEN = { start(onExit) { S.onExit = onExit; open('shootout', null); }, single(done) { S.onExit = null; open('single', done); }, get open() { return !root.hidden; },
+    _S: S };
+})();
