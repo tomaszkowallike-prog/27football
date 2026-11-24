@@ -30,6 +30,8 @@ Na boisku pojawiają się kolorowe kostki. Wbiegnij w nią z piłką, a do torby
 - **BŁYSKAWICA**: pioruny z nieba powalają wszystkich rywali, a ty biegniesz dalej z piłką.
 - **ROZDWOJENIE**: lecą trzy piłki naraz, a bramkarz nie wie, która jest prawdziwa.
 - **MEGA PIŁKA**: olbrzymia piłka taranuje każdego na swojej drodze.
+- **WILK**: zawodnik zmienia się w wilka i pędzi z piłką na bramkę, a rywale uciekają.
+- **SMOK**: z nieba sfruwa smok z piłką, zieje ogniem, płonąca piłka leci do bramki i cała bramka staje w ogniu.
 
 Faul w polu karnym to rzut karny. Na telefonie możesz też dotknąć kolegi na boisku, żeby nim sterować.
 
@@ -46,3 +48,4 @@ Po PRESS START wybierasz MECZ albo KAPKI. W kapkach Dominik żongluje piłką na
 - `intro*.mp4`, `intro*.jpg`: filmy intro
 - `juggle.png`, `kapki_bg.jpg`: tryb kapki
 - `btn_*.png`: ikony przycisków
+- `creatures.png`, `creatures.json`: wilk i smok

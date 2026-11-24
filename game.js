@@ -8,7 +8,8 @@ import * as THREE from 'three';
 const FR = await (await fetch('./frames.json')).json();
 const POSE = FR.poses;
 const loadImg = (src) => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
-const [IMG_G, IMG_P] = await Promise.all([loadImg('./atlas_green.png'), loadImg('./atlas_purple.png')]);
+const [IMG_G, IMG_P, IMG_C] = await Promise.all([loadImg('./atlas_green.png'), loadImg('./atlas_purple.png'), loadImg('./creatures.png')]);
+const CR = await (await fetch('./creatures.json')).json();   // wolf and dragon frames [x, y, w, h, anchorX, feet]
 const EX = await (await fetch('./extras.json')).json();
 const [IMG_FANS, IMG_FRONT, ...IMG_FLAGS] = await Promise.all([loadImg('./fans.png'), loadImg('./crowdfront.png'), ...EX.flags.map((_, i) => loadImg(`./flag${i}.png`))]);
 const TIERS = [], FLAGS = [], FANS = {}, CARDS = {}, FLARES = [], SMOKES = [], LIGHTS = { glows: [] }, FRONT = []; let GLOW = null;
@@ -517,6 +518,9 @@ const SFX = (() => {
     save() { tone(660, 880, 0.12, 'square', 0.05); },
     pickup() { [660, 880, 1320, 1760].forEach((f, i) => tone(f, f, 0.09, 'square', 0.05, i * 0.06)); },
     menu() { tone(990, 990, 0.04, 'square', 0.04); },
+    howl() { tone(320, 720, 0.5, 'sawtooth', 0.07); tone(720, 520, 0.9, 'sawtooth', 0.06, 0.5); tone(330, 740, 0.5, 'square', 0.03, 0.02); },
+    roar() { noise(1.1, 0.3); tone(140, 55, 1.1, 'sawtooth', 0.14); tone(95, 40, 1.2, 'square', 0.08); },
+    flame() { noise(0.7, 0.22); tone(300, 80, 0.6, 'sawtooth', 0.07); },
     thunder() { noise(1.4, 0.32); tone(90, 30, 1.0, 'sawtooth', 0.12); tone(1200, 200, 0.25, 'square', 0.05); },
   };
 })();
@@ -589,7 +593,7 @@ const MUSIC = (() => {
 
 // ---- game state ----------------------------------------------------------------------------------------------------
 const ui = window.UI || {};
-const G = { inv: { lightning: 0, split: 0, mega: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
+const G = { inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
 const GRAV = 30, JUMP_V = 11, APEX = 3.2;                       // a jump peaks ~0.37 s after take-off, ~2 units up
 const WALK = 6.4, DASH = 11.8, AI_WALK = 5.8, AI_RUN = 7.6;
 const goalX = (team) => (team === 0 ? PX : -PX);               // the goal this team attacks
@@ -602,6 +606,8 @@ const POWERS = {
   lightning: { name: 'BŁYSKAWICA', col: '#ffe14a', dark: '#8a6200' },
   split: { name: 'ROZDWOJENIE', col: '#5fd8ff', dark: '#0a4a6a' },
   mega: { name: 'MEGA PIŁKA', col: '#ff6ab8', dark: '#6a0a3a' },
+  wolf: { name: 'WILK', col: '#aab4c8', dark: '#252a36' },
+  dragon: { name: 'SMOK', col: '#ff6a2a', dark: '#5a1408' },
 };
 const boxTex = (k) => tex(20, 20, (g) => { const P = POWERS[k];
   g.fillStyle = '#111'; g.fillRect(0, 0, 20, 20); g.fillStyle = P.dark; g.fillRect(1, 1, 18, 18); g.fillStyle = P.col; g.fillRect(2, 2, 16, 15);
@@ -609,6 +615,8 @@ const boxTex = (k) => tex(20, 20, (g) => { const P = POWERS[k];
   const ink = (c, pts) => { g.fillStyle = c; for (const [x, y, w, h] of pts) g.fillRect(x, y, w, h); };
   if (k === 'lightning') { ink('#111', [[10, 3, 4, 2], [8, 5, 4, 2], [6, 7, 7, 2], [9, 9, 3, 2], [8, 11, 3, 2], [7, 13, 3, 2], [6, 15, 2, 2]]); ink('#fff', [[11, 4, 2, 1], [9, 6, 2, 1], [7, 8, 5, 1], [10, 10, 1, 1], [9, 12, 1, 1], [8, 14, 1, 1]]); }
   if (k === 'split') for (const cx of [6, 13]) { ink('#111', [[cx - 3, 7, 6, 6], [cx - 2, 6, 4, 8], [cx - 4, 8, 8, 4]]); ink('#fff', [[cx - 2, 8, 4, 4], [cx - 3, 9, 6, 2], [cx - 1, 7, 2, 6]]); ink('#111', [[cx - 1, 9, 2, 2]]); }
+  if (k === 'wolf') { ink('#111', [[4, 3, 3, 4], [13, 3, 3, 4], [4, 6, 12, 8], [6, 14, 8, 3]]); ink('#3a3f4d', [[5, 4, 1, 3], [14, 4, 1, 3], [5, 7, 10, 6], [7, 13, 6, 3]]); ink('#ff3a2a', [[7, 9, 2, 1], [11, 9, 2, 1]]); ink('#fff', [[8, 15, 1, 1], [11, 15, 1, 1]]); }
+  if (k === 'dragon') { ink('#111', [[8, 2, 4, 3], [6, 5, 8, 4], [4, 9, 12, 7], [5, 16, 10, 2]]); ink('#ffe14a', [[9, 3, 2, 2], [7, 6, 6, 3], [6, 10, 8, 6]]); ink('#fff6c0', [[8, 11, 4, 4]]); ink('#c2300a', [[5, 10, 1, 5], [14, 10, 1, 5], [6, 16, 8, 1]]); }
   if (k === 'mega') { ink('#111', [[5, 4, 10, 12], [4, 5, 12, 10], [3, 7, 14, 6]]); ink('#fff', [[6, 5, 8, 10], [5, 6, 10, 8], [4, 8, 12, 4]]); ink('#111', [[9, 8, 3, 3], [6, 11, 2, 2], [12, 11, 2, 2], [7, 6, 2, 1], [12, 6, 2, 1]]); }
 });
 const PU = (() => {
@@ -672,6 +680,8 @@ function doPick(i = PICK.sel) {
   if (o.id === 'own') { ball.owner = null; shoot(c, 0.9, c.super); return; }
   G.inv[o.id]--; ui.inv?.(G.inv);
   if (o.id === 'lightning') { lightning(c); return; }
+  if (o.id === 'wolf') { wolfStart(c); return; }
+  if (o.id === 'dragon') { dragonStart(c); return; }
   ball.owner = null; shoot(c, 0.9, { name: POWERS[o.id].name, kind: o.id });
 }
 // a sprinter leaves a trail of fading copies of himself
@@ -685,6 +695,72 @@ const TRAIL = (() => {
     update(dt) { for (const g of pool) { if (g.life <= 0) { g.m.visible = false; continue; } g.life -= dt; g.m.material.opacity = Math.max(0, g.life / 0.24) * 0.55; } } };
 })();
 // two decoy balls for ROZDWOJENIE
+// ---- WILK: the captain turns into a wolf, runs at the goal with the ball, and every rival runs for his life ----
+const WOLF = { on: false, p: null, t: 0, phase: '', shot: false, spr: null };
+const WF = CR.wolf, WOLF_MORPH = [1, 2, 3, 4, 5, 6, 7, 8], WOLF_RUN = [8, 11, 12, 11];
+function wolfStart(c) {
+  if (!WOLF.spr) { WOLF.spr = makeSprite(IMG_C); }
+  Object.assign(WOLF, { on: true, p: c, t: 0, phase: 'morph', shot: false }); c.wolf = true; ball.owner = c; c.hold = 0; c.vx = c.vz = 0;
+  G.ca = 2.2; G.shake = 0.5; G.flash = 0.6; SFX.howl(); ui.banner?.('WILK!', c.T, 'super', c); shout(c, 'Auuuu!');
+}
+function wolfStep(p, dt) {    // instead of the captain's own physics while the wolf is out
+  WOLF.t += dt; const gx = goalX(p.team), dir = Math.sign(gx);
+  if (WOLF.phase === 'morph') { p.vx = p.vz = 0; if (WOLF.t > 0.85) { WOLF.phase = 'run'; WOLF.t = 0; G.ca = Math.max(G.ca, 1.2); } }
+  else if (WOLF.phase === 'run') {
+    let dx = gx - p.x, dz = (0 - p.z) * 0.7; const d = Math.hypot(dx, dz) || 1; dx /= d; dz /= d; dz += input.z * 0.7;
+    const l = Math.hypot(dx, dz); p.vx = dx / l * 17; p.vz = dz / l * 17; p.face = dir; ball.owner = p;
+    if (Math.random() < 0.7) FX.emit('dust', p.x - dir * 0.8, 0.2, p.z, 2, 2, 0.3, 4);
+    for (const q of players) if (q.team !== p.team && q.st !== 'down' && dist(q, p) < 1.5) knock(q, 2.2, { lie: 'lieBack', dizzy: true, push: [p.vx * 0.5, (q.z - p.z) * 4], by: null });
+    if (Math.abs(gx - p.x) < 8 || WOLF.t > 5) { WOLF.phase = 'shot'; WOLF.t = 0; ball.owner = null; shoot(p, 1, { name: 'WILK', kind: 'fire' }); p.vx *= 0.3; p.vz *= 0.3; }
+  }
+  else if (WOLF.phase === 'shot') { p.vx *= 0.9; p.vz *= 0.9; if (WOLF.t > 0.9) { WOLF.phase = 'back'; WOLF.t = 0; } }
+  else if (WOLF.phase === 'back') { p.vx = p.vz = 0; if (WOLF.t > 0.6) wolfEnd(); }
+  p.x += p.vx * dt; p.z += p.vz * dt; p.st = 'run'; p.y = 0;
+}
+function wolfEnd() { if (!WOLF.on) return; WOLF.on = false; if (WOLF.p) WOLF.p.wolf = false; if (WOLF.spr) WOLF.spr.holder.visible = WOLF.spr.blob.visible = WOLF.spr.sgrp.visible = false; }
+function wolfFlee(q, dt) {   // rivals scatter away from the wolf; the keeper leaves his goal too
+  const w = WOLF.p, dx = q.x - w.x, dz = q.z - w.z, d = Math.hypot(dx, dz) || 1;
+  if (d > 16 && !q.keeper) { ai(q, dt); return; }
+  const side = Math.abs(dz) < 1.5 ? (q.id % 2 ? 1 : -1) : Math.sign(dz);
+  steer(q, q.x + dx / d * 6, q.z + side * 8, dt, q.keeper ? 8 : 9.5); q.face = Math.sign(q.vx) || q.face;
+  if (q.flee !== true) { q.flee = true; if (Math.random() < 0.5) shout(q, ['Aaa!', 'Ratunku!', 'Wilk!'][q.id % 3]); }
+}
+// ---- SMOK: a dragon swoops down holding the ball, breathes fire and the burning ball flies into a goal that catches fire ----
+const DRAGON = { on: false, t: 0, c: null, x: 0, z: 0, y: 0, dir: 1, spr: null, launched: false };
+const DF = CR.dragon, DR_FLY = [0, 1, 2, 3, 4, 5, 6, 7], DR_S = 1.45;
+function dragonStart(c) {
+  if (!DRAGON.spr) { DRAGON.spr = makeSprite(IMG_C); DRAGON.spr.sgrp.visible = false; }
+  const dir = Math.sign(goalX(c.team));
+  Object.assign(DRAGON, { on: true, t: 0, c, dir, x: c.x - dir * 3, z: Math.max(-PZ + 4, Math.min(PZ - 4, c.z + 5)), y: 16, launched: false });
+  ball.owner = null; ball.vx = ball.vz = ball.vy = 0; ball.hidden = true; G.state = 'dragon';
+  G.ca = 2; G.shake = 0.6; SFX.roar(); ui.banner?.('SMOK!', c.T, 'super', c); shout(c, 'Smoku, leć!');
+  for (const q of players) if (q.team !== c.team && q.st === 'run') { q.vx *= 0.2; q.vz *= 0.2; }
+}
+function dragonUpdate(dt) {
+  if (!DRAGON.on) return; const D = DRAGON; D.t += dt;
+  if (D.t < 0.7) D.y = 16 - (16 - 0.6) * (1 - Math.pow(1 - D.t / 0.7, 3));      // swoops down from the sky
+  else if (D.t > 3.0) D.y += dt * (6 + (D.t - 3) * 14);                            // and flies off
+  if (D.t > 1.0 && D.t < 2.4 && Math.random() < 0.5) FX.emit('fire', D.x + D.dir * DF[11][2] * UNIT * DR_S * 0.42, D.y + DF[11][3] * UNIT * DR_S * 0.72, D.z, 2, 1.5, 0.3);
+  if (!D.launched && D.t >= 2.15) {   // the fireball leaves the dragon's mouth
+    D.launched = true; const c = D.c, gx = goalX(c.team);
+    ball.hidden = false; ball.owner = null; const f = DF[13]; ball.x = D.x + D.dir * f[2] * UNIT * DR_S * 0.3; ball.y = D.y + f[3] * UNIT * DR_S * 0.62; ball.z = D.z;
+    const tx = gx + D.dir * 0.8, ty = 1.2, tz = (Math.random() - 0.5) * 3, dx = tx - ball.x, dy = ty - ball.y, dz = tz - ball.z, d = Math.hypot(dx, dy, dz), v = 30;
+    ball.vx = dx / d * v; ball.vy = dy / d * v; ball.vz = dz / d * v; ball.sup = { name: 'SMOK', kind: 'dragon', team: c.team, t: 0, ox: D.dir, by: c }; ball.last = c; ball.hot = 1;
+    G.state = 'play'; G.flash = 1; G.shake = 0.9; G.ca = 2.6; SFX.flame(); SFX.super();
+  }
+  if (D.t > 4.2) { D.on = false; D.spr.holder.visible = D.spr.blob.visible = false; }
+}
+// a goal on fire: flames along the posts, the bar and the net for a few seconds
+function goalFireUpdate(dt) {
+  const F = G.goalFire; if (!F || F.t <= 0) return; F.t -= dt; const s = Math.sign(F.x), n = F.t > 1 ? 7 : 3;
+  for (let i = 0; i < n; i++) { const r = Math.random(); let x = F.x, y, z;
+    if (r < 0.3) { z = (Math.random() < 0.5 ? -1 : 1) * GOAL_W / 2; y = Math.random() * GOAL_H; }
+    else if (r < 0.55) { z = (Math.random() - 0.5) * GOAL_W; y = GOAL_H; }
+    else { z = (Math.random() - 0.5) * GOAL_W; y = Math.random() * GOAL_H; x = F.x + s * Math.random() * GOAL_D; }
+    FX.emit('fire', x, y, z, 1, 1.6, 0.5); }
+  if (Math.random() < 0.3) FX.emit('dust', F.x + s * GOAL_D * 0.5, GOAL_H + 0.5, (Math.random() - 0.5) * GOAL_W, 1, 1, 0.9, 3);
+  G.ca = Math.max(G.ca, 0.35);
+}
 const decoySpr = [0, 1].map(() => { const s = makeSprite(IMG_G); s.sgrp.visible = false; const b = FR.ball; s.show([b[0], b[1], b[2], b[3], b[2] / 2]); s.blob.scale.set(0.45, 0.25, 1); s.holder.visible = s.blob.visible = false; return s; });
 const free = (p) => p.st === 'run' || p.st === 'kick';
 const shout = (p, text) => ui.shout?.(p, text);
@@ -695,9 +771,10 @@ const keys = new Set(), lastTap = {};
 const KEYMAP = { ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0], ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1] };
 let keyDash = false, padDash = false, stick = null, stickFull = 0, abT = { a: -9, b: -9 };
 addEventListener('keydown', (e) => {
+  if (G.state === 'dragon') { for (const p of players) physics(p, dt, false); draw(dt); return; }
   if (G.state === 'pick') { e.preventDefault(); if (e.repeat) return; const c = e.code;
     if (c === 'ArrowLeft' || c === 'KeyA' || c === 'ArrowUp' || c === 'KeyW') pickMove(-1); else if (c === 'ArrowRight' || c === 'KeyD' || c === 'ArrowDown' || c === 'KeyS') pickMove(1);
-    else if (/^Digit[1-4]$/.test(c)) doPick(+c.slice(5) - 1); else if (['KeyK', 'KeyX', 'KeyJ', 'KeyZ', 'Space', 'Enter'].includes(c)) doPick(); return; }
+    else if (/^Digit[1-6]$/.test(c)) doPick(+c.slice(5) - 1); else if (['KeyK', 'KeyX', 'KeyJ', 'KeyZ', 'Space', 'Enter'].includes(c)) doPick(); return; }
   if (KEYMAP[e.code]) {
     e.preventDefault(); if (e.repeat) return;
     const d = KEYMAP[e.code].join(), now = performance.now();
@@ -759,6 +836,7 @@ function bestMate(p, dx = 0, dz = 0) {
 }
 const inBox = (x, z, defTeam) => Math.abs(x + goalX(defTeam)) < 9 && Math.abs(z) < 11;
 function knock(p, dur = 1.5, { lie = 'lieBack', dizzy = false, push = [0, 0], by = null, foul = true } = {}) {
+  if (p.wolf) return;
   if (p.st === 'down' || p.st === 'getup') return;
   const hadBall = ball.owner === p || dist(ball, p) < 2.2;
   p.st = 'down'; p.t = dur; p.lie = lie; p.dizzy = dizzy; p.vx = push[0]; p.vz = push[1]; p.vy = Math.max(p.vy, 4);
@@ -931,6 +1009,9 @@ function stepBall(dt) {
       for (let i = 0; i < 3; i++) { const a = S.t * 16 + i * 2.1; FX.emit('tornado', ball.x + Math.cos(a) * 0.9, ball.y - 0.4 + i * 0.3, ball.z + Math.sin(a) * 0.9, 1, 0.5, 0.25); } }
     else if (k === 'curve') { const u = Math.min(1, S.t * 1.3), side = Math.sin(u * Math.PI) * 6, along = S.t * S.speed;
       ball.x = S.base[0] + S.ox * along - S.oz * side; ball.z = S.base[1] + S.oz * along + S.ox * side; ball.y = 1 + Math.sin(u * Math.PI) * 1.8; FX.emit('curve', ball.x, ball.y + 0.3, ball.z, 2, 1, 0.26); }
+    else if (k === 'dragon') { ball.x += ball.vx * dt; ball.y = Math.max(0.6, ball.y + ball.vy * dt); ball.z += ball.vz * dt;
+      FX.emit('fire', ball.x, ball.y + 0.3, ball.z, 6, 2.2, 0.4); if (Math.random() < 0.4) FX.emit('dust', ball.x, ball.y + 0.4, ball.z, 1, 1, 0.6, 4);
+      if (Math.abs(ball.x) > PX - 0.6 && !G.goalFire?.t) G.goalFire = { x: Math.sign(ball.x) * PX, t: 5.5 }; }
     else if (k === 'split') { ball.x += ball.vx * dt; ball.z += ball.vz * dt; ball.y += (1.1 + Math.sin(S.t * 14) * 0.25 - ball.y) * Math.min(1, dt * 8);
       FX.emit('zigzag', ball.x, ball.y + 0.3, ball.z, 1, 0.6, 0.22);
       for (const d of S.decoys) if (d.on) { d.x += d.vx * dt; d.z += d.vz * dt; FX.emit('zigzag', d.x, ball.y + 0.3, d.z, 1, 0.6, 0.22);
@@ -939,12 +1020,12 @@ function stepBall(dt) {
       if (Math.random() < 0.6) FX.emit('dust', ball.x - S.ox * 1.4, 0.3, ball.z + (Math.random() - 0.5) * 1.5, 2, 2, 0.45, 4); }
     ball.spin += dt * (k === 'mega' ? 12 : 40); ball.hot = k === 'split' ? 0 : 1;
     // a super shot flattens every opponent in its way; keepers seldom hold it and are carried into the net
-    const mega = S.kind === 'mega';
+    const mega = S.kind === 'mega' || S.kind === 'dragon';
     for (const p of players) if (p.team !== S.team && p.st !== 'down' && Math.hypot(p.x - ball.x, p.z - ball.z) < (mega ? 2.6 : p.keeper ? 1.8 : 1.2) && (mega || Math.abs(ball.y - (p.y + 1.2)) < 1.8)) {
       if (p.keeper && !mega && Math.random() < 0.22) { ball.owner = p; ball.sup = null; p.hold = 0; p.st = 'run'; SFX.save(); ui.banner?.('OBRONA!', p.T, 'small'); return; }
       knock(p, p.keeper ? 1.8 : 2.0, { lie: 'lieBack', dizzy: true, push: [S.ox * (p.keeper ? 11 : 6), S.oz * 3] });
     }
-    if (S.t > (S.kind === 'mega' ? 4.5 : 3)) ball.sup = null;
+    if (S.t > (S.kind === 'mega' ? 4.5 : 3) && S.kind !== 'dragon') ball.sup = null;
   } else {
     ball.vy -= GRAV * dt; ball.y += ball.vy * dt;
     if (ball.y < 0) { ball.y = 0; ball.vy = Math.abs(ball.vy) > 2.5 ? -ball.vy * 0.5 : 0; }
@@ -974,6 +1055,7 @@ function stepBall(dt) {
   if (Math.abs(ball.z) > PZ - 0.2) { ball.z = Math.sign(ball.z) * (PZ - 0.25); ball.vz = -ball.vz * 0.55; if (ball.sup && ball.sup.kind !== 'zigzag') ball.sup = null; }
 }
 function goalScored(team) {
+  if (WOLF.on) { WOLF.phase = 'back'; WOLF.t = 0; }
   G.score[team]++; G.state = 'goal'; G.pause = 3.2; const shooter = ball.last; ball.sup = null; ball.vx *= 0.15; ball.vz *= 0.15; ball.x = Math.sign(ball.x) * (PX + 1.2);
   SFX.goal(); G.shake = 0.5; G.cheer = team === 0 ? 2.5 : 1.2; G.flares = team === 0 ? 9 : 4; ui.score?.(G); ui.banner?.('GOAL!', TEAMS[team], 'goal');
   for (let i = 0; i < 4; i++) FX.emit(team === 0 ? 'goal' : 'goal2', ball.x, 1.5, ball.z, 14, 5, 0.3, 8);
@@ -982,6 +1064,7 @@ function goalScored(team) {
   G.kickoff = 1 - team;
 }
 function placeKickoff(team) {
+  wolfEnd(); ball.hidden = false;
   for (const p of players) {
     const own = -goalX(p.team);
     Object.assign(p, { sta: 1, x: own + p.T.dir * Math.min(p.home[0], PX - 2.5), z: p.home[1], y: 0, vx: 0, vz: 0, vy: 0, st: 'run', t: 0, act: null, hold: 0, face: p.T.dir, order: null, autoSuper: false, dizzy: false });
@@ -1043,7 +1126,8 @@ function physics(p, dt, control) {
   if (spd > 7.2 && p.y < 0.5 && free(p) && Math.random() < 0.7) FX.streak(p.x - p.vx * 0.06, 0.5 + Math.random() * 1.3, p.z + (Math.random() - 0.5) * 0.4, Math.sign(p.vx) || p.face);
 }
 function step(dt) {
-  FX.update(dt); BOLTS.update(dt); TRAIL.update(dt); PU.update(dt, performance.now() / 1000); updateLines(dt); updateStands(dt, performance.now() / 1000); WX.update(dt, performance.now() / 1000); G.shake = Math.max(0, G.shake - dt); G.flash = Math.max(0, G.flash - dt * 2.5);
+  FX.update(dt); BOLTS.update(dt); TRAIL.update(dt); dragonUpdate(dt); goalFireUpdate(dt);
+  if (WOLF.on && G.state !== 'play') { WOLF.t += dt; if (WOLF.phase !== 'back') { WOLF.phase = 'back'; WOLF.t = 0; } else if (WOLF.t > 0.6) wolfEnd(); } PU.update(dt, performance.now() / 1000); updateLines(dt); updateStands(dt, performance.now() / 1000); WX.update(dt, performance.now() / 1000); G.shake = Math.max(0, G.shake - dt); G.flash = Math.max(0, G.flash - dt * 2.5);
   if (G.state === 'pick') { PICK.t += dt; if (PICK.t > 5) doPick(); draw(dt); return; }
   if (G.state === 'penalty') { G.pause -= dt; for (const p of players) physics(p, dt, false); if (G.pause <= 0) setupPenalty(); draw(dt); return; }
   if (G.state === 'penAim') {
@@ -1080,7 +1164,10 @@ function step(dt) {
       if (n && n !== captain && (dist(n, ball) + 2 < dist(captain, ball) || captain.st === 'down')) { captain = n; switchT = 0.5; SFX.pass(); }
     } }
   if (ball.owner === captain) captain.hold += dt;
-  for (const p of players) { if (p !== captain && (p.st === 'run' || p.st === 'jump')) ai(p, dt); physics(p, dt, p === captain); }
+  for (const p of players) {
+    if (WOLF.on && p === WOLF.p) { wolfStep(p, dt); continue; }
+    if (WOLF.on && WOLF.phase !== 'back' && p.team !== WOLF.p.team && p.st === 'run') { wolfFlee(p, dt); physics(p, dt, false); continue; }
+    p.flee = false; if (p !== captain && (p.st === 'run' || p.st === 'jump')) ai(p, dt); physics(p, dt, p === captain); }
   // keep apart a little, keep on the pitch
   for (let i = 0; i < players.length; i++) for (let j = i + 1; j < players.length; j++) { const a = players[i], b = players[j], dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz);
     if (d > 0 && d < 0.8 && a.y < 1 && b.y < 1) { const k = (0.8 - d) / 2 / d; a.x -= dx * k; a.z -= dz * k; b.x += dx * k; b.z += dz * k; } }
@@ -1139,6 +1226,18 @@ function draw(dt) {
     const showStars = p.st === 'dizzy' || (p.st === 'down' && p.t < 0.9 && p.dizzy);
     p.stars.forEach((s, i) => { s.visible = showStars; if (showStars) { const a = t * 5 + i * 2.09; const h = (p.st === 'down' ? 0.9 : 2.6) + Math.sin(a * 2) * 0.08; s.position.set(p.x + Math.cos(a) * 0.55 - Math.sin(CAM_YAW) * h * Math.sin(LEAN), p.y + h * Math.cos(LEAN), p.z - Math.cos(CAM_YAW) * h * Math.sin(LEAN) + Math.sin(a) * 0.3); s.quaternion.copy(camera.quaternion); } });
   }
+  // the wolf stands in for his player; the dragon hangs over the pitch
+  for (const p of players) if (p.wolf !== p._wolfShown) { p._wolfShown = p.wolf; p.spr.holder.visible = !p.wolf; p.spr.sgrp.visible = !p.wolf; p.spr.blob.visible = !p.wolf; }
+  if (WOLF.on && WOLF.spr) { const w = WOLF.spr, p = WOLF.p, T = WOLF.t; let f;
+    if (WOLF.phase === 'morph') f = WF[WOLF_MORPH[Math.min(WOLF_MORPH.length - 1, (T / 0.85 * WOLF_MORPH.length) | 0)]];
+    else if (WOLF.phase === 'back') f = WF[WOLF_MORPH[Math.max(0, WOLF_MORPH.length - 1 - ((T / 0.6 * WOLF_MORPH.length) | 0))]];
+    else f = WF[WOLF_RUN[(performance.now() / 70 | 0) % WOLF_RUN.length]];
+    w.holder.visible = w.blob.visible = w.sgrp.visible = true; w.show(f, p.face < 0); w.holder.position.set(p.x, 0, p.z); w.blob.position.set(p.x, 0.02, p.z); w.blob.scale.set(1.3, 0.7, 1);
+    w.sgrp.position.set(p.x, 0.02, p.z); }
+  if (DRAGON.on && DRAGON.spr) { const D = DRAGON, d = D.spr, T = D.t; let f;
+    if (T < 1.4) f = DF[DR_FLY[(T * 12 | 0) % DR_FLY.length]]; else if (T < 1.75) f = DF[8]; else if (T < 1.95) f = DF[9]; else if (T < 2.1) f = DF[11]; else if (T < 2.35) f = DF[12]; else if (T < 2.6) f = DF[13]; else f = DF[(T * 12 | 0) % 2 ? 14 : 4];
+    d.holder.visible = d.blob.visible = true; d.show(f, D.dir < 0); d.holder.scale.setScalar(DR_S); d.holder.position.set(D.x, D.y, D.z); d.blob.position.set(D.x, 0.02, D.z); const k = Math.max(0.3, 2.6 - D.y * 0.12); d.blob.scale.set(k, k * 0.5, 1); }
+  ballSpr.holder.visible = !ball.hidden;
   const big = ball.sup && ball.sup.kind === 'mega' ? 3.4 : 1, split = ball.sup && ball.sup.kind === 'split' ? ball.sup : null;
   ballSpr.holder.scale.setScalar(big); ballSpr.holder.position.set(ball.x, ball.y, ball.z); ballSpr.mesh.rotation.z = -ball.spin;
   G.fakes = split ? split.decoys.filter((d) => d.on) : null;
@@ -1149,7 +1248,7 @@ function draw(dt) {
   ballSpr.blob.position.set(ball.x, 0.025, ball.z); const bs = Math.max(0.35, 1 - ball.y * 0.1); ballSpr.blob.scale.set(0.45 * bs * big, 0.25 * bs * big, 1);
   const c = captain; capMark.visible = G.state !== 'menu';
   { const h = 3.15 + Math.abs(Math.sin(t * 6)) * 0.3; capMark.position.set(c.x - Math.sin(CAM_YAW) * h * Math.sin(LEAN), c.y + h * Math.cos(LEAN), c.z - Math.cos(CAM_YAW) * h * Math.sin(LEAN)); capMark.quaternion.copy(camera.quaternion); capRing.visible = capMark.visible; capRing.position.set(c.x, 0.03, c.z); }
-  { const k = 1.9 + Math.min(1.8, ball.y * 0.25) + Math.sin(t * 7) * 0.08; ballRing.position.set(ball.x, 0.04, ball.z); ballRing.scale.setScalar(k * (big > 1 ? 1.45 : 1)); ballRing.visible = !split; ballRing.rotation.y = -t * 2.6;
+  { const k = 1.9 + Math.min(1.8, ball.y * 0.25) + Math.sin(t * 7) * 0.08; ballRing.position.set(ball.x, 0.04, ball.z); ballRing.scale.setScalar(k * (big > 1 ? 1.45 : 1)); ballRing.visible = !split && !ball.hidden; ballRing.rotation.y = -t * 2.6;
     ballRing.mat.color.set(ball.sup || ball.hot > 0 ? '#ff6a3a' : ball.owner ? (ball.owner.team ? '#d9b8ff' : '#9cf0a8') : '#ffe14a'); } 
   // the camera: high up, following the ball, never past the ends
   const portrait = innerHeight > innerWidth;
@@ -1168,7 +1267,7 @@ let last = performance.now(), auto = true, frozen = false;
 renderer.setAnimationLoop((now) => { if (!auto) return; const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; step(frozen ? 0 : dt); });
 placeKickoff(0); G.state = 'menu'; WX.set('leaves');
 window.GAME = {
-  start() { G.inv = { lightning: 0, split: 0, mega: 0 }; PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = 120; G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = Math.random() < 0.5 ? 'rain' : 'leaves'; setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
+  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0 }; PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = 120; G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = Math.random() < 0.5 ? 'rain' : 'leaves'; setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
   press, pick: (i) => doPick(i), pickMove,
   // a finger on a teammate takes control of him (not while you are the one with the ball)
   tapAt(cx, cy) { if (G.state !== 'play' && G.state !== 'kickoff') return false; if (ball.owner === captain) return false;
