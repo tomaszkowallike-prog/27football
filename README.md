@@ -13,17 +13,17 @@ three.js jest ładowany z CDN (jsdelivr).
 
 ## Sterowanie
 
-| Klawiatura | Telefon | Akcja |
-|---|---|---|
-| Strzałki / WASD | gałka | ruch |
-| J | PODAJ | podanie |
-| K | STRZAŁ | strzał; w powietrzu główka, wolej, przewrotka |
-| L | WŚLIZG | wślizg; w powietrzu kopnięcie z wyskoku |
-| Shift | SPRINT | sprint (przytrzymaj) |
-| Q | ZMIANA | zmiana zawodnika na najbliższego piłki |
-| Spacja | SKOK | skok, także z piłką |
+Przyciski same zmieniają działanie zależnie od tego, czy masz piłkę.
 
-Super strzał: skocz z piłką i wciśnij strzał. Gra się zatrzyma i wybierasz, który super strzał oddać (strzałki i K, cyfry 1–4 albo dotknięcie karty).
+| Klawiatura | Telefon | Z piłką | Bez piłki |
+|---|---|---|---|
+| Strzałki / WASD | gałka | ruch | ruch |
+| Shift / gałka do końca | gałka do końca | sprint | sprint |
+| J | zielony | podanie | zmiana zawodnika |
+| K (przytrzymaj = mocniej) | czerwony | strzał | wślizg (gdy piłka leci: główka) |
+| L | ★ | super strzał | nieaktywny |
+
+Super strzał: gdy masz piłkę, wciśnij ★. Gra się zatrzyma i wybierasz, który super strzał oddać (strzałki i K, cyfry 1–6 albo dotknięcie karty).
 
 Na boisku pojawiają się kolorowe kostki. Wbiegnij w nią z piłką, a do torby trafia nowy super strzał:
 

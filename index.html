@@ -98,6 +98,22 @@
   #nbShoot { --ic: url(btn_shoot.png); --on: url(btn_shoot_on.png); }
   #nbSprint { --ic: url(btn_sprint.png); --on: url(btn_sprint_on.png); }
   #nbSwap { --ic: url(btn_swap.png); --on: url(btn_swap_on.png); }
+  /* the simple pad: B big (shoot / tackle), A (pass / switch), ★ (super, lit when you have the ball) */
+  #btns { width: 230px !important; height: 200px !important; }
+  #nbB { right: 0; top: 70px; width: 100px; } #nbB i { width: 92px; height: 92px; } #nbA { right: 116px; top: 104px; } #nbStar { right: 124px; top: 4px; }
+  #nbB { --ic: url(btn_shoot.png); --on: url(btn_shoot_on.png); } #nbB.tackle { --ic: url(btn_slide.png); --on: url(btn_slide_on.png); }
+  #nbA { --ic: url(btn_pass.png); --on: url(btn_pass_on.png); } #nbA.swap { --ic: url(btn_swap.png); --on: url(btn_swap_on.png); }
+  #nbB span { color: #ff5a4a; } #nbB.tackle span { color: #ffe14a; } #nbA span { color: #5be36e; } #nbA.swap span { color: #4ff0d4; }
+  #nbB .pw { position: absolute; left: 50%; top: 46px; width: 104px; height: 104px; margin: -52px 0 0 -52px; border-radius: 50%; pointer-events: none; opacity: 0;
+             background: conic-gradient(#ffe14a calc(var(--pw, 0) * 360deg), rgba(0,0,0,.35) 0); -webkit-mask: radial-gradient(circle, transparent 47px, #000 48px); mask: radial-gradient(circle, transparent 47px, #000 48px); }
+  #nbB.charging .pw { opacity: 1; }
+  #nbStar i { width: 58px; height: 58px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #fff3a0, #ffc21a 55%, #b07800); border: 4px solid #1a1a1a; box-shadow: 0 0 0 3px #fff6, 0 4px 0 rgba(0,0,0,.45);
+               font-style: normal; font-size: 34px; line-height: 50px; color: #fff; text-shadow: 2px 2px 0 #8a4a00; text-align: center; }
+  #nbStar span { color: #ffe14a; } #nbStar.off { opacity: .32; } #nbStar.ready i { animation: glow .8s steps(2) infinite; }
+  @keyframes glow { 50% { box-shadow: 0 0 0 3px #fff, 0 0 18px 6px #ffe14a, 0 4px 0 rgba(0,0,0,.45); } }
+  #nbStar .cnt { position: absolute; right: 2px; top: -4px; min-width: 20px; padding: 1px 4px; border-radius: 10px; background: #e8361f; border: 2px solid #000; font: 700 13px "Pixelify Sans", monospace; color: #fff; }
+  #nbStar .cnt:empty { display: none; }
+  #joy.dash .knob { background: radial-gradient(circle at 38% 32%, #ffe0b0, #ff8a1f 55%, #a84a00); }
   #nbJump { right: 96px; top: 0; } #nbSlide { right: 0; top: 0; } #nbPass { right: 96px; top: 98px; } #nbShoot { right: 0; top: 98px; } #nbSprint { right: 190px; top: 56px; } #nbSwap { right: 190px; top: -34px; } #nbSwap i { width: 54px; height: 54px; } #nbSwap span { margin-top: 6px; }
   /* the crowd in front of the camera, out of focus */
   #front { position: fixed; left: -4%; width: 108%; bottom: -2vh; height: 19vh; z-index: 2; pointer-events: none; filter: blur(7px) brightness(.55) saturate(.8); opacity: .92; display: none; animation: bob 1.6s ease-in-out infinite; }
@@ -225,17 +241,13 @@
     <div class="vs"><div><div class="squad" id="sqA"></div><div class="tname" style="color:var(--g)">CUIAVIA</div></div><b>VS</b><div><div class="squad" id="sqB"></div><div class="tname" style="color:var(--p)">FIOLETOWI</div></div></div>
     <p id="turn">Obróć telefon poziomo, będzie wygodniej.</p>
     <dl class="how keys">
-      <dt><span class="kc">←</span><span class="kc">↑</span><span class="kc">↓</span><span class="kc">→</span></dt><dd>ruch (albo <span class="kc alt">W</span><span class="kc alt">A</span><span class="kc alt">S</span><span class="kc alt">D</span>) · dwa razy w tę samą stronę = sprint</dd>
-      <dt><span class="kc">J</span></dt><dd>podanie do najbliższego kolegi</dd>
-      <dt><span class="kc">K</span></dt><dd>strzał · w powietrzu: główka, wolej, przewrotka · bez piłki: szczupak albo szarża barkiem</dd>
-      <dt><span class="kc">L</span></dt><dd>wślizg · w powietrzu: kopnięcie z wyskoku, które powala rywala</dd>
-      <dt><span class="kc w">SHIFT</span></dt><dd>sprint (przytrzymaj)</dd>
-      <dt><span class="kc">Q</span></dt><dd>zmiana zawodnika na najbliższego piłki</dd>
-      <dt><span class="kc w">SPACJA</span></dt><dd>skok, także z piłką</dd>
-      <dt><span class="kc w">SPACJA</span> <span class="kc">K</span></dt><dd><b style="color:var(--o)">SUPER STRZAŁ:</b> skocz z piłką i wciśnij strzał, potem wybierz, który (<span class="kc">←</span><span class="kc">→</span> i <span class="kc">K</span>). Kolorowe kostki na boisku dają nowe super strzały, wbiegnij w nie z piłką</dd>
+      <dt><span class="kc">←</span><span class="kc">↑</span><span class="kc">↓</span><span class="kc">→</span></dt><dd>ruch (albo <span class="kc alt">W</span><span class="kc alt">A</span><span class="kc alt">S</span><span class="kc alt">D</span>) · <span class="kc w">SHIFT</span> albo dwa razy w tę samą stronę = sprint</dd>
+      <dt><span class="kc">J</span></dt><dd><b style="color:#5be36e">z piłką: PODAJ</b> · bez piłki: <b style="color:#4ff0d4">ZMIANA</b> zawodnika</dd>
+      <dt><span class="kc">K</span></dt><dd><b style="color:#ff5a4a">z piłką: STRZAŁ</b> (przytrzymaj = mocniej) · bez piłki: <b style="color:#ffe14a">WŚLIZG</b>, a gdy piłka leci: główka</dd>
+      <dt><span class="kc">L</span></dt><dd><b style="color:var(--o)">★ SUPER STRZAŁ</b>, kiedy masz piłkę: wybierasz, który</dd>
       <dt><span class="kc">↑</span><span class="kc">↓</span> <span class="kc">K</span></dt><dd>rzut karny: wybierz róg i strzel</dd>
     </dl>
-    <dl class="how k-touch"><dt>Gałka</dt><dd>ruch</dd><dt>PODAJ · STRZAŁ</dt><dd>podanie i strzał (w powietrzu: główka, wolej, przewrotka)</dd><dt>WŚLIZG</dt><dd>wślizg · w powietrzu: kopnięcie z wyskoku</dd><dt>SKOK</dt><dd>skok, także z piłką</dd><dt>SPRINT</dt><dd>przytrzymaj, żeby biec szybciej</dd><dt>ZMIANA</dt><dd>przełącz na zawodnika najbliżej piłki</dd><dt>Dotknięcie</dt><dd>dotknij kolegi na boisku, żeby nim sterować</dd></dl>
+    <dl class="how k-touch"><dt>Gałka</dt><dd>ruch; wychyl do końca = sprint</dd><dt>Zielony</dt><dd>z piłką PODAJ, bez piłki ZMIANA</dd><dt>Czerwony</dt><dd>z piłką STRZAŁ (przytrzymaj = mocniej), bez piłki WŚLIZG</dd><dt>★</dt><dd>super strzał, gdy masz piłkę</dd></dl>
     <p class="note" style="margin:0 0 12px;opacity:.75">Grasz DOMINIKIEM, blondynem z 27. Bez piłki sterujesz tym, kto jest najbliżej (żółta strzałka). 2 połowy po 2:00, faul w polu karnym to karny.</p>
     <div class="row"><button class="btn" id="play" disabled>WCZYTUJĘ…</button><span class="go k-keys">albo <span class="kc w">ENTER</span></span></div>
   </div>
@@ -252,11 +264,14 @@
   <div id="kend" hidden><div class="tbox"><small>PIŁKA SPADŁA</small><div class="kres"><b id="kres">0</b> kapek</div><p id="knew"></p><div class="row"><button class="btn" id="kagain">JESZCZE RAZ</button><button class="btn ghost" id="kmenu">MENU</button></div></div></div>
   <button class="ibtn" id="kback">✕ MENU</button></div>
 <div id="picker" hidden><div class="pbox"><small>WYBIERZ SUPER STRZAŁ</small><div class="cards" id="pcards"></div><div class="pbar"><i></i></div><div class="phint k-keys">← → wybierz · <span class="kc">K</span> strzał · albo <span class="kc">1</span>–<span class="kc">6</span></div><div class="phint k-touch">Dotknij strzału, który chcesz oddać</div></div></div>
-<div id="tip" hidden><div class="tbox"><small>PODPOWIEDŹ</small><div class="combo"><span class="cb" style="--c:#5aa8ff">SKOK</span><b>+</b><span class="cb" style="--c:#f0453a">STRZAŁ</span><b>=</b><span class="sup">SUPER STRZAŁ!</span></div>
-  <p>Skocz z piłką i wciśnij STRZAŁ. Gra się zatrzyma i wybierzesz, który super strzał oddać.</p><p>Wbiegnij z piłką w kolorową kostkę na boisku, a dostaniesz nowy: <b style="color:#ffe14a">BŁYSKAWICA</b> powala wszystkich rywali, <b style="color:#5fd8ff">ROZDWOJENIE</b> wysyła trzy piłki naraz, <b style="color:#ff6ab8">MEGA PIŁKA</b> taranuje wszystko po drodze.</p><p class="k-keys"><span class="kc w">SPACJA</span> potem <span class="kc">K</span> · sprint: <span class="kc w">SHIFT</span> · zmiana zawodnika: <span class="kc">Q</span></p><p class="k-touch">Przytrzymaj SPRINT, żeby biec szybciej. Dotknij kolegi na boisku albo wciśnij ZMIANA, żeby nim sterować.</p>
+<div id="tip" hidden><div class="tbox"><small>JAK GRAĆ</small>
+  <div class="combo"><span class="cb" style="--c:#5be36e">PODAJ</span><span class="cb" style="--c:#ff5a4a">STRZAŁ</span><span class="cb" style="--c:#ffc21a">★ SUPER</span></div>
+  <p>Przyciski same się zmieniają: gdy masz piłkę, zielony podaje, a czerwony strzela (przytrzymaj, żeby strzelić mocniej). Bez piłki zielony zmienia zawodnika, a czerwony robi wślizg.</p>
+  <p><b style="color:#ffc21a">★</b> świeci, gdy masz piłkę: wtedy wybierasz super strzał. Kolorowe kostki na boisku dają nowe super strzały.</p>
+  <p class="k-keys"><span class="kc">J</span> zielony · <span class="kc">K</span> czerwony · <span class="kc">L</span> ★ · <span class="kc w">SHIFT</span> sprint</p><p class="k-touch">Wychyl gałkę do końca, żeby biec sprintem. Możesz też dotknąć kolegi na boisku.</p>
   <div class="cont">▶ DOTKNIJ ALBO WCIŚNIJ KLAWISZ, ŻEBY GRAĆ</div></div></div>
 <div class="nes" id="joy"><div class="base"></div><div class="knob"></div></div>
-<div class="nes" id="btns"><div class="nb" id="nbJump"><i></i><span>SKOK</span></div><div class="nb" id="nbSlide"><i></i><span>WŚLIZG</span></div><div class="nb" id="nbPass"><i></i><span>PODAJ</span></div><div class="nb" id="nbShoot"><i></i><span>STRZAŁ</span></div><div class="nb" id="nbSprint"><i></i><span>SPRINT</span></div><div class="nb" id="nbSwap"><i></i><span>ZMIANA</span></div></div>
+<div class="nes" id="btns"><div class="nb" id="nbA"><i></i><span>PODAJ</span></div><div class="nb big" id="nbB"><em class="pw"></em><i></i><span>STRZAŁ</span></div><div class="nb" id="nbStar"><i>★</i><span>SUPER</span><b class="cnt"></b></div></div>
 
 <script>
 {
@@ -441,16 +456,29 @@
   { const joy = $('joy'), knob = joy.querySelector('.knob'); let pid = null; const R = 52;
     const move = (e) => { const r = joy.getBoundingClientRect(), k = r.width / 150; let dx = (e.clientX - (r.left + r.width / 2)) / k, dy = (e.clientY - (r.top + r.height / 2)) / k;
       const l = Math.hypot(dx, dy); if (l > R) { dx *= R / l; dy *= R / l; } knob.style.transform = `translate(${dx}px, ${dy}px)`;
-      const on = l > R * 0.2; joy.classList.toggle('on', on); window.GAME?.setStick(on ? [dx / R * 0.9, dy / R * 0.9] : null); };
+      const on = l > R * 0.2; joy.classList.toggle('on', on); window.GAME?.setStick(on ? [dx / R, dy / R] : null); };
     joy.addEventListener('pointerdown', (e) => { pid = e.pointerId; joy.setPointerCapture(pid); move(e); e.preventDefault(); });
     joy.addEventListener('pointermove', (e) => { if (e.pointerId === pid) move(e); });
     const end = () => { pid = null; knob.style.transform = ''; joy.classList.remove('on'); window.GAME?.setStick(null); };
     joy.addEventListener('pointerup', end); joy.addEventListener('pointercancel', end); }
-  for (const [id, btn] of [['nbPass', 'a'], ['nbShoot', 'b'], ['nbSlide', 'slide'], ['nbJump', 'jump'], ['nbSwap', 'swap']]) { const el = $(id);
+  for (const [id, btn] of [['nbA', 'A'], ['nbStar', 'star']]) { const el = $(id);
     el.addEventListener('pointerdown', (e) => { el.classList.add('down'); window.GAME?.press(btn); e.preventDefault(); });
     for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, () => el.classList.remove('down')); }
-  { const el = $('nbSprint'); el.addEventListener('pointerdown', (e) => { el.classList.add('down'); window.GAME?.setDash(true); e.preventDefault(); });
-    for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, () => { el.classList.remove('down'); window.GAME?.setDash(false); }); }
+  { const el = $('nbB'); let held = false;
+    el.addEventListener('pointerdown', (e) => { held = true; el.classList.add('down'); try { el.setPointerCapture(e.pointerId); } catch (_) {} window.GAME?.press('Bdown'); e.preventDefault(); });
+    for (const ev of ['pointerup', 'pointercancel']) el.addEventListener(ev, () => { el.classList.remove('down'); if (held) { held = false; window.GAME?.press('Bup'); } }); }
+  // the buttons say what they will do right now
+  { let last = '';
+    const loop = () => { const G = window.GAME; if (G && G.ctx && document.body.classList.contains('playing')) { const c = G.ctx();
+        const key = [c.has, c.air, c.bag, c.dash, c.charge > 0].join();
+        if (key !== last) { last = key;
+          $('nbA').classList.toggle('swap', !c.has); $('nbA').querySelector('span').textContent = c.has ? 'PODAJ' : 'ZMIANA';
+          $('nbB').classList.toggle('tackle', !c.has && !c.air); $('nbB').querySelector('span').textContent = c.has ? 'STRZAŁ' : c.air ? 'GŁÓWKA' : 'WŚLIZG';
+          $('nbStar').classList.toggle('off', !c.has); $('nbStar').classList.toggle('ready', c.has); $('nbStar').querySelector('.cnt').textContent = c.bag ? c.bag : '';
+          $('joy').classList.toggle('dash', c.dash); }
+        $('nbB').classList.toggle('charging', c.charge > 0); $('nbB').style.setProperty('--pw', c.charge.toFixed(2)); }
+      requestAnimationFrame(loop); };
+    requestAnimationFrame(loop); }
   $('pcards').addEventListener('pointerdown', (e) => { const c = e.target.closest('.pc'); if (c) { e.preventDefault(); window.GAME?.pick(+c.dataset.i); } });
   $('stage').addEventListener('pointerdown', (e) => { if (document.body.classList.contains('playing')) window.GAME?.tapAt(e.clientX, e.clientY); });
   addEventListener('contextmenu', (e) => e.preventDefault());

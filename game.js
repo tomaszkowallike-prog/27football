@@ -773,7 +773,6 @@ const keys = new Set(), lastTap = {};
 const KEYMAP = { ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0], ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1] };
 let keyDash = false, padDash = false, stick = null, stickFull = 0, abT = { a: -9, b: -9 };
 addEventListener('keydown', (e) => {
-  if (G.state === 'dragon') { for (const p of players) physics(p, dt, false); draw(dt); return; }
   if (G.state === 'pick') { e.preventDefault(); if (e.repeat) return; const c = e.code;
     if (c === 'ArrowLeft' || c === 'KeyA' || c === 'ArrowUp' || c === 'KeyW') pickMove(-1); else if (c === 'ArrowRight' || c === 'KeyD' || c === 'ArrowDown' || c === 'KeyS') pickMove(1);
     else if (/^Digit[1-6]$/.test(c)) doPick(+c.slice(5) - 1); else if (['KeyK', 'KeyX', 'KeyJ', 'KeyZ', 'Space', 'Enter'].includes(c)) doPick(); return; }
@@ -785,13 +784,13 @@ addEventListener('keydown', (e) => {
   }
   if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') { padDash = true; return; }
   if (e.repeat) return;
-  if (e.code === 'KeyJ' || e.code === 'KeyZ') { press('a'); e.preventDefault(); }
-  if (e.code === 'KeyK' || e.code === 'KeyX') { press('b'); e.preventDefault(); }
+  if (e.code === 'KeyJ' || e.code === 'KeyZ') { press('A'); e.preventDefault(); }
+  if (e.code === 'KeyK' || e.code === 'KeyX') { press('Bdown'); e.preventDefault(); }
   if (e.code === 'Space') { press('jump'); e.preventDefault(); }
-  if (e.code === 'KeyL' || e.code === 'KeyC') { press('slide'); e.preventDefault(); }
+  if (e.code === 'KeyL' || e.code === 'KeyC') { press('star'); e.preventDefault(); }
   if (e.code === 'KeyQ' || e.code === 'KeyE') { press('swap'); e.preventDefault(); }
 });
-addEventListener('keyup', (e) => { if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') padDash = false; if (KEYMAP[e.code]) { keys.delete(e.code); if (!keys.size) keyDash = false; } });
+addEventListener('keyup', (e) => { if (e.code === 'KeyK' || e.code === 'KeyX') press('Bup'); if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') padDash = false; if (KEYMAP[e.code]) { keys.delete(e.code); if (!keys.size) keyDash = false; } });
 addEventListener('blur', () => { keys.clear(); keyDash = false; });
 function readInput(dt) {
   let x = 0, z = 0; for (const k of keys) { x += KEYMAP[k][0]; z += KEYMAP[k][1]; }
@@ -902,6 +901,16 @@ function press(btn) {
   const c = captain;
   if (btn === 'swap') { if (ball.owner === c) return; const n = players.filter((q) => q.team === 0 && !q.keeper && q !== c && q.st !== 'down').sort((a, b) => dist(a, ball) - dist(b, ball))[0];
     if (n) { captain = n; switchT = 1.6; SFX.menu(); G.ca = Math.max(G.ca, 0.3); } return; }
+  // ---- the simple scheme: A passes (or switches when you have no ball), B shoots (hold for power) or tackles, ★ fires a super
+  if (btn === 'A') { if (ball.owner === c || (c.y > 0 && reach(c))) { press('a'); return; } press('swap'); return; }
+  if (btn === 'Bdown') {
+    if (c.st === 'down') { c.t -= 0.22; return; }
+    if (ball.owner === c && free(c) && c.y <= 0) { G.charge = 0.0001; G.chargeP = c; SFX.charge?.(0.3); return; }
+    if (c.y > 0 || (!ball.owner && Math.hypot(ball.x - c.x, ball.z - c.z) < 4.5 && ball.y > 0.5 && ball.y < 2.6)) { press('b'); return; }   // headers and volleys
+    if (free(c)) tackle(c, 'slide'); return; }
+  if (btn === 'Bup') { if (!G.charge) return; const k = Math.min(1, G.charge / 0.75); G.charge = 0;
+    if (ball.owner === c && free(c)) shoot(c, 0.3 + 0.7 * k); return; }
+  if (btn === 'star') { if (ball.owner !== c || !free(c) || c.y > 0) return; G.charge = 0; c.st = 'jump'; c.jumpBall = true; c.y = 1.4; c.vy = 0; openPick(c); return; }
   if (c.st === 'down') { c.t -= 0.22; return; }                  // mash to get up sooner
   if (btn === 'jump') { jump(c); return; }
   if (btn === 'slide') { if (c.st === 'jump' && c.y > 0.3) dropkick(c); else if (free(c) && ball.owner !== c) tackle(c, 'slide'); else if (free(c)) dropkick(c); return; }
@@ -1130,6 +1139,8 @@ function physics(p, dt, control) {
 function step(dt) {
   FX.update(dt); BOLTS.update(dt); TRAIL.update(dt); dragonUpdate(dt); goalFireUpdate(dt);
   if (WOLF.on && G.state !== 'play') { WOLF.t += dt; if (WOLF.phase !== 'back') { WOLF.phase = 'back'; WOLF.t = 0; } else if (WOLF.t > 0.6) wolfEnd(); } PU.update(dt, performance.now() / 1000); updateLines(dt); updateStands(dt, performance.now() / 1000); WX.update(dt, performance.now() / 1000); G.shake = Math.max(0, G.shake - dt); G.flash = Math.max(0, G.flash - dt * 2.5);
+  if (G.charge) { if (ball.owner !== captain || G.state !== 'play') G.charge = 0; else { G.charge += dt; if (G.charge > 1.1) press('Bup'); } }
+  if (G.state === 'dragon') { for (const p of players) physics(p, dt, false); draw(dt); return; }
   if (G.state === 'pick') { PICK.t += dt; if (PICK.t > 5) doPick(); draw(dt); return; }
   if (G.state === 'penalty') { G.pause -= dt; for (const p of players) physics(p, dt, false); if (G.pause <= 0) setupPenalty(); draw(dt); return; }
   if (G.state === 'penAim') {
@@ -1272,6 +1283,9 @@ window.GAME = {
   start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0 }; PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = 120; G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = Math.random() < 0.5 ? 'rain' : 'leaves'; setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
   press, pick: (i) => doPick(i), pickMove,
   // a finger on a teammate takes control of him (not while you are the one with the ball)
+  ctx() { const c = captain, has = ball.owner === c, air = !has && !ball.owner && Math.hypot(ball.x - c.x, ball.z - c.z) < 4.5 && ball.y > 0.5 && ball.y < 2.6;
+    let n = 0; for (const k in G.inv) n += G.inv[k];
+    return { has, air, charge: G.charge ? Math.min(1, G.charge / 0.75) : 0, dash: !!c.dash, bag: n, state: G.state }; },
   tapAt(cx, cy) { if (G.state !== 'play' && G.state !== 'kickoff') return false; if (ball.owner === captain) return false;
     const r = renderer.domElement.getBoundingClientRect(); let best = null, bd = 64; const v = new THREE.Vector3();
     for (const q of players) { if (q.team !== 0 || q.keeper || q.st === 'down') continue; v.set(q.x, q.y + 1.1, q.z).project(camera);
