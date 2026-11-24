@@ -264,15 +264,26 @@
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
 <script>
   // music volume for every track (match, locker room, penalties, keepy-uppy): 100 / 60 / 30 / off, remembered
-  window.MV = (() => { const L = []; let v = 1; try { const s = localStorage.getItem('musvol'); if (s !== null) v = +s; } catch (e) {}
+  window.MV = (() => {
+    // ONE audio player for all music: every track only hands it its file, so two tracks can never sound at once;
+    // a phone unlocks this one player on the first tap
+    const B = new Audio(); B.loop = true; B.preload = 'auto'; let cur = null, v = 1, unlocked = false;
+    try { const s = localStorage.getItem('musvol'); if (s !== null) v = +s; } catch (e) {}
     const lbl = () => { const b = document.getElementById('mvol'); if (b) b.textContent = v ? `♪ ${Math.round(v * 100)}%` : '♪ WYŁ'; };
-    const apply = () => { for (const [el, base] of L) { try { el.volume = base * v; } catch (e) {} } lbl(); };
-    // phones only let a track start if it was touched during a tap: on every tap, prime the tracks not yet primed
-    const prime = () => { for (const [el] of L) { if (!el.play || el._primed) continue; el._primed = true; if (!el.paused) continue;
-        el.muted = true; const p = el._P(); if (p && p.then) p.then(() => { if (!el._want) { el._Q(); el.currentTime = 0; } el.muted = false; }).catch(() => { el.muted = false; el._primed = false; }); } };
-    ['pointerdown', 'touchend', 'click', 'keydown'].forEach((ev) => addEventListener(ev, prime, true));
-    return { get v() { return v; }, reg(el, base) { L.push([el, base]); if (el.play) { const P = el.play.bind(el), Q = el.pause.bind(el); el._P = P; el._Q = Q; el.play = () => { el._want = true; el.muted = false; return P(); }; el.pause = () => { el._want = false; return Q(); }; } try { el.volume = base * v; } catch (e) {} return el; },
-      next() { v = v >= 1 ? 0.6 : v >= 0.6 ? 0.3 : v > 0 ? 0 : 1; try { localStorage.setItem('musvol', v); } catch (e) {} apply(); }, lbl }; })();
+    const unlock = () => { if (unlocked) return; unlocked = true; if (cur) return; B.muted = true; B.src = 'tablica.mp3';
+      const p = B.play(); if (p && p.then) p.then(() => { if (!cur) { B.pause(); } B.muted = false; }).catch(() => { B.muted = false; unlocked = false; }); };
+    ['pointerdown', 'touchend', 'click', 'keydown'].forEach((ev) => addEventListener(ev, unlock, true));
+    return { get v() { return v; },
+      reg(el, base) {
+        if (!el.play) { el.volume = base * v; return el; }   // a WebAudio gain (the chiptune) keeps its own path
+        const src = el.getAttribute ? el.getAttribute('src') || el.src : el.src; let m = false;
+        el.play = () => { cur = el; el._base = base; if (!B.src.endsWith(src.replace('./', ''))) B.src = src; B.loop = true; B.muted = m; B.volume = base * v; B.currentTime = 0; return B.play(); };
+        el.pause = () => { if (cur === el) { B.pause(); cur = null; } };
+        Object.defineProperty(el, 'muted', { get: () => m, set: (x) => { m = x; if (cur === el) B.muted = x; } });
+        Object.defineProperty(el, 'paused', { get: () => cur !== el || B.paused });
+        Object.defineProperty(el, 'currentTime', { get: () => (cur === el ? B.currentTime : 0), set: () => {} });
+        el.preload = 'none'; return el; },
+      next() { v = v >= 1 ? 0.6 : v >= 0.6 ? 0.3 : v > 0 ? 0 : 1; try { localStorage.setItem('musvol', v); } catch (e) {} if (cur) B.volume = cur._base * v; lbl(); }, lbl }; })();
 </script>
 </head>
 <body>
