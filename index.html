@@ -228,6 +228,9 @@
   #szatnia .bars { display: grid; grid-template-columns: auto auto; gap: .25em .8em; align-items: center; font-size: clamp(8px, 1.15vw, 15px); }
   #szatnia .bars span { color: #b8b0e8; } #szatnia .bars i { display: flex; gap: 2px; } #szatnia .bars i u { width: 1.6em; height: .7em; background: #3a3270; text-decoration: none; }
   #szatnia .bars i u.on { background: #ffc21a; } #szatnia .bars i.max u.on { background: #ff5a1a; box-shadow: 0 0 6px #ff8a1f; }
+  #dog { position: absolute; left: 0.8%; top: 60.5%; width: 8.6%; aspect-ratio: 88 / 96; background: url(dog.png) 0 0 / 800% 100% no-repeat; image-rendering: pixelated; cursor: pointer; }
+  #dog.scr { animation: scr .16s steps(2) infinite; } @keyframes scr { 50% { transform: translate(1px, -2px); } }
+  #dog.hop { animation: dhop .35s steps(3); } @keyframes dhop { 50% { transform: translateY(-14%); } }
   #szatnia .hot { position: absolute; background: transparent; border: 0; cursor: pointer; }
   #szatnia .hot:hover, #szatnia .hot:focus-visible { outline: 3px solid #ffe14a; border-radius: 10px; }
   #tip { position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; background: rgba(0,0,0,.55); padding: 12px; cursor: pointer; }
@@ -281,7 +284,7 @@
 <div id="szatnia" hidden><div class="sbg"></div><div class="sbox"><img src="szatnia.jpg" alt="">
   <div class="kid" data-i="0" style="left:14.5%;width:12.5%"></div><div class="kid" data-i="1" style="left:34.5%;width:12.5%"></div>
   <div class="kid" data-i="2" style="left:54.5%;width:12.5%"></div><div class="kid" data-i="3" style="left:73.5%;width:12.5%"></div>
-  <div class="pick" id="spick">▼</div>
+  <div class="pick" id="spick">▼</div><div id="dog" title="Pies"></div>
   <div class="spanel"><div class="face" id="sface"></div><div class="who"><b id="sname"></b><span id="spos"></span><em>KAPITAN · ROZGRYWAJĄCY</em><i id="ssup"></i></div><div class="bars" id="sbars"></div></div>
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
@@ -403,6 +406,13 @@
       $('sbars').innerHTML = ['STRZAŁ', 'PODANIE', 'DRYBLING', 'OBRONA', 'PRĘDKOŚĆ'].map((n, i) => `<span>${n}</span><i class="${q.st[i] >= 5 ? 'max' : ''}">${[1, 2, 3, 4, 5].map((k) => `<u class="${k <= q.st[i] ? 'on' : ''}"></u>`).join('')}</i>`).join(''); };
     const choose = (i) => { if (i === sel) return; sel = i; mark(); try { tone && tone(880, 0.05); } catch (e) {} };
     kids.forEach((k, i) => k.addEventListener('click', () => choose(i)));
+    // the team dog: sits by the ball, scratches, yawns, lies down for a nap; a tap makes it hop with its tongue out
+    { const dog = $('dog'); let t = 0, i = 0;
+      const SEQ = [[0, 1800], [3, 900], [0, 700], [1, 1700, 'scr'], [0, 600], [2, 1200], [6, 1100], [5, 800], [4, 4200], [0, 900], [7, 1400], [1, 1200, 'scr'], [4, 3000]];
+      const show = (f, cls) => { dog.style.backgroundPosition = `${f / 7 * 100}% 0`; dog.className = cls || ''; };
+      const stepDog = () => { if ($('szatnia').hidden) { t = setTimeout(stepDog, 500); return; } const [f, d, c] = SEQ[i++ % SEQ.length]; show(f, c); t = setTimeout(stepDog, d); };
+      stepDog();
+      dog.addEventListener('click', (e) => { e.stopPropagation(); clearTimeout(t); show(2, 'hop'); try { tone(520, 0.07); setTimeout(() => tone(700, 0.08), 110); } catch (_) {} t = setTimeout(stepDog, 1300); }); }
     const play = () => { const q = SQ[sel]; try { localStorage.setItem('captain', q.num); } catch (e) {} $('szatnia').hidden = true; window.GAME.setCaptain(q.num); if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
     const back = () => { $('szatnia').hidden = true; showModes(); };
     $('sgo').addEventListener('click', play); $('sback').addEventListener('click', back);
