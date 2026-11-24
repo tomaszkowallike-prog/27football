@@ -178,6 +178,7 @@
   #modes .mtitle { font: italic 700 clamp(40px, 9vw, 78px) "Pixelify Sans", monospace; color: #fff; text-shadow: 4px 4px 0 #000, -2px -2px 0 #000; margin-bottom: 10px; letter-spacing: -.02em; } #modes .mtitle b { color: #3fe060; }
   #modes .mbox { position: relative; z-index: 1; text-align: center; padding: 12px; }
   #modes small { display: inline-block; background: rgba(0,0,0,.7); padding: 3px 10px; font-size: 16px; letter-spacing: .2em; color: #8fd99a; margin-bottom: 12px; }
+  #modes .mback { position: static; margin-top: 12px; }
   #modes .mrow { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
   .mb { width: 190px; padding: 14px 10px 12px; font: 700 26px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.78); border: 3px solid #5a5d66; cursor: pointer; }
   .mb b { display: block; font-size: 40px; margin-bottom: 4px; } .mb em { display: block; font-style: normal; font-size: 13px; font-weight: 400; opacity: .8; margin-top: 4px; }
@@ -188,7 +189,7 @@
   #kapki[hidden] { display: none; }
   #kapki .f169 { position: absolute; left: 50%; top: 50%; width: max(100vw, 177.78vh); height: max(56.25vw, 100vh); transform: translate(-50%, -50%); }
   #kapki .f169 img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  #jug { position: absolute; left: 50%; bottom: 3vh; height: min(66vh, 120vw); aspect-ratio: 147 / 150; transform: translateX(-50%); background: url(juggle.png) 0 0 / 1600% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 6px 0 rgba(0,0,0,.35)); }
+  #jug { position: absolute; left: 50%; bottom: 3vh; height: min(66vh, 120vw); aspect-ratio: 116 / 150; transform: translateX(-50%); background: url(juggle_27.png) 0 0 / 1600% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 6px 0 rgba(0,0,0,.35)); }
   #jug.bump { animation: bump .18s steps(3); } @keyframes bump { 50% { transform: translateX(-50%) translateY(-6px); } }
   #kdots { position: absolute; inset: 0; }
   .kd { position: absolute; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%; background: radial-gradient(circle, var(--c1, #ffe14a) 0 30%, var(--c2, #ff8a1f) 31% 44%, transparent 45%); cursor: pointer; animation: kin .12s steps(3); }
@@ -289,8 +290,9 @@
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <div class="stitle">WYBIERZ KAPITANA</div></div></div>
-<div id="modes" hidden><div class="mbox"><img class="logo" src="kapki_bg.jpg" alt=""><div class="mtitle"><b>27</b>football</div><small>WYBIERZ TRYB</small>
+<div id="modes" hidden><div class="mbox"><img class="logo" src="kapki_bg.jpg" alt=""><div class="mtitle"><b>27</b>football</div><small id="mq">CO ROBIMY?</small>
   <div class="mrow"><button class="mb" data-m="match"><b>⚽</b>MECZ<em>Cuiavia kontra Fioletowi</em></button><button class="mb" data-m="karne"><b>🥅</b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b>🎯</b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button></div>
+  <button class="ibtn mback" data-m="back">◀ SZATNIA</button>
   <div class="mhint k-keys"><span class="kc">←</span><span class="kc">→</span> wybierz · <span class="kc w">ENTER</span> start</div></div></div>
 <div id="kapki" hidden><div class="f169"><img src="kapki_bg.jpg" alt=""></div><div id="jug"></div><div id="kdots"></div>
   <div class="khud"><div><small>KAPKI</small><b id="kscore">0</b></div><div><small>REKORD</small><b id="kbest">0</b></div></div>
@@ -386,12 +388,14 @@
   // after PRESS START: a phone goes straight onto the pitch (the pad is on screen), a desktop first shows the keys
   const afterIntro = () => { if (!ready) { wantStart = true; $('pressStart').firstChild.innerHTML = 'WCZYTUJĘ…'; return; }
     $('intro').hidden = true; for (const v of [$('v1'), $('v2')]) { v.pause(); v.removeAttribute('src'); v.load(); }
-    showModes(); };
+    SZ.show(); };
   // ---- the mode screen: a match, or keepy-uppy on the stadium from the intro ----
   let modeSel = 0;
-  const showModes = () => { $('modes').hidden = false; modeSel = 0; markMode(); };
+  const NAMES = { 14: 'SOWA', 10: 'ARTUR', 7: 'SZYMON', 27: 'DOMINIK' };
+  const showModes = () => { $('modes').hidden = false; modeSel = 0; markMode(); $('mq').textContent = `${window.CAPTAIN} ${NAMES[window.CAPTAIN] || ''}: CO ROBIMY?`; };
   const markMode = () => document.querySelectorAll('#modes .mb').forEach((b, i) => b.classList.toggle('sel', i === modeSel));
-  const pickMode = (m) => { $('modes').hidden = true; if (m === 'karne') window.PEN.start(showModes); else if (m === 'kapki') K.start(); else SZ.show(); };
+  window.CAPTAIN = 27;
+  const pickMode = (m) => { $('modes').hidden = true; if (m === 'back') { SZ.show(); return; } if (m === 'karne') window.PEN.start(showModes, window.CAPTAIN); else if (m === 'kapki') K.start(); else if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
   // ---- the locker room: pick the captain, who plays in the middle and kicks off ----
   const SZ = (() => {
     const MUS = new Audio('szatnia.mp3'); MUS.loop = true; MUS.volume = 0.5;   // the locker-room tune, from 0:08 of the user's track
@@ -415,18 +419,18 @@
       const stepDog = () => { if ($('szatnia').hidden) { t = setTimeout(stepDog, 500); return; } const [f, d, c] = SEQ[i++ % SEQ.length]; show(f, c); t = setTimeout(stepDog, d); };
       stepDog();
       dog.addEventListener('click', (e) => { e.stopPropagation(); clearTimeout(t); show(2, 'hop'); try { tone(520, 0.07); setTimeout(() => tone(700, 0.08), 110); } catch (_) {} t = setTimeout(stepDog, 1300); }); }
-    const play = () => { const q = SQ[sel]; try { localStorage.setItem('captain', q.num); } catch (e) {} $('szatnia').hidden = true; musOff(); window.GAME.setCaptain(q.num); if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
-    const back = () => { $('szatnia').hidden = true; musOff(); showModes(); };
-    $('sgo').addEventListener('click', play); $('sback').addEventListener('click', back);
+    const play = () => { const q = SQ[sel]; try { localStorage.setItem('captain', q.num); } catch (e) {} $('szatnia').hidden = true; musOff(); window.GAME.setCaptain(q.num); window.CAPTAIN = q.num; showModes(); };
+    const back = () => {};
+    $('sgo').addEventListener('click', play); $('sback').style.display = 'none';
     return { show() { $('szatnia').hidden = false; mark(); MUS.currentTime = 0; MUS.play().catch(() => {}); }, key(e) { if (e.code === 'ArrowLeft' || e.code === 'KeyA') choose((sel + 3) % 4); else if (e.code === 'ArrowRight' || e.code === 'KeyD') choose((sel + 1) % 4);
       else if (e.code === 'Enter' || e.code === 'Space') play(); else if (e.code === 'Escape' || e.code === 'Backspace') back(); } };
   })();
-  document.querySelectorAll('#modes .mb').forEach((b) => b.addEventListener('click', () => pickMode(b.dataset.m)));
+  document.querySelectorAll('#modes .mb, #modes .mback').forEach((b) => b.addEventListener('click', () => pickMode(b.dataset.m)));
   // keepy-uppy: a dot appears, you have about a second to tap it; every tap is a touch on the ball
   const K = (() => {
     const FW = 16, jug = $('jug'), dots = $('kdots'); let score = 0, best = 0, alive = false, timer = 0, AC = null, airT = 0, pairI = 0;
     try { best = +localStorage.getItem('kapki_best') || 0; } catch (e) {}
-    const PAIRS = [[1, 3], [2, 4], [5, 7], [6, 10], [8, 11], [9, 0], [13, 4], [14, 7]];
+    const PAIRS = [[3, 5], [6, 4], [8, 10], [11, 9], [12, 14], [15, 13], [4, 6], [9, 11]];   // a touch, then the ball in the air
     const frame = (i) => { jug.style.backgroundPosition = `${(i / (FW - 1)) * 100}% 0`; };
     const tone = (f, d = 0.09, type = 'square', v = 0.06) => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
       o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + 0.02); } catch (e) {} };
@@ -474,11 +478,11 @@
       tone(520 + Math.min(score, 40) * 18, 0.08); if (score % 10 === 0) { tone(1320, 0.25, 'square', 0.05); shout(); }
       const pop = document.createElement('div'); pop.className = 'kpop'; pop.textContent = score % 10 === 0 ? score + '!' : '+1'; pop.style.left = x - 20 + 'px'; pop.style.top = y - 30 + 'px'; $('kapki').appendChild(pop); setTimeout(() => pop.remove(), 650);
       setTimeout(() => alive && spawn(), 120); };
-    const miss = () => { if (!alive) return; alive = false; dots.innerHTML = ''; frame(12); setTimeout(() => frame(15), 450); tone(220, 0.35, 'sawtooth', 0.06); setTimeout(() => tone(140, 0.4, 'sawtooth', 0.06), 160);
+    const miss = () => { if (!alive) return; alive = false; dots.innerHTML = ''; frame(1); setTimeout(() => frame(0), 450); tone(220, 0.35, 'sawtooth', 0.06); setTimeout(() => tone(140, 0.4, 'sawtooth', 0.06), 160);
       const rec = score > best; if (rec) { best = score; try { localStorage.setItem('kapki_best', best); } catch (e) {} }
       $('kbest').textContent = best; $('kres').textContent = score; $('knew').textContent = rec && score ? 'NOWY REKORD!' : best ? `Rekord: ${best}` : '';
       setTimeout(() => { $('kend').hidden = false; }, 700); };
-    const start = () => { MUS.start(actx()); $('kapki').hidden = false; $('kend').hidden = true; $('kmsg').hidden = false; score = 0; pairI = (Math.random() * 8) | 0; $('kscore').textContent = 0; $('kbest').textContent = best; frame(0); alive = true; setTimeout(() => alive && spawn(), 900); };
+    const start = () => { jug.style.backgroundImage = `url(juggle_${window.CAPTAIN || 27}.png)`; MUS.start(actx()); $('kapki').hidden = false; $('kend').hidden = true; $('kmsg').hidden = false; score = 0; pairI = (Math.random() * 8) | 0; $('kscore').textContent = 0; $('kbest').textContent = best; frame(0); alive = true; setTimeout(() => alive && spawn(), 900); };
     const stop = () => { MUS.stop(); alive = false; clearTimeout(timer); dots.innerHTML = ''; $('kapki').hidden = true; showModes(); };
     $('kagain').addEventListener('click', start); $('kmenu').addEventListener('click', stop); $('kback').addEventListener('click', stop);
     return { start, stop };
@@ -508,7 +512,7 @@
     // keys belong to the intro and the controls screen while they are up, not to the game behind them
     document.addEventListener('keydown', (e) => {
       if (!I.hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (stage === 3) { blip(); afterIntro(); } else if (['Enter', 'Escape', 'Space'].includes(e.code)) skip(); return; }
-      if (!$('modes').hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'KeyA' || e.code === 'KeyD') { modeSel = (modeSel + (e.code === 'ArrowLeft' || e.code === 'KeyA' ? 2 : 1)) % 3; markMode(); } else if (e.code === 'Digit1') pickMode('match'); else if (e.code === 'Digit2') pickMode('karne'); else if (e.code === 'Digit3') pickMode('kapki'); else if (e.code === 'Enter' || e.code === 'Space') pickMode(['match', 'karne', 'kapki'][modeSel]); return; }
+      if (!$('modes').hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'KeyA' || e.code === 'KeyD') { modeSel = (modeSel + (e.code === 'ArrowLeft' || e.code === 'KeyA' ? 2 : 1)) % 3; markMode(); } else if (e.code === 'Digit1') pickMode('match'); else if (e.code === 'Digit2') pickMode('karne'); else if (e.code === 'Digit3') pickMode('kapki'); else if (e.code === 'Escape' || e.code === 'Backspace') pickMode('back'); else if (e.code === 'Enter' || e.code === 'Space') pickMode(['match', 'karne', 'kapki'][modeSel]); return; }
       if (!$('szatnia').hidden) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) SZ.key(e); return; }
       if (!$('kapki').hidden) { e.preventDefault(); e.stopPropagation(); if (e.code === 'Escape') K.stop(); else if (!$('kend').hidden && (e.code === 'Enter' || e.code === 'Space') && !e.repeat) K.start(); return; }
       if (!$('tip').hidden) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) unTip(); return; }

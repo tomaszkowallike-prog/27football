@@ -245,7 +245,7 @@
     shadow(L.cx + dx, L.gbot + 5, 18); frame(sheet, fi, x, y, { flip });
   };
   const drawShooter = () => {
-    if (!M) return; let sheet = 'kick', fi = 0;
+    if (!M) return; let sheet = S.kick || 'kick', fi = 0;
     if (S.phase === 'run' || (S.phase === 'fly' && !S.power) || (S.phase === 'after' && !S.power)) fi = S.phase === 'run' ? S.ki : 13;
     if (S.power) { const Pw = POWERS[S.power]; sheet = Pw.sheet; fi = Pw.seq[S.pi || 0]; }
     const [x, y] = atSpot(sheet), m = M[sheet];
@@ -256,7 +256,7 @@
     shadow(L.spotX - 30, L.spotY + 8, 30);
     frame(sheet, fi, x + ox, y + oy, { alpha, scale: SC });
     const ballOnSpot = S.phase !== 'fly' && S.phase !== 'after' && S.phase !== 'powerfly' && !(S.phase === 'run' && S.ki >= 9);
-    if (sheet === 'kick' && ballOnSpot && S.phase !== 'run') return;   // the drawn frames carry their own ball before the kick
+    if (sheet === (S.kick || 'kick') && ballOnSpot && S.phase !== 'run') return;   // the drawn frames carry their own ball before the kick
   };
   const drawCross = () => {
     const cx = L.cx, cy = L.crossY, glow = (S.phase === 'cross1' || S.phase === 'cross2');
@@ -324,6 +324,7 @@
   const loop = (now) => { if (!S.on) return; const dt = Math.min(0.05, (now - (last || now)) / 1000); last = now; update(dt); draw(); raf = requestAnimationFrame(loop); };
   const open = (mode, done) => { S.mode = mode; S.done = done; root.hidden = false; root.classList.toggle('single', mode === 'single'); layout(); reset(); newKick(); S.on = true; last = 0; try { window.MATCH_MUSIC && window.MATCH_MUSIC.stop(); } catch (e) {} MUS.currentTime = 0; MUS.play().catch(() => {}); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); };
   const close = () => { MUS.pause(); if (S.mode === 'single') { try { window.MATCH_MUSIC && window.MATCH_MUSIC.start(); } catch (e) {} } S.on = false; cancelAnimationFrame(raf); root.hidden = true; if (S.mode === 'shootout' && S.onExit) S.onExit(); };
-  window.PEN = { start(onExit) { S.onExit = onExit; open('shootout', null); }, single(done) { S.onExit = null; open('single', done); }, get open() { return !root.hidden; },
+  const kickSheet = (n) => ({ 14: 'kick14', 10: 'kick10', 7: 'kick7' }[n] || 'kick');
+  window.PEN = { start(onExit, num) { S.kick = kickSheet(num); S.onExit = onExit; open('shootout', null); }, single(done, num) { S.kick = kickSheet(num || window.CAPTAIN); S.onExit = null; open('single', done); }, get open() { return !root.hidden; },
     _S: S };
 })();
