@@ -18,7 +18,7 @@ Przyciski same zmieniają działanie zależnie od tego, czy masz piłkę.
 | Klawiatura | Telefon | Z piłką | Bez piłki |
 |---|---|---|---|
 | Strzałki / WASD | gałka | ruch | ruch |
-| Shift / gałka do końca | gałka do końca | sprint | sprint |
+| Shift | gałka w czerwonej strefie | sprint | sprint |
 | J | zielony | podanie | zmiana zawodnika |
 | K (przytrzymaj = mocniej) | czerwony | strzał | wślizg (gdy piłka leci: główka) |
 | L | ★ | super strzał | nieaktywny |

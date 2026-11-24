@@ -792,13 +792,15 @@ addEventListener('keydown', (e) => {
 });
 addEventListener('keyup', (e) => { if (e.code === 'KeyK' || e.code === 'KeyX') press('Bup'); if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') padDash = false; if (KEYMAP[e.code]) { keys.delete(e.code); if (!keys.size) keyDash = false; } });
 addEventListener('blur', () => { keys.clear(); keyDash = false; });
+const SPRINT_ZONE = 0.68;
 function readInput(dt) {
   let x = 0, z = 0; for (const k of keys) { x += KEYMAP[k][0]; z += KEYMAP[k][1]; }
   let full = false;
   if (stick) { [x, z] = stick; full = Math.hypot(x, z) > 0.93; }
   stickFull = full ? stickFull + dt : 0;
-  const l = Math.hypot(x, z); input.x = l > 0.15 ? x / Math.max(1, l) : 0; input.z = l > 0.15 ? z / Math.max(1, l) : 0;
-  input.dash = ((keyDash || padDash) && l > 0.15) || stickFull > 0.22;
+  // the stick: anywhere in the blue zone is a normal run, the red ring round it is a sprint
+  const l = Math.hypot(x, z); input.x = l > 0.15 ? x / l : 0; input.z = l > 0.15 ? z / l : 0;
+  input.dash = ((keyDash || padDash) && l > 0.15) || (!!stick && l > SPRINT_ZONE);
 }
 
 // ---- moves -----------------------------------------------------------------------------------------------------------

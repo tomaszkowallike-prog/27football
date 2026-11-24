@@ -81,8 +81,12 @@
   body.playing.touch .nes { display: block; }
   /* the analog stick: a round well and a knob that follows the thumb */
   #joy { left: max(18px, env(safe-area-inset-left)); width: 150px; height: 150px; }
-  #joy .base { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 50% 45%, #2c2c30, #111113 70%); border: 4px solid #2a2a2c; box-shadow: 0 0 0 5px #bdbdbd, 0 4px 0 5px #8e8e8e, inset 0 0 0 10px rgba(255,255,255,.04); }
-  #joy .base::after { content: ''; position: absolute; inset: 34px; border-radius: 50%; border: 2px dashed rgba(255,255,255,.14); }
+  /* blue middle = run, red ring = sprint (the knob's centre past 68% of its travel) */
+  #joy .base { position: absolute; inset: 0; border-radius: 50%; border: 4px solid #2a2a2c; box-shadow: 0 0 0 5px #bdbdbd, 0 4px 0 5px #8e8e8e;
+               background: radial-gradient(circle, #2a5bd0 0, #1d3f8a 43px, #0d1f48 46px, #3a0d0a 47px, #b3201a 50px, #e8361f 60px, #7a120d 71px); }
+  #joy .base::after { content: 'SPRINT'; position: absolute; left: 0; right: 0; top: 3px; text-align: center; font: 700 10px "Pixelify Sans", monospace; letter-spacing: .12em; color: #ffd0c8; text-shadow: 1px 1px 0 #000; }
+  #joy.dash .base { box-shadow: 0 0 0 5px #bdbdbd, 0 4px 0 5px #8e8e8e, 0 0 18px 8px rgba(255,60,40,.7); }
+  #joy.dash .knob { background: radial-gradient(circle at 38% 32%, #ffd8d0, #ff5a3a 55%, #9a1a0a) !important; }
   #joy .knob { position: absolute; left: 41px; top: 41px; width: 68px; height: 68px; border-radius: 50%; background: radial-gradient(circle at 38% 32%, #f4f4f6, #a9a9b0 60%, #6a6a70); border: 3px solid #1a1a1c; box-shadow: 0 5px 0 #0008; will-change: transform; }
   #joy.on .knob { background: radial-gradient(circle at 38% 32%, #fff6c0, #ffe14a 55%, #b08a00); }
   #btns { right: max(14px, env(safe-area-inset-right)); width: 282px; height: 186px; }
@@ -113,7 +117,6 @@
   @keyframes glow { 50% { box-shadow: 0 0 0 3px #fff, 0 0 18px 6px #ffe14a, 0 4px 0 rgba(0,0,0,.45); } }
   #nbStar .cnt { position: absolute; right: 2px; top: -4px; min-width: 20px; padding: 1px 4px; border-radius: 10px; background: #e8361f; border: 2px solid #000; font: 700 13px "Pixelify Sans", monospace; color: #fff; }
   #nbStar .cnt:empty { display: none; }
-  #joy.dash .knob { background: radial-gradient(circle at 38% 32%, #ffe0b0, #ff8a1f 55%, #a84a00); }
   #nbJump { right: 96px; top: 0; } #nbSlide { right: 0; top: 0; } #nbPass { right: 96px; top: 98px; } #nbShoot { right: 0; top: 98px; } #nbSprint { right: 190px; top: 56px; } #nbSwap { right: 190px; top: -34px; } #nbSwap i { width: 54px; height: 54px; } #nbSwap span { margin-top: 6px; }
   /* the crowd in front of the camera, out of focus */
   #front { position: fixed; left: -4%; width: 108%; bottom: -2vh; height: 19vh; z-index: 2; pointer-events: none; filter: blur(7px) brightness(.55) saturate(.8); opacity: .92; display: none; animation: bob 1.6s ease-in-out infinite; }
