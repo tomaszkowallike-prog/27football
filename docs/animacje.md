@@ -50,3 +50,43 @@ Stroje: koszulka czarna z zielonymi rękawami i białym numerem, czarne spodenki
 | 14 | SOWA | jasnobrązowe, krótkie po bokach, długa grzywka | SOWIA SPIRALA (podkręcona) | uderzenie zewnętrzną częścią stopy, ciało obrócone | ELEKTRYCZNY, HALLAND | |
 | 7 | SZYMON | jasne, proste, krótkie po bokach | SZYMONOWY ZYGZAK | strzał z podskokiem, błyskawica wokół piłki | ELEKTRYCZNY, HALLAND | obrońca: trochę bardziej krępy, wślizg 5 klatek |
 | 1 | MAREK (bramkarz) | do ustalenia | – | – | – | gotowość, rzut w bok (4 klatki), skok, trzymanie piłki, wykop |
+
+## Prośba: nowe moce strzałów specjalnych do losowania
+
+Wygeneruj sporo nowych mocy (co najmniej 12) do dwóch miejsc w grze:
+
+1. **Karne:** idealne trafienie (obie kropki na krzyżyku) losuje moc na bębnie. Teraz są 3 (SMOK, ELEKTRYCZNY STRZAŁ, HALLAND). Każda moc w karnych zawsze daje gola.
+2. **Mecz:** skrzynka na boisku daje losową moc do ekwipunku, a przycisk ★ ją odpala. Teraz jest 5 (BŁYSKAWICA, ROZDWOJENIE, MEGA PIŁKA, WILK, SMOK).
+
+Każda nowa moc ma mieć:
+
+| Pole | Co wpisać |
+|---|---|
+| Nazwa | po polsku, wersalikami, krótka (do 2 słów), zabawna dla dzieci |
+| Gdzie | karne, mecz albo oba |
+| Co robi w grze | jedno, dwa zdania: co dzieje się z zawodnikiem, piłką, bramkarzem i przeciwnikami |
+| Animacja zawodnika | kierunek (zza pleców w karnych, bok w meczu), liczba klatek (10–15 w karnych, 6–10 w meczu), opis klatek |
+| Efekt | osobny arkusz efektu (ogień, lód, iskry, dym), klatki, kolory z palety NES |
+| Dźwięk | krótki efekt 8-bit, jednym zdaniem |
+| Rzadkość | zwykła, rzadka albo legendarna (legendarne losują się rzadziej) |
+
+Zasady: styl 8-bit jak reszta gry, czysto białe tło arkuszy, bez postaci i znaków z innych gier, filmów i bajek. Bez przemocy wobec zawodników: przeciwnicy mogą się przewrócić, zamarznąć albo uciec, ale nic więcej. Każda moc musi wyglądać inaczej niż pozostałe.
+
+Pomysły na start (można rozwinąć albo zastąpić lepszymi):
+
+| Nazwa | Gdzie | Co robi |
+|---|---|---|
+| LODOWA KULA | oba | piłka zamraża bramkarza w bryle lodu i wpada do bramki |
+| RAKIETA | oba | zawodnik odpala piłkę jak rakietę, z dymem i płomieniem z tyłu |
+| TĘCZA | karne | piłka leci po łuku tęczy, bramkarz patrzy w górę jak zaczarowany |
+| MAGNES | mecz | piłka przyciąga się do nogi, nikt nie może jej odebrać przez kilka sekund |
+| ZYGZAK BURZY | oba | piłka skacze zygzakiem między chmurkami z piorunami |
+| KUJAWSKI WIATR | mecz | wichura zdmuchuje przeciwników na bok boiska |
+| NINJA | oba | zawodnik znika w chmurce dymu i pojawia się z piłką przed bramką |
+| METEOR | karne | piłka wylatuje w niebo i spada z góry jako płonący meteor |
+| PSIA POMOC | mecz | pies z szatni wbiega na boisko, porywa piłkę i wnosi ją do bramki |
+| KLONY | mecz | zawodnik rozdwaja się na trzech, każdy strzela, prawdziwy jest jeden |
+| WULKAN | karne | z ziemi wybucha lawa i wyrzuca piłkę do bramki |
+| GIGANT | oba | zawodnik na chwilę rośnie do rozmiaru bramki i wkopuje piłkę |
+| BALON | karne | piłka zamienia się w balon, bramkarz próbuje ją złapać, a ona wlatuje górą |
+| BUMERANG | mecz | piłka okrąża wszystkich przeciwników i wraca do bramki |
