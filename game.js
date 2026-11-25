@@ -1316,7 +1316,7 @@ function draw(dt) {
 // ---- the loop and the page's handle --------------------------------------------------------------------------------
 let last = performance.now(), auto = true, frozen = false;
 // the 3D pitch sleeps while a full-screen mode (penalties, keepy-uppy, lacing) covers it
-const covered = () => ['pen', 'kapki', 'lace', 'caps'].some((id) => { const e = document.getElementById(id); return e && !e.hidden; });
+const covered = () => ['pen', 'kapki', 'lace', 'caps', 'flip'].some((id) => { const e = document.getElementById(id); return e && !e.hidden; });
 renderer.setAnimationLoop((now) => { if (!auto) return; if (covered()) { last = now; return; } const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; step(frozen ? 0 : dt); });
 placeKickoff(0); G.state = 'menu'; WX.set('leaves');
 window.GAME = {

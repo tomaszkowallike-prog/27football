@@ -305,6 +305,7 @@
   #modes .tbox2 small, #szatnia .stitle { font-family: var(--px) !important; font-size: clamp(7px, 1.1vw, 14px) !important; letter-spacing: .05em !important; padding: 5px 10px !important; }
   #modes .mback, #mvol { font-family: var(--px) !important; font-size: 9px !important; border-radius: 0 !important; }
   body:has(#szatnia:not([hidden])) #mvol { display: none; }
+  body:has(#flip:not([hidden])) #mvol { display: none; }
   /* board buttons stand still; now and then a pixel glitch with colour fringes runs through one of them */
   #modes .tbox2 .mb { animation: none !important; transform: none; }
   #modes .tbox2 .mb.glitch { animation: mbg .32s steps(1) 1 !important; }
@@ -317,6 +318,16 @@
     100% { transform: none; text-shadow: none; clip-path: var(--notch); } }
   @keyframes mbgi { 0% { filter: drop-shadow(-3px 0 #ff2a6a) drop-shadow(3px 0 #2ae0ff); } 40% { filter: drop-shadow(3px 0 #ff2a6a) drop-shadow(-3px 0 #2ae0ff); } 80% { filter: drop-shadow(-1px 0 #ff2a6a); } 100% { filter: none; } }
   @media (prefers-reduced-motion: reduce) { #modes .tbox2 .mb.glitch, #modes .tbox2 .mb.glitch .pxi { animation: none !important; } }
+  /* the hidden bottle on the board's floor: stands still and now and then blinks */
+  #modes .hbottle { position: absolute; left: 25%; bottom: 3.5%; height: 13%; aspect-ratio: 97 / 300; padding: 0; border: 0; background: none; cursor: pointer; z-index: 3; }
+  #modes .hbottle img { width: 100%; height: 100%; display: block; image-rendering: pixelated; animation: hbl 2.6s steps(1) infinite; filter: drop-shadow(3px 4px 0 rgba(10,0,25,.5)); }
+  @keyframes hbl { 0%, 82% { filter: drop-shadow(3px 4px 0 rgba(10,0,25,.5)); } 84% { filter: drop-shadow(3px 4px 0 rgba(10,0,25,.5)) brightness(1.7); } 87% { filter: drop-shadow(3px 4px 0 rgba(10,0,25,.5)); } 90% { filter: drop-shadow(3px 4px 0 rgba(10,0,25,.5)) brightness(1.6) drop-shadow(0 0 0 #fff); } 93% { filter: drop-shadow(3px 4px 0 rgba(10,0,25,.5)); } }
+  .flipgrid { display: flex; gap: 10px; justify-content: center; align-items: flex-end; margin: 10px 0 4px; flex-wrap: wrap; }
+  .flipgrid button { background: #2a2454; border: 0; clip-path: var(--notch); box-shadow: inset 0 0 0 3px #000, inset -5px -5px 0 0 rgba(0,0,0,.3), inset 5px 5px 0 0 rgba(255,255,255,.25); padding: 10px 12px 8px; cursor: pointer; }
+  .flipgrid button:hover, .flipgrid button:focus-visible { background: #ffe14a; }
+  .flipgrid img { height: min(26vh, 120px); display: block; image-rendering: pixelated; }
+  .setp .yn { display: flex; gap: 12px; } .setp .yn .big { flex: 1; }
+  .setp p.q { font-size: 11px; line-height: 1.7; margin: 8px 0 4px; color: #e8e4ff; }
   /* wide phones: yellow 90s strips on both sides, the pattern drifts up and the sparkles blink */
   .side90 { display: none; position: absolute; top: 0; bottom: 0; width: calc((100vw - 177.78vh) / 2 + 4px); z-index: 0; pointer-events: none; overflow: hidden;
     background: url(side_a.png) 0 0 / 192px 192px repeat, #ffd21a; image-rendering: pixelated; animation: side90up 8s linear infinite; }
@@ -419,6 +430,11 @@
   <div class="row"><span>Pad dotykowy</span><button class="v" data-k="pad"></button></div>
   <div class="note" id="setnote"></div>
   <div class="foot"><button class="red" id="setclr">WYCZYŚĆ REKORDY</button><button class="ok" id="setok">ZAMKNIJ</button></div></div></div>
+<div class="setov" id="flipask" hidden><div class="setp" role="dialog" aria-label="Butelka"><h2>BUTELKA?</h2>
+  <p class="q">Znalazłeś ukrytą grę! Chcesz rzucać butelką?</p>
+  <div class="yn"><button class="big grn" id="flipyes">TAK</button><button class="big red2" id="flipno">NIE</button></div></div></div>
+<div class="setov" id="flippick" hidden><div class="setp" role="dialog" aria-label="Wybierz butelkę"><h2>WYBIERZ BUTELKĘ <button class="x" id="flipx" aria-label="Zamknij">X</button></h2>
+  <div class="flipgrid"><button data-b="woda"><img src="flip_woda.png" alt="Woda"></button><button data-b="cola"><img src="flip_cola.png" alt="Cola"></button><button data-b="cytryna"><img src="flip_cytryna.png" alt="Cytryna"></button><button data-b="truskawka"><img src="flip_truskawka.png" alt="Truskawka"></button><button data-b="fiolet"><img src="flip_fiolet.png" alt="Duża woda"></button></div></div></div>
 <div class="setov" id="pmenu" hidden><div class="setp" role="dialog" aria-label="Pauza"><h2>PAUZA</h2>
   <button class="big grn" id="pres">WZNÓW</button>
   <button class="big" id="psnd">DŹWIĘK: TAK</button>
@@ -455,7 +471,7 @@
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <button class="hot" id="sset" aria-label="Ustawienia"></button>
   <div class="stitle">WYBIERZ KAPITANA</div></div></div>
-<div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt="">
+<div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt=""><button class="hbottle" id="hbottle" aria-label="Butelka"><img src="flip_woda.png" alt=""></button>
   <small id="mq">CO ROBIMY?</small>
   <div class="mrow"><button class="mb" data-m="match"><b><img class="pxi" src="ico_match.png" alt=""></b>MECZ<em>Cuiavia kontra Fioletowi</em></button><button class="mb" data-m="karne"><b><img class="pxi" src="ico_karne.png" alt=""></b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b><img class="pxi" src="ico_kapki.png" alt=""></b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b><img class="pxi" src="ico_but.png" alt=""></b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b><img class="pxi" src="ico_kapsle.png" alt=""></b>KAPSLE<em>wyścig kapsli po torze</em></button></div>
   <button class="ibtn mback" data-m="back">◀ SZATNIA</button></div></div></div>
@@ -598,6 +614,12 @@
   (function glitchLoop() { const m = document.getElementById('modes'); if (m && !m.hidden) { const bs = [...m.querySelectorAll('.tbox2 .mb')]; const b = bs[Math.floor(Math.random() * bs.length)];
       if (b) { b.classList.remove('glitch'); void b.offsetWidth; b.classList.add('glitch'); setTimeout(() => b.classList.remove('glitch'), 340); } }
     setTimeout(glitchLoop, 700 + Math.random() * 1400); })();
+  // the hidden bottle game
+  $('hbottle').onclick = (e) => { e.stopPropagation(); $('flipask').hidden = false; };
+  $('flipno').onclick = () => { $('flipask').hidden = true; };
+  $('flipyes').onclick = () => { $('flipask').hidden = true; $('flippick').hidden = false; };
+  $('flipx').onclick = () => { $('flippick').hidden = true; };
+  document.querySelectorAll('#flippick .flipgrid button').forEach((b) => b.addEventListener('click', () => { $('flippick').hidden = true; TMUS.pause(); $('modes').hidden = true; window.FLIP.start(b.dataset.b, showModes); }));
   const showModes = () => { TMUS.currentTime = 0; TMUS.play().catch(() => {}); $('modes').hidden = false; modeSel = 0; markMode(); $('mq').textContent = `${window.CAPTAIN} ${NAMES[window.CAPTAIN] || ''}: CO ROBIMY?`; };
   const markMode = () => document.querySelectorAll('#modes .mb').forEach((b, i) => b.classList.toggle('sel', i === modeSel));
   window.CAPTAIN = 27;
@@ -765,6 +787,7 @@
 <script src="./pen.js"></script>
 <script src="./lace.js"></script>
 <script src="./caps.js"></script>
+<script src="./flip.js"></script>
 <script type="module" src="./game.js"></script>
 </body>
 </html>
