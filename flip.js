@@ -29,7 +29,7 @@
   const vib = (p) => { try { if (!window.CFG || window.CFG.vib !== false) navigator.vibrate?.(p); } catch (e) {} };
 
   // ---- state ----
-  const S = { on: false, phase: 'intro', kind: 'woda', x: LX, y: 0, vx: 0, vy: 0, a: 0, w: 0, t: 0, msg: '', msgT: 0, msgC: '#fff', streak: 0, score: 0, best: 0, parts: [], side: 1, wob: 0, motion: false, info: '' };
+  const S = { seen: 0, lvl: 0, nosens: false, on: false, phase: 'intro', kind: 'woda', x: LX, y: 0, vx: 0, vy: 0, a: 0, w: 0, t: 0, msg: '', msgT: 0, msgC: '#fff', streak: 0, score: 0, best: 0, parts: [], side: 1, wob: 0, motion: false, info: '' };
   try { S.best = +localStorage.getItem('flip_best') || 0; } catch (e) {}
   let W = 0, H = 0, DPR = 1, sc = 1, ox = 0, oy = 0;
   const layout = () => { DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; g.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -48,16 +48,17 @@
     S.phase = 'fly'; S.t = 0; S.info = info; tone(300, 600, 0.12, 'square', 0.04); };
   // phone flick: a short peak in acceleration (height) and rotation rate (spin)
   let cap = null, cool = 0;
-  const onMotion = (e) => { if (root.hidden || S.phase !== 'hold') { cap = null; return; }
+  const onMotion = (e) => { if (root.hidden) return; if (S.phase !== 'hold') { cap = null; S.seen = performance.now(); return; }
     const a0 = e.acceleration; let am;
     if (a0 && a0.x != null) am = Math.hypot(a0.x, a0.y, a0.z); else { const ag = e.accelerationIncludingGravity || {}; am = Math.abs(Math.hypot(ag.x || 0, ag.y || 0, ag.z || 0) - 9.81); }
     const r = e.rotationRate || {}, rm = Math.hypot(r.alpha || 0, r.beta || 0, r.gamma || 0), now = performance.now();
+    S.seen = now; S.lvl = Math.max(S.lvl * 0.9, Math.min(1, am / 12 + rm / 600));
     if (now < cool) return;
-    if (!cap && am > 10) cap = { t0: now, a: am, r: rm };
+    if (!cap && (am > 5.5 || rm > 220)) cap = { t0: now, a: am, r: rm };
     if (cap) { cap.a = Math.max(cap.a, am); cap.r = Math.max(cap.r, rm);
-      if (now - cap.t0 > 170) { const w = cap.r > 30 ? cap.r / 57.3 * 0.9 : 3 + (cap.a - 10) * 0.55;
-        toss(300 + (cap.a - 10) * 38, w, `ruch: ${cap.a.toFixed(1)} m/s², obrót ${cap.r | 0}°/s`); cap = null; cool = now + 700; } } };
-  const askMotion = async () => { try { if (typeof DeviceMotionEvent !== 'undefined' && DeviceMotionEvent.requestPermission) { if ((await DeviceMotionEvent.requestPermission()) !== 'granted') return false; }
+      if (now - cap.t0 > 170) { const w = cap.r > 30 ? cap.r / 57.3 * 0.75 : 3 + cap.a * 0.35;
+        toss(330 + cap.a * 45, w, `ruch: ${cap.a.toFixed(1)} m/s², obrót ${cap.r | 0}°/s`); cap = null; cool = now + 700; } } };
+  const askMotion = async () => { S.seen = 0; S.lvl = 0; setTimeout(() => { if (!S.seen && S.on) { S.motion = false; S.nosens = true; } }, 1500); try { if (typeof DeviceMotionEvent !== 'undefined' && DeviceMotionEvent.requestPermission) { if ((await DeviceMotionEvent.requestPermission()) !== 'granted') return false; }
       if (typeof DeviceMotionEvent === 'undefined') return false; addEventListener('devicemotion', onMotion); return true; } catch (e) { return false; } };
   // swipe fallback, always on
   let sw = null;
@@ -120,6 +121,9 @@
       g.fillStyle = '#ffe14a'; g.fillText(`WYNIK ${S.score}  ×${S.streak}`, 22, 30); g.fillStyle = '#9fd8ff'; g.fillText(`REKORD ${S.best}`, 22, 52);
       if (S.msgT > 0) txt(S.msg, W / 2, H * 0.42, Math.min(34, W / 16), S.msgC);
       else if (S.phase === 'hold' && Math.floor(S.t * 2.5) % 2) txt(S.motion ? 'MACHNIJ TELEFONEM W GÓRĘ' : 'PRZESUŃ PALCEM W GÓRĘ', W / 2, H - 30, Math.min(20, W / 30), '#fff');
+      if (S.nosens && S.phase === 'hold') txt('Ta przeglądarka nie daje czujnika ruchu - otwórz grę w Chrome', W / 2, 92, Math.min(13, W / 55), '#ffb0a0');
+      if (S.motion) { const n = 10, lit = Math.round(S.lvl * n); g.font = '8px "Press Start 2P", monospace'; g.textAlign = 'left'; g.fillStyle = '#fff'; g.fillText('RUCH', 14, 84);
+        for (let i = 0; i < n; i++) { g.fillStyle = '#000'; g.fillRect(56 + i * 12, 78, 11, 12); g.fillStyle = i < lit ? (i > 6 ? '#ff4a3a' : i > 3 ? '#ffe14a' : '#3fe060') : '#333'; g.fillRect(57 + i * 12, 79, 9, 10); } }
     } else {
       g.fillStyle = 'rgba(10,6,24,.72)'; g.fillRect(0, 0, W, H);
       txt('BOTTLE FLIP', W / 2, H * 0.2, Math.min(48, W / 11), '#ffe14a');
