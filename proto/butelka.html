@@ -22,7 +22,7 @@
 <canvas id="c"></canvas>
 <div id="ov">
   <h1>BOTTLE FLIP</h1>
-  <div>Weź telefon jak butelkę i <b>machnij lekko nadgarstkiem w górę</b>.<br>Butelka ma zrobić pełny obrót (fikołka) i stanąć na denku.</div>
+  <div>Weź telefon jak butelkę i <b>machnij lekko nadgarstkiem w górę</b>.<br>Butelka buja się w dłoni – złap moment, gdy jest prosto, machnij, a ma zrobić pełny fikołek i stanąć na denku.</div>
   <button id="go">START</button>
   <small>Bez czujników (komputer albo brak zgody): przesuń palcem / myszką w górę. Im szybciej, tym wyżej; im bardziej ukośnie, tym mocniej się kręci.<br>Trzymaj telefon mocno 🙂</small>
 </div>
@@ -65,7 +65,7 @@ function launch(vy, w, info) {
   if (B.st !== 'ready') return;
   B.vy = -Math.max(60, Math.min(380, vy));
   B.w = Math.max(3, Math.min(32, w));
-  B.vx = (Math.random() - .5) * 8;
+  B.vx = (B.swv || 0) * .5;     // the swing carries into the throw; the bottle keeps its tilt
   B.st = 'fly'; B.t = 0;
   lastInfo = info;
   blip(220, .05);
@@ -163,7 +163,13 @@ const TAU = Math.PI * 2;
 const wrap = a => { a = ((a + Math.PI) % TAU + TAU) % TAU - Math.PI; return a; };
 function step(dt) {
   B.t += dt;
-  if (B.st === 'fly') {
+  if (B.st === 'ready') {
+    const ph = B.t * 2.4;
+    B.hx = BX + Math.sin(ph) * 5; B.hy = HOLD - BH + Math.abs(Math.cos(ph)) * 1.5;
+    B.a = Math.sin(ph - .5) * 0.32;                              // bottle lags behind the hand
+    B.swv = Math.cos(ph) * 2.4 * 5 * 4;                          // sideways speed of the hand
+    B.x = B.hx - BH * Math.sin(B.a); B.y = B.hy + BH * Math.cos(B.a);
+  } else if (B.st === 'fly') {
     B.vy += G * dt; B.y += B.vy * dt; B.x += B.vx * dt;
     B.w *= Math.exp(-damp() * dt);
     B.a += B.w * dt;
@@ -228,7 +234,7 @@ function background() {
 }
 function drawHand() {
   if (B.st !== 'ready') return;
-  const x = Math.round(B.x), y = Math.round(B.y - BH);
+  const x = Math.round(B.hx ?? B.x), y = Math.round(B.hy ?? B.y - BH);
   px(x - 9, y - 1, 18, 7, '#e9a06b'); px(x - 9, y + 5, 18, 1, '#b8693c');      // fist round the neck
   px(x - 7, y + 1, 1, 4, '#b8693c'); px(x - 3, y + 1, 1, 4, '#b8693c'); px(x + 1, y + 1, 1, 4, '#b8693c'); px(x + 5, y + 1, 1, 4, '#b8693c');
   px(x + 8, y - 8, 10, 12, '#e9a06b'); px(x + 8, y - 30, 12, 23, '#1d6a32'); px(x + 8, y - 30, 2, 23, '#2fb34a'); // wrist + green sleeve
