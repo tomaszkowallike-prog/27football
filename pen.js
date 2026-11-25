@@ -132,7 +132,7 @@
     ball: null, keeper: null, result: '', banner: '', bannerT: 0, flash: 0, shake: 0, netFire: 0, rings: [] };
   const KICKS = 5;
   const reset = () => { Object.assign(S, { round: 0, us: [], them: [] }); };
-  const newKick = () => { Object.assign(S, { phase: 'intro', t: 0, stopV: null, stopH: null, power: null, ball: null, result: '', netFire: 0, rings: [], dotV: 0, dotH: 0, aim: [0, 0.45] });
+  const newKick = () => { Object.assign(S, { phase: 'intro', t: 0, drag: false, stopV: null, stopH: null, power: null, ball: null, result: '', netFire: 0, rings: [], dotV: 0, dotH: 0, aim: [0, 0.45] });
     S.keeper = { st: 'idle', side: 0, high: false, t: 0, save: false, x: 0, y: 0 }; bolts.length = 0; SND.whistle(); };
   // the dots ride the cross at a steady speed, back and forth
   const CROSS_V = 58, CROSS_H = 140, PERFECT = 7;
@@ -160,14 +160,21 @@
     if (S.phase === 'cross1') { S.stopV = S.dotV; S.phase = 'cross2'; S.t = 0; Math.abs(S.stopV) <= PERFECT ? SND.perfect() : SND.stop(); return; }
     if (S.phase === 'cross2') { S.stopH = S.dotH; S.phase = 'judge'; S.t = 0; Math.abs(S.stopH) <= PERFECT ? SND.perfect() : SND.stop(); return; }
     if (S.phase === 'aim') {
-      if (lx != null) { const u = (lx - L.cx) / ((L.gx1 - L.gx0) / 2 + 20), v = (L.gbot - ly) / (L.gbot - L.gtop + 20); S.aim = [Math.max(-1.15, Math.min(1.15, u)), Math.max(0, Math.min(1.2, v))]; }
+      if (lx != null) setAim(lx, ly);
       S.phase = 'force'; S.t = 0; SND.stop(); return; }
     if (S.phase === 'force') { S.phase = 'run'; S.t = 0; S.pow = powNow(); return; }
     if (S.phase === 'end') { if (S.mode === 'shootout') { reset(); newKick(); } }
   };
+  const setAim = (lx, ly) => { const u = (lx - L.cx) / ((L.gx1 - L.gx0) / 2 + 20), v = (L.gbot - ly) / (L.gbot - L.gtop + 20); S.aim = [Math.max(-1.15, Math.min(1.15, u)), Math.max(0, Math.min(1.2, v))]; };
   const powNow = () => tri(S.t + 0.55, 0.5, 1.15) + 0.5;
-  cv.addEventListener('pointerdown', (e) => { e.preventDefault(); const r = cv.getBoundingClientRect(), sc = Math.min(r.width / W, r.height / H), ox = r.left + (r.width - W * sc) / 2, oy = r.top + (r.height - H * sc) / 2;
-    act((e.clientX - ox) / sc, (e.clientY - oy) / sc); });
+  const loc = (e) => { const r = cv.getBoundingClientRect(), sc = Math.min(r.width / W, r.height / H), ox = r.left + (r.width - W * sc) / 2, oy = r.top + (r.height - H * sc) / 2; return [(e.clientX - ox) / sc, (e.clientY - oy) / sc]; };
+  // aiming: the reticle jumps under the finger, follows it while dragging, and the kick is aimed where the finger lets go
+  cv.addEventListener('pointerdown', (e) => { e.preventDefault(); const [x, y] = loc(e);
+    if (S.phase === 'aim') { try { cv.setPointerCapture(e.pointerId); } catch (_) {} S.drag = true; setAim(x, y); SND.tick(); return; }
+    act(x, y); });
+  cv.addEventListener('pointermove', (e) => { if (S.drag && S.phase === 'aim') { const [x, y] = loc(e); setAim(x, y); } });
+  const lift = (e) => { if (!S.drag) return; S.drag = false; if (S.phase === 'aim') { const [x, y] = loc(e); setAim(x, y); act(); } };
+  cv.addEventListener('pointerup', lift); cv.addEventListener('pointercancel', lift);
   addEventListener('keydown', (e) => { if (root.hidden) return; e.preventDefault(); e.stopPropagation(); if (e.repeat) return;
     if (e.code === 'Escape' && S.mode === 'shootout') { close(); return; }
     if (S.phase === 'aim' && /Arrow|Key[WASD]/.test(e.code)) { const d = { ArrowLeft: [-0.25, 0], KeyA: [-0.25, 0], ArrowRight: [0.25, 0], KeyD: [0.25, 0], ArrowUp: [0, 0.25], KeyW: [0, 0.25], ArrowDown: [0, -0.25], KeyS: [0, -0.25] }[e.code];
@@ -288,13 +295,18 @@
           g.fillStyle = i >= arr.length ? '#3a3d44' : arr[i] ? '#3fe060' : '#e8361f'; g.fillRect(x - 5, y - 5, 10, 10); } };
       row('CUI', '#3fe060', S.us, y0 + 14); row('FIO', '#c9a2ff', S.them, y0 + 32);
     }
-    const hint = { intro: '', cross1: 'ZATRZYMAJ CZERWONĄ KROPKĘ NA ŚRODKU', cross2: 'TERAZ NIEBIESKĄ', judge: '', aim: 'DOTKNIJ MIEJSCA W BRAMCE', force: 'ZATRZYMAJ SIŁĘ', roll: 'LOSOWANIE MOCY!' }[S.phase];
+    const hint = { intro: '', cross1: 'ZATRZYMAJ CZERWONĄ KROPKĘ NA ŚRODKU', cross2: 'TERAZ NIEBIESKĄ', judge: '', aim: 'DOTKNIJ BRAMKI I PRZECIĄGNIJ CELOWNIK', force: 'ZATRZYMAJ SIŁĘ', roll: 'LOSOWANIE MOCY!' }[S.phase];
     if (hint) txt(hint, W / 2, H - 16, 16, '#ffe14a');
     if (S.phase === 'intro') txt(S.mode === 'single' ? 'RZUT KARNY!' : `SERIA ${S.us.length + 1}`, W / 2, 70, 30, '#fff');
     if (S.phase === 'judge') { const ok = Math.abs(S.stopV) <= PERFECT && Math.abs(S.stopH) <= PERFECT; txt(ok ? 'IDEALNIE!' : 'PRAWIE...', W / 2, 70, 32, ok ? '#3fe060' : '#ff8a6a'); }
-    if (S.phase === 'aim') { const [u, v] = S.aim, x = L.cx + u * ((L.gx1 - L.gx0) / 2), y = L.gbot - 8 - v * (L.gbot - L.gtop - 12), r = 10 + Math.sin(performance.now() / 120) * 2;
-      g.strokeStyle = '#000'; g.lineWidth = 5; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); g.strokeStyle = '#ffe14a'; g.lineWidth = 2.5; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke();
-      g.fillStyle = '#ffe14a'; g.fillRect(x - 1, y - r - 6, 2, 6); g.fillRect(x - 1, y + r, 2, 6); g.fillRect(x - r - 6, y - 1, 6, 2); g.fillRect(x + r, y - 1, 6, 2); }
+    if (S.phase === 'aim' || S.phase === 'force' || S.phase === 'run') { const [u, v] = S.aim, x = Math.round(L.cx + u * ((L.gx1 - L.gx0) / 2)), y = Math.round(L.gbot - 8 - v * (L.gbot - L.gtop - 12));
+      const aiming = S.phase === 'aim', c = 3, R = aiming ? 6 + (Math.floor(performance.now() / 180) % 2) : 5, col = aiming ? '#ffe14a' : (Math.floor(performance.now() / 120) % 2 ? '#ff4a3a' : '#fff');
+      const blk = (i, j, k) => { g.fillStyle = k; g.fillRect(x + i * c - c / 2, y + j * c - c / 2, c, c); };
+      const ring = []; for (let a = 0; a < 6.283; a += 0.12) ring.push([Math.round(Math.cos(a) * R), Math.round(Math.sin(a) * R)]);
+      const arms = []; for (let k = R - 2; k <= R + 3; k++) arms.push([k, 0], [-k, 0], [0, k], [0, -k]);
+      for (const [i, j] of [...ring, ...arms]) for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) blk(i + di, j + dj, '#000');
+      for (const [i, j] of [...ring, ...arms]) blk(i, j, col); blk(0, 0, col);
+      if (aiming && !S.drag) txt('PRZECIĄGNIJ', x, y + (R + 8) * c, 12, '#ffe14a'); }
     if (S.phase === 'force') { const p = powNow(), x = W - 40, y0 = 90, h = 170; g.fillStyle = '#000'; g.fillRect(x - 3, y0 - 3, 26, h + 6);
       const grd = g.createLinearGradient(0, y0 + h, 0, y0); grd.addColorStop(0, '#3fe060'); grd.addColorStop(0.7, '#ffe14a'); grd.addColorStop(0.86, '#ff8a1f'); grd.addColorStop(1, '#e8361f');
       g.fillStyle = '#222'; g.fillRect(x, y0, 20, h); g.fillStyle = grd; g.fillRect(x, y0 + h * (1 - p), 20, h * p);
@@ -332,6 +344,6 @@
   const open = (mode, done) => { S.mode = mode; S.done = done; root.hidden = false; root.classList.toggle('single', mode === 'single'); layout(); reset(); newKick(); S.on = true; last = 0; try { window.MATCH_MUSIC && window.MATCH_MUSIC.stop(); } catch (e) {} MUS.currentTime = 0; MUS.play().catch(() => {}); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); };
   const close = () => { MUS.pause(); if (S.mode === 'single') { try { window.MATCH_MUSIC && window.MATCH_MUSIC.start(); } catch (e) {} } S.on = false; cancelAnimationFrame(raf); root.hidden = true; if (S.mode === 'shootout' && S.onExit) S.onExit(); };
   const kickSheet = (n) => ({ 14: 'kick14', 10: 'kick10', 7: 'kick7' }[n] || 'kick');
-  window.PEN = { start(onExit, num) { S.kick = kickSheet(num); S.onExit = onExit; open('shootout', null); }, single(done, num) { S.kick = kickSheet(num || window.CAPTAIN); S.onExit = null; open('single', done); }, get open() { return !root.hidden; },
+  window.PEN = { get _S() { return S; }, start(onExit, num) { S.kick = kickSheet(num); S.onExit = onExit; open('shootout', null); }, single(done, num) { S.kick = kickSheet(num || window.CAPTAIN); S.onExit = null; open('single', done); }, get open() { return !root.hidden; },
     _S: S };
 })();
