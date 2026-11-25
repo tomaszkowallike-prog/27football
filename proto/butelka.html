@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>BUTELKA – prototyp</title>
+<style>
+  html,body{margin:0;height:100%;background:#120d1a;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+  canvas{position:fixed;inset:0;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges}
+  #ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+      background:rgba(10,6,18,.82);color:#fff;font:bold 18px/1.3 monospace;text-align:center;padding:20px;z-index:2}
+  #ov h1{margin:0;font-size:34px;color:#ffd23c;letter-spacing:3px;text-shadow:3px 3px 0 #b8321e}
+  #ov button{font:bold 18px monospace;padding:12px 22px;border:0;border-radius:4px;background:#2fb34a;color:#fff;
+      box-shadow:0 5px 0 #17702a;cursor:pointer}
+  #ov small{opacity:.75;font-size:13px;max-width:440px}
+  #dbg{position:fixed;left:8px;bottom:6px;color:#9fd;font:12px monospace;z-index:1;opacity:.8;pointer-events:none}
+  #mode{position:fixed;right:8px;bottom:6px;z-index:1;font:bold 12px monospace;background:#2a2340;color:#fff;border:2px solid #6b5fa8;
+      padding:6px 8px;border-radius:4px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ov">
+  <h1>BOTTLE FLIP</h1>
+  <div>Weź telefon jak butelkę i <b>machnij lekko nadgarstkiem w górę</b>.<br>Butelka ma zrobić obrót i stanąć na denku.</div>
+  <button id="go">START</button>
+  <small>Bez czujników (komputer albo brak zgody): przesuń palcem / myszką w górę. Im szybciej, tym wyżej; im bardziej ukośnie, tym mocniej się kręci.<br>Trzymaj telefon mocno 🙂</small>
+</div>
+<div id="dbg"></div>
+<button id="mode">STER: PALEC</button>
+<script>
+(() => {
+const W = 240, H = 135;                     // low-res 8-bit canvas
+const cv = document.getElementById('c'), g = cv.getContext('2d');
+cv.width = W; cv.height = H; g.imageSmoothingEnabled = false;
+const dbg = document.getElementById('dbg'), modeBtn = document.getElementById('mode');
+
+// ---------- palette ----------
+const C = { wall:'#2b2547', wall2:'#332c55', tile:'#3c3463', bench:'#8a4b2a', bench2:'#6a3420', benchTop:'#b0643a',
+  floor:'#1d1830', glass:'#bfe6ff', glass2:'#7fb8e0', glassD:'#4b7aa8', water:'#2f7cf0', water2:'#5aa2ff', cap:'#e23b2e',
+  cap2:'#9e1f17', label:'#ffd23c', label2:'#e08a1e', ink:'#0e0a18', white:'#fff' };
+
+// ---------- state ----------
+const FLOOR = 96;                 // bench top (y of bottle base when standing)
+const BX = 120;
+const BH = 30, BW = 10;           // bottle size in px
+const G = 520;                    // gravity px/s²
+let fill = .33, best = 0, streak = 0, score = 0;
+try { best = +localStorage.getItem('flip_best') || 0; } catch (e) {}
+const B = { x: BX, y: FLOOR, vx: 0, vy: 0, a: 0, w: 0, st: 'ready', t: 0, wob: 0, side: 1 };
+let msg = '', msgT = 0, msgCol = '#fff', parts = [];
+let useMotion = false, lastInfo = '';
+
+function newRound() {
+  fill = [0.2, 0.28, 0.33, 0.33, 0.4, 0.5][Math.random() * 6 | 0];
+  Object.assign(B, { x: BX, y: FLOOR, vx: 0, vy: 0, a: 0, w: 0, st: 'ready', t: 0, wob: 0 });
+}
+// how forgiving the landing is: best around 1/3 water (as in real life)
+const tol = () => 0.42 - Math.abs(fill - 0.33) * 0.9;
+// water sloshing slows the spin
+const damp = () => 0.6 + fill * 4.2;
+
+function launch(vy, w, info) {
+  if (B.st !== 'ready') return;
+  B.vy = -Math.max(140, Math.min(430, vy));
+  B.w = Math.max(3, Math.min(32, w));
+  B.vx = (Math.random() - .5) * 8;
+  B.st = 'fly'; B.t = 0;
+  lastInfo = info;
+  blip(220, .05);
+}
+
+// ---------- input: device motion ----------
+let cap = null, cool = 0;
+function onMotion(e) {
+  const a0 = e.acceleration;
+  let am;
+  if (a0 && a0.x != null) am = Math.hypot(a0.x, a0.y, a0.z);
+  else { const ag = e.accelerationIncludingGravity || {}; am = Math.abs(Math.hypot(ag.x || 0, ag.y || 0, ag.z || 0) - 9.81); }
+  const r = e.rotationRate || {};
+  const rm = Math.hypot(r.alpha || 0, r.beta || 0, r.gamma || 0);   // deg/s
+  const now = performance.now();
+  if (B.st !== 'ready' || now < cool) { cap = null; return; }
+  if (!cap && am > 11) cap = { t0: now, a: am, r: rm };
+  if (cap) {
+    cap.a = Math.max(cap.a, am); cap.r = Math.max(cap.r, rm);
+    if (now - cap.t0 > 180) {
+      const vy = 150 + (cap.a - 11) * 11;
+      const w = cap.r / 57.3 * 0.55;
+      launch(vy, w, `szarpnięcie ${cap.a.toFixed(1)} m/s²  obrót ${cap.r | 0}°/s`);
+      cap = null; cool = now + 600;
+    }
+  }
+}
+async function enableMotion() {
+  try {
+    if (typeof DeviceMotionEvent !== 'undefined' && DeviceMotionEvent.requestPermission) {
+      const p = await DeviceMotionEvent.requestPermission();
+      if (p !== 'granted') return false;
+    }
+    if (typeof DeviceMotionEvent === 'undefined') return false;
+    // check that events actually arrive
+    return await new Promise(res => {
+      let got = false;
+      const h = e => { if (e.rotationRate || e.acceleration) { got = true; } };
+      window.addEventListener('devicemotion', h);
+      setTimeout(() => { window.removeEventListener('devicemotion', h); res(got); }, 400);
+    });
+  } catch (e) { return false; }
+}
+function setMode(m) {
+  useMotion = m;
+  modeBtn.textContent = m ? 'STER: RUCH TELEFONU' : 'STER: PALEC';
+  window.removeEventListener('devicemotion', onMotion);
+  if (m) window.addEventListener('devicemotion', onMotion);
+}
+modeBtn.onclick = async (e) => {
+  e.stopPropagation();
+  if (useMotion) setMode(false);
+  else if (await enableMotion()) setMode(true);
+  else { msg = 'BRAK CZUJNIKÓW'; msgT = 1.5; msgCol = '#f66'; }
+};
+document.getElementById('go').onclick = async () => {
+  audio();
+  document.getElementById('ov').style.display = 'none';
+  setMode(await enableMotion());
+};
+
+// ---------- input: swipe fallback (always on) ----------
+let sw = null;
+cv.addEventListener('pointerdown', e => { sw = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+window.addEventListener('pointerup', e => {
+  if (!sw) return;
+  const dt = Math.max(30, performance.now() - sw.t), dx = e.clientX - sw.x, dy = sw.y - e.clientY;
+  sw = null;
+  if (dy < 30) return;
+  const sp = dy / dt * 1000 / innerHeight;        // screen-heights per second
+  const ang = Math.atan2(Math.abs(dx), dy);       // 0 = straight up
+  launch(110 + sp * 95, 6 + ang * 22 + sp * 1.2, `palec: ${sp.toFixed(1)} ekr/s  kąt ${(ang * 57.3) | 0}°`);
+});
+
+// ---------- sound (tiny 8-bit blips) ----------
+let ac = null;
+function audio() { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch (e) {} }
+function blip(f, d, type = 'square', f2) {
+  if (!ac) return;
+  const o = ac.createOscillator(), v = ac.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, ac.currentTime);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, ac.currentTime + d);
+  v.gain.setValueAtTime(.08, ac.currentTime); v.gain.exponentialRampToValueAtTime(.001, ac.currentTime + d);
+  o.connect(v); v.connect(ac.destination); o.start(); o.stop(ac.currentTime + d);
+}
+function jingle(ns) { ns.forEach((n, i) => setTimeout(() => blip(n, .09), i * 80)); }
+
+function say(t, col, d = 1.3) { msg = t; msgCol = col; msgT = d; }
+function burst(x, y, col, n = 18) {
+  for (let i = 0; i < n; i++) parts.push({ x, y, vx: (Math.random() - .5) * 120, vy: -Math.random() * 120 - 30, l: .7 + Math.random() * .4, c: col });
+}
+
+// ---------- physics ----------
+const TAU = Math.PI * 2;
+const wrap = a => { a = ((a + Math.PI) % TAU + TAU) % TAU - Math.PI; return a; };
+function step(dt) {
+  B.t += dt;
+  if (B.st === 'fly') {
+    B.vy += G * dt; B.y += B.vy * dt; B.x += B.vx * dt;
+    B.w *= Math.exp(-damp() * dt);
+    B.a += B.w * dt;
+    // the lowest point of the rotated bottle (base centre is the pivot in local coords)
+    if (B.vy > 0 && B.y >= FLOOR) {
+      B.y = FLOOR;
+      const ang = wrap(B.a), spins = Math.round(B.a / TAU);
+      const t = tol();
+      if (Math.abs(ang) < t && B.w < 14) {
+        B.st = 'stand'; B.wob = ang * 1.2; B.a = 0; B.t = 0;
+        streak++; const pts = 1 + (spins >= 2 ? 2 : 0); score += pts * streak;
+        say(spins >= 2 ? 'PODWÓJNY FLIP!' : 'FLIP!', '#ffd23c');
+        burst(B.x, FLOOR - 4, C.label); jingle([523, 659, 784, 1046]);
+        try { navigator.vibrate && navigator.vibrate(40); } catch (e) {}
+      } else if (Math.abs(Math.abs(ang) - Math.PI) < t * .55 && B.w < 14) {
+        B.st = 'cap'; B.a = Math.PI; B.t = 0; B.wob = (Math.abs(ang) - Math.PI) * 1.2;
+        streak++; score += 3 * streak;
+        say('NA NAKRĘTCE! ×3', '#ff7bd5'); burst(B.x, FLOOR - 4, '#ff7bd5', 28); jingle([523, 784, 1046, 1318, 1568]);
+        try { navigator.vibrate && navigator.vibrate([30, 40, 30]); } catch (e) {}
+      } else {
+        B.st = 'fall'; B.t = 0; B.side = Math.sin(ang) >= 0 ? 1 : -1; B.vy = -40; B.a = ang;
+        if (streak > 0) say('PUDŁO  (seria ' + streak + ')', '#f66'); else say(ang > 0 ? 'ZA MOCNO' : 'ZA SŁABO', '#f66');
+        streak = 0; blip(160, .25, 'sawtooth', 60);
+      }
+      if (score > best) { best = score; try { localStorage.setItem('flip_best', best); } catch (e) {} }
+      if (B.st !== 'fall' && streak === 0) score = 0;
+    }
+  } else if (B.st === 'stand' || B.st === 'cap') {
+    B.wob *= Math.exp(-6 * dt);
+    B.a = (B.st === 'cap' ? Math.PI : 0) + B.wob * Math.cos(B.t * 22);
+    if (B.t > 1.1) newRound();
+  } else if (B.st === 'fall') {
+    // topple to the side, bounce once, roll a bit
+    const target = B.side * Math.PI / 2;
+    B.a += (target - B.a) * Math.min(1, dt * 9);
+    B.vy += G * dt; B.y = Math.min(FLOOR - BW / 2, B.y + B.vy * dt);
+    B.x += B.side * 28 * dt * Math.max(0, 1 - B.t);
+    if (B.t > 1.3) { score = 0; newRound(); }
+  }
+  parts = parts.filter(p => (p.l -= dt) > 0);
+  parts.forEach(p => { p.vy += 300 * dt; p.x += p.vx * dt; p.y += p.vy * dt; });
+  if (msgT > 0) msgT -= dt;
+}
+
+// ---------- drawing ----------
+function px(x, y, w, h, c) { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w, h); }
+let bgCache = null;
+function background() {
+  if (bgCache) { g.drawImage(bgCache, 0, 0); return; }
+  bgCache = document.createElement('canvas'); bgCache.width = W; bgCache.height = H;
+  const b = bgCache.getContext('2d');
+  const P = (x, y, w, h, c) => { b.fillStyle = c; b.fillRect(x, y, w, h); };
+  P(0, 0, W, H, C.wall);
+  for (let y = 0; y < 70; y += 8) for (let x = (y / 8 % 2) * 6; x < W; x += 12) P(x, y, 11, 7, (x + y) % 24 ? C.wall2 : C.tile);
+  // lockers
+  for (let i = 0; i < 6; i++) {
+    const x = 6 + i * 40; P(x, 8, 34, 64, '#3f6b5a'); P(x + 1, 9, 32, 62, '#4f8a70');
+    P(x + 4, 14, 26, 2, '#2c4a3e'); P(x + 4, 18, 26, 2, '#2c4a3e'); P(x + 26, 38, 3, 8, '#d9d9d9');
+  }
+  P(0, 72, W, 3, '#15111f');
+  P(0, 75, W, H - 75, C.floor);
+  for (let x = 0; x < W; x += 16) P(x, 75, 1, H - 75, '#241e3a');
+  // bench
+  P(40, FLOOR, 160, 4, C.benchTop); P(40, FLOOR + 4, 160, 4, C.bench); P(40, FLOOR + 8, 160, 1, C.bench2);
+  P(50, FLOOR + 9, 5, 26, C.bench2); P(185, FLOOR + 9, 5, 26, C.bench2);
+  P(40, FLOOR + 33, 160, 2, 'rgba(0,0,0,.35)');
+}
+function drawBottle() {
+  // shadow on the bench
+  const hgt = Math.max(0, FLOOR - B.y), sw = Math.max(4, 14 - hgt * .08);
+  g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(Math.round(B.x - sw / 2), FLOOR, Math.round(sw), 2);
+
+  g.save();
+  // pivot: the base centre when standing; centre of mass while flying
+  const fly = B.st === 'fly';
+  const cy = fly ? BH * .45 : 0;
+  g.translate(Math.round(B.x), Math.round(B.y - cy));
+  g.rotate(B.a);
+  g.translate(0, cy);
+  const L = -BW / 2;
+  // body (base at y=0, up to -BH)
+  px(L, -BH + 9, BW, BH - 9, C.glass2);
+  px(L + 1, -BH + 9, BW - 2, BH - 10, C.glass);
+  // shoulders + neck
+  px(L + 1, -BH + 6, BW - 2, 3, C.glass2); px(L + 2, -BH + 5, BW - 4, 1, C.glass2);
+  px(L + 3, -BH + 3, BW - 6, 2, C.glass2);
+  // cap
+  px(L + 2, -BH, BW - 4, 3, C.cap); px(L + 2, -BH + 2, BW - 4, 1, C.cap2);
+  // water (in bottle space; tilts with the bottle – reads fine at this size)
+  const wh = Math.round((BH - 10) * fill);
+  px(L + 1, -1 - wh, BW - 2, wh, C.water); px(L + 1, -1 - wh, BW - 2, 1, C.water2);
+  // label
+  px(L, -BH + 13, BW, 5, C.label); px(L, -BH + 17, BW, 1, C.label2);
+  // shine + outline-ish base
+  px(L + 2, -BH + 10, 1, BH - 13, C.white); px(L, -1, BW, 1, C.glassD);
+  g.restore();
+}
+function text(t, x, y, col, size = 8, align = 'center') {
+  g.font = `bold ${size}px monospace`; g.textAlign = align;
+  g.fillStyle = C.ink; g.fillText(t, x + 1, y + 1); g.fillStyle = col; g.fillText(t, x, y);
+}
+function draw() {
+  background();
+  drawBottle();
+  parts.forEach(p => px(p.x, p.y, 2, 2, p.c));
+  text('WYNIK ' + score, 6, 10, '#fff', 8, 'left');
+  text('REKORD ' + best, W - 6, 10, '#ffd23c', 8, 'right');
+  text('SERIA ×' + streak, 6, 20, '#9fd', 7, 'left');
+  // water gauge
+  text('WODA', W - 6, 20, '#9fd', 7, 'right');
+  px(W - 40, 24, 34, 4, '#222'); px(W - 40, 24, Math.round(34 * fill / .6), 4, C.water);
+  px(W - 40 + Math.round(34 * .33 / .6), 23, 1, 6, '#ffd23c');
+  if (B.st === 'ready') {
+    const k = (performance.now() / 400 | 0) % 2;
+    if (k) text(useMotion ? 'MACHNIJ TELEFONEM ↑' : 'PRZESUŃ PALCEM ↑', W / 2, 52, '#fff', 9);
+  }
+  if (msgT > 0) {
+    const s = 1 + Math.max(0, msgT - 1.1) * 3;
+    text(msg, W / 2, 40, msgCol, Math.round(12 * s));
+  }
+  dbg.textContent = lastInfo ? 'ostatni rzut — ' + lastInfo + '  |  woda ' + Math.round(fill * 100) + '%' : '';
+}
+
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min(.033, (now - last) / 1000); last = now;
+  step(dt); draw(); requestAnimationFrame(loop);
+}
+newRound(); requestAnimationFrame(loop);
+window.__flip = { launch, B };   // for testing
+})();
+</script>
+</body>
+</html>
