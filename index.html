@@ -235,6 +235,15 @@
   #szatnia .sbg { position: absolute; inset: -20px; background: url(szatnia.jpg) center / cover; filter: blur(12px) brightness(.45); }
   #szatnia .sbox { position: absolute; left: 50%; top: 50%; width: min(100vw, 177.7vh); aspect-ratio: 1672 / 941; transform: translate(-50%, -50%); }
   #szatnia .sbox > img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+  /* wide phones: yellow 90s strips on both sides, the pattern drifts up and the sparkles blink */
+  .side90 { display: none; position: absolute; top: 0; bottom: 0; width: calc((100vw - 177.78vh) / 2 + 4px); z-index: 0; pointer-events: none; overflow: hidden;
+    background: url(side_a.png) 0 0 / 192px 192px repeat, #ffd21a; image-rendering: pixelated; animation: side90up 8s linear infinite; }
+  .side90::after { content: ""; position: absolute; inset: 0; background: url(side_b.png) 0 0 / 192px 192px repeat; image-rendering: pixelated; animation: side90up 8s linear infinite, side90blink .9s steps(1) infinite; }
+  .side90.l { left: 0; border-right: 4px solid #111; } .side90.r { right: 0; border-left: 4px solid #111; background-position: 96px 0; }
+  .side90.r::after { animation-delay: 0s, -.45s; }
+  @keyframes side90up { to { background-position-y: -192px; } }
+  @keyframes side90blink { 50% { opacity: 0; } }
+  @media (min-aspect-ratio: 17/9) { .side90 { display: block; } }
   /* phones wider than 16:9: plain dark sides, the picture fades into them from the shadow */
   @media (min-aspect-ratio: 17/9) {
     #szatnia, #modes { background: #0a0614; } #szatnia .sbg, #modes .sbg.tb, #modes .logo { display: none; }
@@ -337,7 +346,7 @@
 <div class="ov" id="end" hidden><div class="panel"><h1 id="endT">KONIEC</h1><div id="final">0 : 0</div><div class="row"><button class="btn" id="again">REWANŻ</button></div></div></div>
 <div id="penHint"></div>
 <div id="bag" class="hud"></div>
-<div id="szatnia" hidden><div class="sbg"></div><div class="sbox"><img src="szatnia.jpg" alt="">
+<div id="szatnia" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg"></div><div class="sbox"><img src="szatnia.jpg" alt="">
   <div class="kid" data-i="0" style="left:14.5%;width:12.5%"></div><div class="kid" data-i="1" style="left:34.5%;width:12.5%"></div>
   <div class="kid" data-i="2" style="left:54.5%;width:12.5%"></div><div class="kid" data-i="3" style="left:73.5%;width:12.5%"></div>
   <div class="pick" id="spick">▼</div><div id="dog" title="Pies"></div>
@@ -345,7 +354,7 @@
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <div class="stitle">WYBIERZ KAPITANA</div></div></div>
-<div id="modes" hidden><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt="">
+<div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt="">
   <small id="mq">CO ROBIMY?</small>
   <div class="mrow"><button class="mb" data-m="match"><b>⚽</b>MECZ<em>Cuiavia kontra Fioletowi</em></button><button class="mb" data-m="karne"><b>🥅</b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b>🎯</b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b>👟</b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b>🔘</b>KAPSLE<em>wyścig kapsli po torze</em></button></div>
   <button class="ibtn mback" data-m="back">◀ SZATNIA</button></div></div></div>
