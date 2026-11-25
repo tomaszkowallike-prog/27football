@@ -263,6 +263,16 @@
   #szatnia .phone { position: absolute; background: #b8e8ff; mix-blend-mode: screen; border-radius: 2px; animation: phfl 1.7s steps(1) infinite; }
   @keyframes phfl { 0% { opacity: .15; } 12% { opacity: .55; } 18% { opacity: .2; } 40% { opacity: .45; background: #ffd0f0; } 55% { opacity: .1; } 70% { opacity: .6; background: #b8ffcc; } 85% { opacity: .25; } }
   @media (prefers-reduced-motion: reduce) { #szatnia .sanim * { animation: none !important; } }
+  /* the ceiling tubes over the boys flicker now and then, each on its own beat; light falls under them */
+  #szatnia .lamp { position: absolute; }
+  #szatnia .lamp::before { content: ""; position: absolute; inset: 0; background: #fff8e0; border-radius: 2px; mix-blend-mode: screen; opacity: .0; }
+  #szatnia .lamp i { position: absolute; left: -10%; right: -10%; top: 100%; height: 900%; background: linear-gradient(#fff4c8 0, rgba(255,244,200,.35) 25%, rgba(255,244,200,0) 100%); clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%); mix-blend-mode: soft-light; opacity: .55; }
+  #szatnia .lamp.a::before, #szatnia .lamp.a i { animation: lmpA 5.3s steps(1) infinite; }
+  #szatnia .lamp.b::before, #szatnia .lamp.b i { animation: lmpB 7.1s steps(1) infinite; }
+  #szatnia .lamp.c::before, #szatnia .lamp.c i { animation: lmpC 3.7s steps(1) infinite; }
+  @keyframes lmpA { 0%, 70% { opacity: .55; filter: none; } 71% { opacity: .05; filter: brightness(.3); } 72.5% { opacity: .5; } 74% { opacity: .05; filter: brightness(.3); } 75%, 100% { opacity: .55; filter: none; } }
+  @keyframes lmpB { 0%, 40% { opacity: .55; } 41% { opacity: .2; } 42%, 88% { opacity: .55; } 89% { opacity: .0; } 89.8% { opacity: .45; } 90.6% { opacity: .0; } 92%, 100% { opacity: .55; } }
+  @keyframes lmpC { 0%, 20% { opacity: .5; } 22% { opacity: .1; } 23% { opacity: .5; } 55% { opacity: .35; } 57% { opacity: .5; } 80% { opacity: .05; } 81% { opacity: .5; } 83% { opacity: .1; } 84%, 100% { opacity: .5; } }
   /* settings and the match menu: a navy pixel panel with yellow buttons */
   .setov { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(6,4,18,.6); }
   .setov[hidden] { display: none; }
@@ -429,7 +439,10 @@
   <div class="row"><span>Wibracje (telefon)</span><button class="v" data-k="vib"></button></div>
   <div class="row"><span>Pad dotykowy</span><button class="v" data-k="pad"></button></div>
   <div class="note" id="setnote"></div>
-  <div class="foot"><button class="red" id="setclr">WYCZYŚĆ REKORDY</button><button class="ok" id="setok">ZAMKNIJ</button></div></div></div>
+  <div class="foot"><button class="red" id="setclr">WYCZYŚĆ REKORDY</button><button class="red" id="setexit">WYJDŹ Z GRY</button><button class="ok" id="setok">ZAMKNIJ</button></div></div></div>
+<div class="setov" id="askov" hidden><div class="setp" role="alertdialog" aria-label="Pytanie"><h2 id="askh">NA PEWNO?</h2>
+  <p class="q" id="askq"></p>
+  <div class="yn"><button class="big grn" id="askyes">TAK</button><button class="big red2" id="askno">NIE</button></div></div></div>
 <div class="setov" id="flipask" hidden><div class="setp" role="dialog" aria-label="Butelka"><h2>BUTELKA?</h2>
   <p class="q">Znalazłeś ukrytą grę! Chcesz rzucać butelką?</p>
   <div class="yn"><button class="big grn" id="flipyes">TAK</button><button class="big red2" id="flipno">NIE</button></div></div></div>
@@ -439,7 +452,8 @@
   <button class="big grn" id="pres">WZNÓW</button>
   <button class="big" id="psnd">DŹWIĘK: TAK</button>
   <button class="big" id="pset">USTAWIENIA</button>
-  <button class="big red2" id="pquit">WYJDŹ Z MECZU</button></div></div>
+  <button class="big red2" id="pquit">WYJDŹ Z MECZU</button>
+  <button class="big" id="pexit">WYJDŹ Z GRY</button></div></div>
 
 <div class="ov" id="menu" hidden>
   <div class="panel">
@@ -462,7 +476,7 @@
 <div id="penHint"></div>
 <div id="bag" class="hud"></div>
 <div id="szatnia" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg"></div><div class="sbox"><img src="szatnia_base.jpg" alt="">
-  <div class="sanim" aria-hidden="true"><div class="lev" style="left:74.522%;top:42.402%;width:9.988%;height:21.679%"><div class="aura"></div><div class="orb back"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div><img src="kid27.png" alt=""><div class="orb front"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div></div><img class="tie" src="kid10.png" alt="" style="left:36.244%;top:41.445%;width:8.134%;height:23.061%"><img class="sip" src="kid7h.png" alt="" style="left:56.998%;top:40.701%;width:6.220%;height:13.603%"><div class="phone" style="left:19.258%;top:53.879%;width:2.093%;height:1.913%"></div></div>
+  <div class="sanim" aria-hidden="true"><div class="lamp a" style="left:18.541%;top:12.965%;width:12.739%;height:2.657%"><i></i></div><div class="lamp b" style="left:43.182%;top:12.965%;width:12.799%;height:2.657%"><i></i></div><div class="lamp c" style="left:68.600%;top:13.177%;width:12.380%;height:2.550%"><i></i></div><div class="lev" style="left:74.522%;top:42.402%;width:9.988%;height:21.679%"><div class="aura"></div><div class="orb back"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div><img src="kid27.png" alt=""><div class="orb front"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div></div><img class="tie" src="kid10.png" alt="" style="left:36.244%;top:41.445%;width:8.134%;height:23.061%"><img class="sip" src="kid7h.png" alt="" style="left:56.998%;top:40.701%;width:6.220%;height:13.603%"><div class="phone" style="left:19.258%;top:53.879%;width:2.093%;height:1.913%"></div></div>
   <div class="kid" data-i="0" style="left:14.5%;width:12.5%"></div><div class="kid" data-i="1" style="left:34.5%;width:12.5%"></div>
   <div class="kid" data-i="2" style="left:54.5%;width:12.5%"></div><div class="kid" data-i="3" style="left:73.5%;width:12.5%"></div>
   <div class="pick" id="spick">▼</div><div id="dog" title="Pies"></div>
@@ -599,7 +613,16 @@
   const openSet = (back) => { setBack = back || null; setDraw(); $('setnote').textContent = ''; $('setov').hidden = false; };
   const closeSet = () => { $('setov').hidden = true; if (setBack) setBack(); };
   $('setok').onclick = closeSet; $('setx').onclick = closeSet;
-  $('setclr').onclick = () => { if (!confirm('Wyczyścić wszystkie rekordy?')) return; ['kapki_best', 'lace_best', 'caps_best', 'pen_best', 'flip_best'].forEach((k) => { try { localStorage.removeItem(k); } catch (e) {} }); $('setnote').textContent = 'Rekordy wyczyszczone.'; };
+  // our own pixel yes/no question: the browser's confirm() is blocked in fullscreen and in app browsers
+  const ask = (q, yes, head = 'NA PEWNO?') => { $('askh').textContent = head; $('askq').textContent = q; $('askov').hidden = false;
+    $('askyes').onclick = () => { $('askov').hidden = true; yes(); }; $('askno').onclick = () => { $('askov').hidden = true; }; };
+  const exitGame = () => ask('Wyjść z gry? Wrócisz do ekranu startowego.', () => { try { window.GAME?.quit?.(); window.GAME?.freeze(false); } catch (e) {}
+      try { MV.stopAll ? MV.stopAll() : document.querySelectorAll('audio').forEach((a) => a.pause()); } catch (e) {}
+      try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+      try { window.close(); } catch (e) {} setTimeout(() => location.reload(), 150); }, 'WYJŚCIE');
+  $('setexit').onclick = () => { $('setov').hidden = true; exitGame(); };
+  $('pexit').onclick = () => { $('pmenu').hidden = true; exitGame(); };
+  $('setclr').onclick = () => ask('Wyczyścić wszystkie rekordy?', () => { ['kapki_best', 'lace_best', 'caps_best', 'pen_best', 'flip_best'].forEach((k) => { try { localStorage.removeItem(k); } catch (e) {} }); $('setnote').textContent = 'Rekordy wyczyszczone.'; });
   $('sset').onclick = () => openSet();
   const sndLbl = () => { $('psnd').textContent = window.GAME?.G && document.getElementById('mute').textContent.includes('NIE') ? 'DŹWIĘK: NIE' : 'DŹWIĘK: TAK'; };
   const openPause = () => { window.GAME?.freeze(true); sndLbl(); $('pmenu').hidden = false; };
@@ -607,8 +630,8 @@
   $('pbtn').onclick = openPause; $('pres').onclick = closePause;
   $('psnd').onclick = () => { $('mute').click(); sndLbl(); };
   $('pset').onclick = () => { $('pmenu').hidden = true; openSet(() => { $('pmenu').hidden = false; }); };
-  $('pquit').onclick = () => { if (!confirm('Wyjść z meczu? Wynik przepadnie.')) return; $('pmenu').hidden = true; window.GAME?.quit?.(); window.GAME?.freeze(false);
-    document.body.classList.remove('playing'); $('tip').hidden = true; showModes(); };
+  $('pquit').onclick = () => { $('pmenu').hidden = true; ask('Wyjść z meczu? Wynik przepadnie.', () => { try { window.GAME?.quit?.(); } catch (e) {} window.GAME?.freeze(false);
+      document.body.classList.remove('playing'); const t = $('tip'); if (t) t.hidden = true; showModes(); }); $('askno').onclick = () => { $('askov').hidden = true; $('pmenu').hidden = false; }; };
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('playing')) { $('pmenu').hidden ? openPause() : closePause(); } });
   // a random board button glitches every second or two
   (function glitchLoop() { const m = document.getElementById('modes'); if (m && !m.hidden) { const bs = [...m.querySelectorAll('.tbox2 .mb')]; const b = bs[Math.floor(Math.random() * bs.length)];
