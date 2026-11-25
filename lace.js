@@ -87,9 +87,9 @@
   const pline = (pts, w, col) => fillCells(cellsOf(pts, w), col);
   const pdot = (x, y, r, col) => fillCells(cellsOf([[x, y]], r * 2), col);
   const lace = (a, b, w, col) => { const A = P(...a), B = P(...b), c = CELL();
-    pline([A, B], w + c * 2.2, '#140a10'); pline([A, B], w, col);
+    pline([A, B], w + c * 1.6, '#140a10'); pline([A, B], w, col);
     // a darker pixel stripe along the lace so it reads as twisted cord
-    const n = Math.max(2, Math.floor(Math.hypot(B[0] - A[0], B[1] - A[1]) / (c * 3))); g.fillStyle = col === '#a3263a' ? '#6a1220' : '#5a0e1a';
+    const n = Math.max(2, Math.floor(Math.hypot(B[0] - A[0], B[1] - A[1]) / (c * 4))); g.fillStyle = col === '#a3263a' ? '#6a1220' : '#5a0e1a';
     for (let i = 1; i < n; i++) { const x = A[0] + (B[0] - A[0]) * i / n, y = A[1] + (B[1] - A[1]) * i / n; g.fillRect(Math.floor(x / c) * c, Math.floor(y / c) * c, c, c); } };
   const txt = (s, x, y, size, col = '#fff') => { g.font = `${Math.round(size * 0.62)}px "Press Start 2P", monospace`; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillStyle = '#000'; for (const [a, b] of [[3, 3], [-2, 2], [2, -2], [-2, -2]]) g.fillText(s, x + a, y + b); g.fillStyle = col; g.fillText(s, x, y); };
@@ -115,7 +115,7 @@
     // the laces threaded so far
     if (won && TIED.complete) { g.globalAlpha = Math.min(1, S.t * 2.5 + (S.phase === 'end' ? 1 : 0)); g.drawImage(TIED, ox, oy, 2576 * sc, 1438 * sc); g.globalAlpha = 1; }
     g.fillStyle = 'rgba(0,0,0,.28)'; g.fillRect(0, 0, W, H);   // dims the picture so the laces to swipe stand out
-    if (!won) { const n = Math.min(S.k, SEGS.length); for (let i = 0; i < n; i++) lace(SEGS[i][0], SEGS[i][1], 16 * sc * 2, i % 2 ? '#8a1c2a' : '#a3263a'); }
+    if (!won) { const n = Math.min(S.k, SEGS.length); for (let i = 0; i < n; i++) lace(SEGS[i][0], SEGS[i][1], Math.max(CELL() * 1.2, 15 * sc), i % 2 ? '#8a1c2a' : '#a3263a'); }
     if (S.phase === 'swipe') drawPath();
     for (const s of S.sparks) { s.t += 1 / 60; const c = CELL(); g.fillStyle = s.t < 0.25 ? '#ffe14a' : '#ff9a1f'; g.fillRect(Math.floor((s.x + s.t * 30) / c) * c, Math.floor((s.y - s.t * 40) / c) * c, c, c); }
     S.sparks = S.sparks.filter((s) => s.t < 0.5);
