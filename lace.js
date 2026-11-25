@@ -74,41 +74,56 @@
   $('laceBack').addEventListener('click', () => close());
 
   // ---- drawing ----
-  const lace = (a, b, w, col) => { const [x0, y0] = P(...a), [x1, y1] = P(...b);
-    g.lineCap = 'round'; g.strokeStyle = '#1a0a0e'; g.lineWidth = w + 5 * sc * 2; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
-    g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); };
-  const txt = (s, x, y, size, col = '#fff') => { g.font = `700 ${size}px "Pixelify Sans", monospace`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  // pixel drawing: everything snaps to a grid of square cells, like an 8-bit screen
+  const CELL = () => Math.max(4, Math.round(Math.min(W, H) / 95));
+  const cellsOf = (pts, w) => { const c = CELL(), R = Math.max(0.5, w / 2 / c), r = Math.ceil(R), set = new Set();
+    for (let i = 0; i < pts.length - 1 || i === 0; i++) { const [x0, y0] = pts[i], [x1, y1] = pts[Math.min(i + 1, pts.length - 1)];
+      const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / (c * 0.5)));
+      for (let k = 0; k <= n; k++) { const gx = Math.floor((x0 + (x1 - x0) * k / n) / c), gy = Math.floor((y0 + (y1 - y0) * k / n) / c);
+        for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (dx * dx + dy * dy <= R * R) set.add((gx + dx) + ',' + (gy + dy)); }
+      if (pts.length < 2) break; }
+    return set; };
+  const fillCells = (set, col) => { const c = CELL(); g.fillStyle = col; for (const k of set) { const i = k.indexOf(','); g.fillRect(+k.slice(0, i) * c, +k.slice(i + 1) * c, c, c); } };
+  const pline = (pts, w, col) => fillCells(cellsOf(pts, w), col);
+  const pdot = (x, y, r, col) => fillCells(cellsOf([[x, y]], r * 2), col);
+  const lace = (a, b, w, col) => { const A = P(...a), B = P(...b), c = CELL();
+    pline([A, B], w + c * 2.2, '#140a10'); pline([A, B], w, col);
+    // a darker pixel stripe along the lace so it reads as twisted cord
+    const n = Math.max(2, Math.floor(Math.hypot(B[0] - A[0], B[1] - A[1]) / (c * 3))); g.fillStyle = col === '#ffffff' ? '#c9cede' : '#b8bccc';
+    for (let i = 1; i < n; i++) { const x = A[0] + (B[0] - A[0]) * i / n, y = A[1] + (B[1] - A[1]) * i / n; g.fillRect(Math.floor(x / c) * c, Math.floor(y / c) * c, c, c); } };
+  const txt = (s, x, y, size, col = '#fff') => { g.font = `${Math.round(size * 0.62)}px "Press Start 2P", monospace`; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillStyle = '#000'; for (const [a, b] of [[3, 3], [-2, 2], [2, -2], [-2, -2]]) g.fillText(s, x + a, y + b); g.fillStyle = col; g.fillText(s, x, y); };
-  const drawPath = () => { const p = S.path.pts, k = S.prog;
-    const stroke = (from, to, w, col) => { g.beginPath(); for (let i = from; i <= to; i++) (i === from ? g.moveTo : g.lineTo).call(g, p[i][0], p[i][1]); g.lineWidth = w; g.strokeStyle = col; g.stroke(); };
-    g.lineCap = 'round'; g.lineJoin = 'round';
-    stroke(0, p.length - 1, 30, 'rgba(0,0,0,.6)'); stroke(0, p.length - 1, 22, '#7a1a26'); stroke(0, p.length - 1, 8, 'rgba(255,255,255,.25)');
-    if (k > 0) { stroke(0, k, 24, '#ffe14a'); stroke(0, k, 10, '#fff7c0'); }
-    // the ends: red to start, green to finish, an arrow on the way
-    const [sx, sy] = p[0], [ex, ey] = p[p.length - 1], pulse = 1 + Math.sin(performance.now() / 120) * 0.1;
-    g.fillStyle = '#000'; g.beginPath(); g.arc(sx, sy, 24 * pulse, 0, 7); g.fill(); g.fillStyle = '#e8361f'; g.beginPath(); g.arc(sx, sy, 19 * pulse, 0, 7); g.fill();
-    g.fillStyle = '#000'; g.beginPath(); g.arc(ex, ey, 24, 0, 7); g.fill(); g.fillStyle = '#3fe060'; g.beginPath(); g.arc(ex, ey, 19, 0, 7); g.fill();
+  const drawPath = () => { const p = S.path.pts, k = S.prog, c = CELL();
+    pline(p, 34, '#000'); pline(p, 24, '#6a1622'); pline(p, 8, '#9a3040');
+    if (k > 0) { const q = p.slice(0, k + 1); pline(q, 26, '#ffe14a'); pline(q, 10, '#fffbe0'); }
+    // the ends: red to start, green to finish (pixel discs), a chevron on the way
+    const [sx, sy] = p[0], [ex, ey] = p[p.length - 1], blink = Math.floor(performance.now() / 160) % 2;
+    pdot(sx, sy, 26, '#000'); pdot(sx, sy, 20, blink ? '#ff4a3a' : '#c8281a'); pdot(sx - 6, sy - 6, 5, '#ffb0a0');
+    pdot(ex, ey, 26, '#000'); pdot(ex, ey, 20, '#3fe060'); pdot(ex - 6, ey - 6, 5, '#c8ffc0');
     const mi = Math.min(p.length - 2, Math.max(k + 6, 12)), [ax, ay] = p[mi], [bx, by] = p[mi + 1], an = Math.atan2(by - ay, bx - ax);
-    g.save(); g.translate(ax, ay); g.rotate(an); g.fillStyle = '#fff'; g.beginPath(); g.moveTo(12, 0); g.lineTo(-6, -9); g.lineTo(-6, 9); g.closePath(); g.fill(); g.restore();
-    // the clock: a ring round the red end
-    const f = Math.max(0, S.left / S.time); g.strokeStyle = f < 0.3 ? '#ff4a3a' : '#fff'; g.lineWidth = 5; g.beginPath(); g.arc(sx, sy, 32, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2); g.stroke(); };
+    const tip = [ax + Math.cos(an) * 12, ay + Math.sin(an) * 12], l = [ax + Math.cos(an + 2.4) * 12, ay + Math.sin(an + 2.4) * 12], r = [ax + Math.cos(an - 2.4) * 12, ay + Math.sin(an - 2.4) * 12];
+    pline([l, tip, r], 8, '#000'); pline([l, tip, r], 3, '#fff');
+    // the clock: a ring of pixel blocks round the red end
+    const f = Math.max(0, S.left / S.time), ring = new Set(), R = 36;
+    for (let a = 0; a < f * Math.PI * 2; a += 0.05) { const x = sx + Math.sin(a) * R, y = sy - Math.cos(a) * R; ring.add(Math.floor(x / c) + ',' + Math.floor(y / c)); }
+    fillCells(ring, f < 0.3 && blink ? '#ff4a3a' : '#fff'); };
   const draw = () => {
     g.save(); if (S.shake > 0) g.translate((Math.random() - 0.5) * 16 * S.shake, (Math.random() - 0.5) * 16 * S.shake);
     g.fillStyle = '#12151a'; g.fillRect(-20, -20, W + 40, H + 40);
     const won = S.phase === 'won' || (S.phase === 'end' && S.win);
     if (OPEN.complete) g.drawImage(OPEN, ox, oy, 2576 * sc, 1438 * sc);
     // the laces threaded so far
-    const n = Math.min(S.k, SEGS.length); for (let i = 0; i < n; i++) lace(SEGS[i][0], SEGS[i][1], 16 * sc * 2, i % 2 ? '#8a1c2a' : '#a3263a');
     if (won && TIED.complete) { g.globalAlpha = Math.min(1, S.t * 2.5 + (S.phase === 'end' ? 1 : 0)); g.drawImage(TIED, ox, oy, 2576 * sc, 1438 * sc); g.globalAlpha = 1; }
     g.fillStyle = 'rgba(0,0,0,.28)'; g.fillRect(0, 0, W, H);   // dims the picture so the laces to swipe stand out
+    if (!won) { const n = Math.min(S.k, SEGS.length); for (let i = 0; i < n; i++) lace(SEGS[i][0], SEGS[i][1], 16 * sc * 2, i % 2 ? '#e8ecf6' : '#ffffff'); }
     if (S.phase === 'swipe') drawPath();
-    for (const s of S.sparks) { s.t += 1 / 60; g.fillStyle = `rgba(255,225,74,${1 - s.t * 2})`; g.fillRect(s.x - 3 + s.t * 30, s.y - 3 - s.t * 40, 6, 6); }
+    for (const s of S.sparks) { s.t += 1 / 60; const c = CELL(); g.fillStyle = s.t < 0.25 ? '#ffe14a' : '#ff9a1f'; g.fillRect(Math.floor((s.x + s.t * 30) / c) * c, Math.floor((s.y - s.t * 40) / c) * c, c, c); }
     S.sparks = S.sparks.filter((s) => s.t < 0.5);
     g.restore();
     if (S.flash > 0) { g.fillStyle = `rgba(255,255,255,${S.flash})`; g.fillRect(0, 0, W, H); }
     // HUD: progress, hearts
     const bw = Math.min(260, W * 0.4); g.fillStyle = 'rgba(0,0,0,.7)'; g.fillRect(12, 12, bw + 16, 44); g.fillStyle = '#333'; g.fillRect(20, 36, bw, 12);
-    g.fillStyle = '#3fe060'; g.fillRect(20, 36, bw * Math.min(1, S.k / N), 12); g.font = '700 14px "Pixelify Sans", monospace'; g.textAlign = 'left'; g.fillStyle = '#fff'; g.textBaseline = 'middle';
+    g.fillStyle = '#3fe060'; g.fillRect(20, 36, bw * Math.min(1, S.k / N), 12); g.font = '12px "Press Start 2P", monospace'; g.textAlign = 'left'; g.fillStyle = '#fff'; g.textBaseline = 'middle';
     g.fillText(`SZNUROWANIE ${Math.min(S.k, N)}/${N}`, 20, 24); g.fillStyle = '#ff4a5a'; g.textAlign = 'right'; g.fillText('♥'.repeat(Math.max(0, S.lives)) + '♡'.repeat(Math.max(0, 3 - S.lives)), 20 + bw, 24);
     if (S.phase === 'ready') { txt('ZAWIĄŻ BUTA!', W / 2, H * 0.36, Math.min(56, W / 9), '#ffe14a'); txt('Przesuń palcem po sznurówce: od CZERWONEGO do ZIELONEGO', W / 2, H * 0.5, Math.min(18, W / 30)); txt('Coraz szybciej! · dotknij, żeby zacząć', W / 2, H * 0.58, Math.min(16, W / 34), '#8fd99a'); }
     if (S.phase === 'go') txt(S.t < 0.5 ? 'GOTOWY…' : 'START!', W / 2, H * 0.45, 48, '#ffe14a');
@@ -129,5 +144,5 @@
   let last = 0, raf = 0;
   const loop = (now) => { if (!S.on) return; raf = requestAnimationFrame(loop); const dt = Math.min(0.05, (now - (last || now)) / 1000); last = now; try { update(dt); draw(); } catch (e) { window.__laceErr = String(e.stack || e); } };
   const close = () => { S.on = false; cancelAnimationFrame(raf); root.hidden = true; if (MUS) MUS.pause(); if (S.onExit) S.onExit(); };
-  window.LACE = { start(onExit) { S.onExit = onExit; root.hidden = false; start(); S.on = true; last = 0; if (MUS) MUS.play().catch(() => {}); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); }, _S: S };
+  window.LACE = { get _S() { return S; }, start(onExit) { S.onExit = onExit; root.hidden = false; start(); S.on = true; last = 0; if (MUS) MUS.play().catch(() => {}); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); }, _S: S };
 })();
