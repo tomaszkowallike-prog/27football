@@ -136,7 +136,7 @@
   const LBL = (c) => (c.team === 2 ? '' : S.mode === 'duo' ? String(c.team + 1) : c.team ? 'F' : String(window.CAPTAIN || 27));
   const capDraw = (c) => { const [x, y] = toScreen(c.x, c.y), r = CAP * sc, px = Math.max(2, Math.round(r * 2 / 22));
     const sp = capSprite(c.team === 1 && S.mode === 'duo' ? 3 : c.team, c.rot || 0), size = px * 24;
-    g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(Math.round(x - size / 2 + px * 2), Math.round(y - size / 2 + px * 3), size - px * 2, size - px * 2);
+    g.fillStyle = 'rgba(0,0,0,.22)'; g.beginPath(); g.ellipse(Math.round(x + px * 1.5), Math.round(y + px * 2.5), size * 0.44, size * 0.4, 0, 0, 7); g.fill();
     g.drawImage(sp, Math.round(x - size / 2), Math.round(y - size / 2), size, size);
     const l = LBL(c); if (l) { g.font = `${Math.max(7, px * 4)}px "Press Start 2P", monospace`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#000'; g.fillText(l, x + 1, y + 2); g.fillStyle = '#fff'; g.fillText(l, x, y + 1); } };
   const pxLine = (x0, y0, x1, y1, cell, col, gapOn = 0) => { const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / cell)); g.fillStyle = col;
