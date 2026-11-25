@@ -22,7 +22,7 @@
 <canvas id="c"></canvas>
 <div id="ov">
   <h1>BOTTLE FLIP</h1>
-  <div>Weź telefon jak butelkę i <b>machnij lekko nadgarstkiem w górę</b>.<br>Butelka ma zrobić obrót i stanąć na denku.</div>
+  <div>Weź telefon jak butelkę i <b>machnij lekko nadgarstkiem w górę</b>.<br>Butelka ma zrobić pełny obrót (fikołka) i stanąć na denku.</div>
   <button id="go">START</button>
   <small>Bez czujników (komputer albo brak zgody): przesuń palcem / myszką w górę. Im szybciej, tym wyżej; im bardziej ukośnie, tym mocniej się kręci.<br>Trzymaj telefon mocno 🙂</small>
 </div>
@@ -47,13 +47,14 @@ const BH = 30, BW = 10;           // bottle size in px
 const G = 520;                    // gravity px/s²
 let fill = .33, best = 0, streak = 0, score = 0;
 try { best = +localStorage.getItem('flip_best') || 0; } catch (e) {}
-const B = { x: BX, y: FLOOR, vx: 0, vy: 0, a: 0, w: 0, st: 'ready', t: 0, wob: 0, side: 1 };
+const HOLD = FLOOR - 34;          // bottle held in the hand above the bench
+const B = { x: BX, y: HOLD, vx: 0, vy: 0, a: 0, w: 0, st: 'ready', t: 0, wob: 0, side: 1 };
 let msg = '', msgT = 0, msgCol = '#fff', parts = [];
 let useMotion = false, lastInfo = '';
 
 function newRound() {
   fill = [0.2, 0.28, 0.33, 0.33, 0.4, 0.5][Math.random() * 6 | 0];
-  Object.assign(B, { x: BX, y: FLOOR, vx: 0, vy: 0, a: 0, w: 0, st: 'ready', t: 0, wob: 0 });
+  Object.assign(B, { x: BX, y: HOLD, vx: 0, vy: 0, a: 0, w: 0, st: 'ready', t: 0, wob: 0 });
 }
 // how forgiving the landing is: best around 1/3 water (as in real life)
 const tol = () => 0.42 - Math.abs(fill - 0.33) * 0.9;
@@ -62,7 +63,7 @@ const damp = () => 0.6 + fill * 4.2;
 
 function launch(vy, w, info) {
   if (B.st !== 'ready') return;
-  B.vy = -Math.max(140, Math.min(430, vy));
+  B.vy = -Math.max(60, Math.min(380, vy));
   B.w = Math.max(3, Math.min(32, w));
   B.vx = (Math.random() - .5) * 8;
   B.st = 'fly'; B.t = 0;
@@ -177,23 +178,18 @@ function step(dt) {
         say(spins >= 2 ? 'PODWÓJNY FLIP!' : 'FLIP!', '#ffd23c');
         burst(B.x, FLOOR - 4, C.label); jingle([523, 659, 784, 1046]);
         try { navigator.vibrate && navigator.vibrate(40); } catch (e) {}
-      } else if (Math.abs(Math.abs(ang) - Math.PI) < t * .55 && B.w < 14) {
-        B.st = 'cap'; B.a = Math.PI; B.t = 0; B.wob = (Math.abs(ang) - Math.PI) * 1.2;
-        streak++; score += 3 * streak;
-        say('NA NAKRĘTCE! ×3', '#ff7bd5'); burst(B.x, FLOOR - 4, '#ff7bd5', 28); jingle([523, 784, 1046, 1318, 1568]);
-        try { navigator.vibrate && navigator.vibrate([30, 40, 30]); } catch (e) {}
       } else {
         B.st = 'fall'; B.t = 0; B.side = Math.sin(ang) >= 0 ? 1 : -1; B.vy = -40; B.a = ang;
-        if (streak > 0) say('PUDŁO  (seria ' + streak + ')', '#f66'); else say(ang > 0 ? 'ZA MOCNO' : 'ZA SŁABO', '#f66');
+        if (streak > 0) say('PUDŁO  (seria ' + streak + ')', '#f66'); else say(Math.abs(ang) > 2.2 ? 'DO GÓRY DNEM' : ang > 0 ? 'ZA MOCNO' : 'ZA SŁABO', '#f66');
         streak = 0; blip(160, .25, 'sawtooth', 60);
       }
       if (score > best) { best = score; try { localStorage.setItem('flip_best', best); } catch (e) {} }
       if (B.st !== 'fall' && streak === 0) score = 0;
     }
-  } else if (B.st === 'stand' || B.st === 'cap') {
+  } else if (B.st === 'stand') {
     B.wob *= Math.exp(-6 * dt);
-    B.a = (B.st === 'cap' ? Math.PI : 0) + B.wob * Math.cos(B.t * 22);
-    if (B.t > 1.1) newRound();
+    B.a = B.wob * Math.cos(B.t * 22);
+    if (B.t > 1.2) newRound();
   } else if (B.st === 'fall') {
     // topple to the side, bounce once, roll a bit
     const target = B.side * Math.PI / 2;
@@ -229,6 +225,13 @@ function background() {
   P(40, FLOOR, 160, 4, C.benchTop); P(40, FLOOR + 4, 160, 4, C.bench); P(40, FLOOR + 8, 160, 1, C.bench2);
   P(50, FLOOR + 9, 5, 26, C.bench2); P(185, FLOOR + 9, 5, 26, C.bench2);
   P(40, FLOOR + 33, 160, 2, 'rgba(0,0,0,.35)');
+}
+function drawHand() {
+  if (B.st !== 'ready') return;
+  const x = Math.round(B.x), y = Math.round(B.y - BH);
+  px(x - 9, y - 1, 18, 7, '#e9a06b'); px(x - 9, y + 5, 18, 1, '#b8693c');      // fist round the neck
+  px(x - 7, y + 1, 1, 4, '#b8693c'); px(x - 3, y + 1, 1, 4, '#b8693c'); px(x + 1, y + 1, 1, 4, '#b8693c'); px(x + 5, y + 1, 1, 4, '#b8693c');
+  px(x + 8, y - 8, 10, 12, '#e9a06b'); px(x + 8, y - 30, 12, 23, '#1d6a32'); px(x + 8, y - 30, 2, 23, '#2fb34a'); // wrist + green sleeve
 }
 function drawBottle() {
   // shadow on the bench
@@ -267,6 +270,7 @@ function text(t, x, y, col, size = 8, align = 'center') {
 function draw() {
   background();
   drawBottle();
+  drawHand();
   parts.forEach(p => px(p.x, p.y, 2, 2, p.c));
   text('WYNIK ' + score, 6, 10, '#fff', 8, 'left');
   text('REKORD ' + best, W - 6, 10, '#ffd23c', 8, 'right');
@@ -277,7 +281,7 @@ function draw() {
   px(W - 40 + Math.round(34 * .33 / .6), 23, 1, 6, '#ffd23c');
   if (B.st === 'ready') {
     const k = (performance.now() / 400 | 0) % 2;
-    if (k) text(useMotion ? 'MACHNIJ TELEFONEM ↑' : 'PRZESUŃ PALCEM ↑', W / 2, 52, '#fff', 9);
+    if (k) text(useMotion ? 'MACHNIJ TELEFONEM ↑' : 'PRZESUŃ PALCEM ↑', W / 2, 128, '#fff', 9);
   }
   if (msgT > 0) {
     const s = 1 + Math.max(0, msgT - 1.1) * 3;
