@@ -122,6 +122,8 @@
   @keyframes glow { 50% { box-shadow: 0 0 0 3px #fff, 0 0 18px 6px #ffe14a, 0 4px 0 rgba(0,0,0,.45); } }
   #nbStar .cnt { position: absolute; right: 2px; top: -4px; min-width: 20px; padding: 1px 4px; border-radius: 10px; background: #e8361f; border: 2px solid #000; font: 700 13px "Pixelify Sans", monospace; color: #fff; }
   #nbStar .cnt:empty { display: none; }
+  /* the plain red shot, right above B (which tackles when you have no ball) */
+  #nbShot { right: 15px; top: -30px; --ic: url(btn_shoot.png); --on: url(btn_shoot_on.png); } #nbShot i { width: 60px; height: 60px; } #nbShot span { color: #ff5a4a; margin-top: 4px; } #nbShot.off { opacity: .4; }
   #nbJump { right: 96px; top: 0; } #nbSlide { right: 0; top: 0; } #nbPass { right: 96px; top: 98px; } #nbShoot { right: 0; top: 98px; } #nbSprint { right: 190px; top: 56px; } #nbSwap { right: 190px; top: -34px; } #nbSwap i { width: 54px; height: 54px; } #nbSwap span { margin-top: 6px; }
   /* the crowd in front of the camera, out of focus */
   #front { position: fixed; left: -4%; width: 108%; bottom: -2vh; height: 19vh; z-index: 2; pointer-events: none; filter: blur(7px) brightness(.55) saturate(.8); opacity: .92; display: none; animation: bob 1.6s ease-in-out infinite; }
@@ -132,7 +134,7 @@
   #penHint { position: fixed; left: 50%; top: 22%; transform: translateX(-50%); z-index: 6; display: none; font-size: 18px; font-weight: 700; background: rgba(0,0,0,.75); border: 2px solid #8a8a8a; padding: 6px 14px; white-space: nowrap; color: #ffe14a; }
   #penHint.on { display: block; }
   @media (orientation: portrait) { #btns { transform: scale(.8); transform-origin: bottom right; } #joy { transform: scale(.8); transform-origin: bottom left; } body.touch #me { display: none !important; } body.touch #minibox { top: calc(max(10px, env(safe-area-inset-top)) + 52px); } body.touch #mini { width: 116px; height: 70px; }
-    body.touch #score { transform: scale(.72); } body.touch #wx { display: none; } body.playing.touch #mute { top: calc(max(10px, env(safe-area-inset-top)) + 148px) !important; } }
+    body.touch #score { transform: scale(.72); } body.touch #wx { display: none; } body.playing.touch #mute { top: calc(max(10px, env(safe-area-inset-top)) + 148px) !important; right: max(8px, env(safe-area-inset-right)) !important; } }
   /* the intro: two films, an 8-bit flash between them, then PRESS START over the title */
   #intro { position: fixed; inset: 0; z-index: 20; background: #000; overflow: hidden; cursor: pointer; }
   #intro[hidden] { display: none; }
@@ -272,7 +274,7 @@
   body.touch #tip p { font-size: 12px; margin-top: 7px; } body.touch #tip .cb { font-size: 15px; padding: 4px 9px; } body.touch #tip .sup { font-size: 24px; } body.touch #tip .tbox { padding: 9px 14px 10px; }
   #tip .cont { margin-top: 14px; font-weight: 700; color: #ffe14a; animation: blink .9s steps(2, jump-none) infinite; }
   #mute { position: fixed; right: max(8px, env(safe-area-inset-right)); top: max(8px, env(safe-area-inset-top)); z-index: 4; display: none; font: 700 12px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.6); border: 2px solid #8a8a8a; padding: 4px 7px; cursor: pointer; }
-  body.playing #mute { display: block; } body.playing.touch #mute { top: calc(max(10px, env(safe-area-inset-top)) + 118px); bottom: auto; }
+  body.playing #mute { display: block; } body.playing.touch #mute { top: max(10px, env(safe-area-inset-top)); right: calc(max(10px, env(safe-area-inset-right)) + 156px); bottom: auto; }
   @media (max-width: 700px) { #score .tn { font-size: 16px; } #score .num { font-size: 24px; min-width: 50px; } #score .clockp { font-size: 18px; } #score .crest { width: 26px; height: 30px; } #score .plate, #score .clockp { height: 38px; } }
 </style>
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
@@ -358,7 +360,7 @@
   <p class="k-keys"><span class="kc">J</span> zielony · <span class="kc">K</span> czerwony · <span class="kc">L</span> ★ · <span class="kc w">SHIFT</span> sprint</p><p class="k-touch">Wychyl gałkę do końca, żeby biec sprintem. Możesz też dotknąć kolegi na boisku.</p>
   <div class="cont">▶ DOTKNIJ ALBO WCIŚNIJ KLAWISZ, ŻEBY GRAĆ</div></div></div>
 <div class="nes" id="joy"><div class="base"></div><div class="knob"></div></div>
-<div class="nes" id="btns"><div class="nb" id="nbA"><i></i><span>PODAJ</span></div><div class="nb big" id="nbB"><em class="pw"></em><i></i><span>STRZAŁ</span></div><div class="nb" id="nbStar"><i>★</i><span>SUPER</span><b class="cnt"></b></div></div>
+<div class="nes" id="btns"><div class="nb" id="nbA"><i></i><span>PODAJ</span></div><div class="nb big" id="nbB"><em class="pw"></em><i></i><span>STRZAŁ</span></div><div class="nb" id="nbShot"><i></i><span>STRZAŁ</span></div><div class="nb" id="nbStar"><i>★</i><span>SUPER</span><b class="cnt"></b></div></div>
 
 <script>
 {
@@ -585,7 +587,7 @@
     joy.addEventListener('pointermove', (e) => { if (e.pointerId === pid) move(e); });
     const end = () => { pid = null; knob.style.transform = ''; joy.classList.remove('on'); window.GAME?.setStick(null); };
     joy.addEventListener('pointerup', end); joy.addEventListener('pointercancel', end); }
-  for (const [id, btn] of [['nbA', 'A'], ['nbStar', 'star']]) { const el = $(id);
+  for (const [id, btn] of [['nbA', 'A'], ['nbStar', 'star'], ['nbShot', 'shot']]) { const el = $(id);
     el.addEventListener('pointerdown', (e) => { el.classList.add('down'); window.GAME?.press(btn); e.preventDefault(); });
     for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, () => el.classList.remove('down')); }
   { const el = $('nbB'); let held = false;
@@ -598,7 +600,7 @@
         if (key !== last) { last = key;
           $('nbA').classList.toggle('swap', !c.has); $('nbA').querySelector('span').textContent = c.has ? 'PODAJ' : 'ZMIANA';
           $('nbB').classList.toggle('tackle', !c.has && !c.air); $('nbB').querySelector('span').textContent = c.has ? 'STRZAŁ' : c.air ? 'GŁÓWKA' : 'WŚLIZG';
-          $('nbStar').classList.toggle('off', !c.has); $('nbStar').classList.toggle('ready', c.has); $('nbStar').querySelector('.cnt').textContent = c.bag ? c.bag : '';
+          $('nbShot').classList.toggle('off', !c.has && !c.air); $('nbStar').classList.toggle('off', !c.has); $('nbStar').classList.toggle('ready', c.has); $('nbStar').querySelector('.cnt').textContent = c.bag ? c.bag : '';
           $('joy').classList.toggle('dash', c.dash); }
         $('nbB').classList.toggle('charging', c.charge > 0); $('nbB').style.setProperty('--pw', c.charge.toFixed(2)); }
       requestAnimationFrame(loop); };

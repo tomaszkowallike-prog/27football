@@ -940,6 +940,9 @@ function press(btn) {
     if (free(c)) tackle(c, 'slide'); return; }
   if (btn === 'Bup') { if (!G.charge) return; const k = Math.min(1, G.charge / 0.75); G.charge = 0;
     if (ball.owner === c && free(c)) shoot(c, 0.3 + 0.7 * k); return; }
+  if (btn === 'shot') {   // the red button: a plain shot straight away, no charging; in the air it heads or volleys
+    if (c.y > 0) { press('b'); return; }
+    if (ball.owner === c && free(c)) { G.charge = 0; shoot(c, c.dash ? 0.8 : 0.6); } return; }
   if (btn === 'star') { if (ball.owner !== c || !free(c) || c.y > 0) return; G.charge = 0; c.st = 'jump'; c.jumpBall = true; c.y = 1.4; c.vy = 0; openPick(c); return; }
   if (c.st === 'down') { c.t -= 0.22; return; }                  // mash to get up sooner
   if (btn === 'jump') { jump(c); return; }
