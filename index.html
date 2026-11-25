@@ -10,8 +10,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Cuiavia Soccer</title>
 <link rel="icon" href="data:,">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+@font-face { font-family: 'Press Start 2P'; font-weight: 400; font-display: swap; src: url(fonts/press-start-2p-latin-400-normal.woff2) format('woff2'); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Press Start 2P'; font-weight: 400; font-display: swap; src: url(fonts/press-start-2p-latin-ext-400-normal.woff2) format('woff2'); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'Pixelify Sans'; font-weight: 400; font-display: swap; src: url(fonts/pixelify-sans-latin-400-normal.woff2) format('woff2'); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Pixelify Sans'; font-weight: 400; font-display: swap; src: url(fonts/pixelify-sans-latin-ext-400-normal.woff2) format('woff2'); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'Pixelify Sans'; font-weight: 700; font-display: swap; src: url(fonts/pixelify-sans-latin-700-normal.woff2) format('woff2'); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Pixelify Sans'; font-weight: 700; font-display: swap; src: url(fonts/pixelify-sans-latin-ext-700-normal.woff2) format('woff2'); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+</style>
 <style>
   /* VOICE an 8-bit cartridge. IDEA the original's black status bar under a 3D pitch. PICTURE the game itself.
      COLOUR Cuiavia green, the rivals purple, white type on black, GOAL! in orange. TYPE Pixelify Sans. */
@@ -246,7 +252,7 @@
   #szatnia .lev { container-type: inline-size; }
   #szatnia .orb { position: absolute; left: 50%; top: 58%; width: 0; height: 0; transform: scaleY(.36); }
   #szatnia .orb.front { clip-path: polygon(-600px 0, 600px 0, 600px 600px, -600px 600px); z-index: 2; } #szatnia .orb.back { z-index: 0; } #szatnia .lev img { z-index: 1; }
-  #szatnia .orb i { position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; background: #8ae8ff; box-shadow: 0 0 6px 2px rgba(80,190,255,.8); animation: orbit 2.6s linear infinite, spk .5s steps(2) infinite; animation-delay: var(--d), var(--d); }
+  #szatnia .orb i { position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; background: #8ae8ff; box-shadow: 0 0 0 2px #1a6ad8; animation: orbit 2.6s linear infinite, spk .5s steps(2) infinite; animation-delay: var(--d), var(--d); }
   #szatnia .orb i:nth-child(odd) { width: 6px; height: 6px; background: #fff; }
   @keyframes orbit { from { transform: rotate(var(--a)) translateX(58cqw); } to { transform: rotate(calc(var(--a) + 360deg)) translateX(58cqw); } }
   @keyframes spk { 50% { opacity: .35; } }
@@ -277,6 +283,28 @@
   #pbtn { position: fixed; z-index: 5; display: none; font: 700 14px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.65); border: 2px solid #ffd21a; border-radius: 6px; padding: 5px 10px; cursor: pointer; right: calc(max(10px, env(safe-area-inset-right)) + 162px); top: max(10px, env(safe-area-inset-top)); }
   body.playing #pbtn { display: block; } body.playing #mute { display: none !important; }
   #sset { left: 93.6%; top: 2.6%; width: 4.6%; height: 8.6%; }
+  /* pixel look for the menus: notched corners, hard bevels, the 8-bit font */
+  :root { --notch: polygon(0 6px, 3px 6px, 3px 3px, 6px 3px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 3px) calc(100% - 6px), calc(100% - 3px) calc(100% - 3px), calc(100% - 6px) calc(100% - 3px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 3px), 3px calc(100% - 3px), 3px calc(100% - 6px), 0 calc(100% - 6px)); --px: "Press Start 2P", monospace; }
+  .setp { border: 0 !important; border-radius: 0 !important; clip-path: var(--notch); background: #1a1540; box-shadow: inset 0 0 0 4px #000, inset 0 0 0 8px #7a6ad8, inset 0 0 0 12px #000 !important; padding: 20px 24px 22px !important; font-family: var(--px) !important; font-size: 11px !important; line-height: 1.5; }
+  .setp h2 { font-family: var(--px) !important; font-size: 18px !important; letter-spacing: 0 !important; text-shadow: 3px 3px 0 #b8321e, 3px 3px 0 #000 !important; }
+  .setp h2 .x { font-family: var(--px); font-size: 12px !important; border: 0 !important; clip-path: var(--notch); box-shadow: inset 0 0 0 3px #fff, inset -6px -6px 0 0 rgba(0,0,0,.4) !important; background: #e8402a !important; color: #fff !important; }
+  .setp .row { border-bottom: 0 !important; background-image: linear-gradient(90deg, #3a3478 50%, transparent 50%); background-size: 8px 2px; background-repeat: repeat-x; background-position: bottom; padding: 9px 0 !important; }
+  .setp .row span { font-weight: 400; font-size: 10px; color: #d8d4ff; }
+  .setp .v, .setp .red, .setp .ok, .setp .big { font-family: var(--px) !important; border: 0 !important; border-radius: 0 !important; clip-path: var(--notch); box-shadow: inset 0 0 0 3px #000, inset -6px -6px 0 0 rgba(0,0,0,.28), inset 6px 6px 0 0 rgba(255,255,255,.55) !important; text-shadow: none; letter-spacing: 0; }
+  .setp .v { font-size: 10px !important; padding: 9px 8px !important; }
+  .setp .red { font-size: 9px !important; padding: 10px 12px !important; } .setp .ok { font-size: 13px !important; padding: 12px 22px !important; } .setp .big { font-size: 13px !important; padding: 13px !important; }
+  .setp .v:active, .setp .red:active, .setp .ok:active, .setp .big:active { transform: translateY(3px); box-shadow: inset 0 0 0 3px #000, inset 6px 6px 0 0 rgba(0,0,0,.28) !important; }
+  .setp .note { font-size: 9px !important; }
+  @media (max-height: 460px) { .setp { padding: 16px 20px 16px !important; } .setp .row { padding: 5px 0 !important; } .setp .v { padding: 6px 8px !important; font-size: 9px !important; } .setp h2 { font-size: 15px !important; } .setp .big { padding: 9px !important; font-size: 11px !important; } }
+  #pbtn { font-family: var(--px) !important; font-size: 10px !important; border: 0 !important; border-radius: 0 !important; clip-path: var(--notch); background: #1a1540 !important; box-shadow: inset 0 0 0 3px #ffd21a, inset -3px -3px 0 3px rgba(0,0,0,.4) !important; padding: 9px 12px !important; }
+  #modes .tbox2 .mb { font-family: var(--px) !important; font-size: clamp(9px, 1.7vw, 20px) !important; border: 0 !important; border-radius: 0 !important; clip-path: var(--notch); padding: .55em .9em !important; line-height: 1 !important; background: #fff4fa !important;
+    box-shadow: inset 0 0 0 3px #1a1a4a, inset -5px -5px 0 0 rgba(60,30,110,.25), inset 5px 5px 0 0 #fff !important; gap: .6em !important; }
+  #modes .tbox2 .mb .pxi { width: 1.3em; height: 1.3em; image-rendering: pixelated; display: block; }
+  #modes .tbox2 .mb b { display: block; }
+  #modes .tbox2 .mb.sel, #modes .tbox2 .mb:hover { background: #ffe14a !important; box-shadow: inset 0 0 0 3px #1a1a4a, inset -5px -5px 0 0 rgba(160,100,0,.35), inset 5px 5px 0 0 #fff8c0 !important; }
+  #modes .tbox2 small, #szatnia .stitle { font-family: var(--px) !important; font-size: clamp(7px, 1.1vw, 14px) !important; letter-spacing: .05em !important; padding: 5px 10px !important; }
+  #modes .mback, #mvol { font-family: var(--px) !important; font-size: 9px !important; border-radius: 0 !important; }
+  body:has(#szatnia:not([hidden])) #mvol { display: none; }
   /* wide phones: yellow 90s strips on both sides, the pattern drifts up and the sparkles blink */
   .side90 { display: none; position: absolute; top: 0; bottom: 0; width: calc((100vw - 177.78vh) / 2 + 4px); z-index: 0; pointer-events: none; overflow: hidden;
     background: url(side_a.png) 0 0 / 192px 192px repeat, #ffd21a; image-rendering: pixelated; animation: side90up 8s linear infinite; }
@@ -370,7 +398,7 @@
 <div id="minibox" class="hud"><div class="mh"><span style="color:var(--g)">CUI</span><i>MAPA</i><span style="color:var(--p)">FIO</span></div><canvas id="mini" class="px" width="210" height="126"></canvas></div>
 <div id="banner"></div>
 <button id="mute">DŹWIĘK: TAK</button><button id="pbtn" aria-label="Menu">☰ MENU</button>
-<div class="setov" id="setov" hidden><div class="setp" role="dialog" aria-label="Ustawienia"><h2>⚙ USTAWIENIA <button class="x" id="setx" aria-label="Zamknij">✕</button></h2>
+<div class="setov" id="setov" hidden><div class="setp" role="dialog" aria-label="Ustawienia"><h2>USTAWIENIA <button class="x" id="setx" aria-label="Zamknij">X</button></h2>
   <div class="row"><span>Głośność muzyki</span><button class="v" data-k="mus"></button></div>
   <div class="row"><span>Efekty dźwiękowe (SFX)</span><button class="v" data-k="sfx"></button></div>
   <div class="row"><span>Czas połowy meczu</span><button class="v" data-k="half"></button></div>
@@ -379,10 +407,10 @@
   <div class="row"><span>Pad dotykowy</span><button class="v" data-k="pad"></button></div>
   <div class="note" id="setnote"></div>
   <div class="foot"><button class="red" id="setclr">WYCZYŚĆ REKORDY</button><button class="ok" id="setok">ZAMKNIJ</button></div></div></div>
-<div class="setov" id="pmenu" hidden><div class="setp" role="dialog" aria-label="Pauza"><h2>⏸ PAUZA</h2>
-  <button class="big grn" id="pres">▶ WZNÓW</button>
+<div class="setov" id="pmenu" hidden><div class="setp" role="dialog" aria-label="Pauza"><h2>PAUZA</h2>
+  <button class="big grn" id="pres">WZNÓW</button>
   <button class="big" id="psnd">DŹWIĘK: TAK</button>
-  <button class="big" id="pset">⚙ USTAWIENIA</button>
+  <button class="big" id="pset">USTAWIENIA</button>
   <button class="big red2" id="pquit">WYJDŹ Z MECZU</button></div></div>
 
 <div class="ov" id="menu" hidden>
@@ -417,7 +445,7 @@
   <div class="stitle">WYBIERZ KAPITANA</div></div></div>
 <div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt="">
   <small id="mq">CO ROBIMY?</small>
-  <div class="mrow"><button class="mb" data-m="match"><b>⚽</b>MECZ<em>Cuiavia kontra Fioletowi</em></button><button class="mb" data-m="karne"><b>🥅</b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b>🎯</b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b>👟</b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b>🔘</b>KAPSLE<em>wyścig kapsli po torze</em></button></div>
+  <div class="mrow"><button class="mb" data-m="match"><b><img class="pxi" src="ico_match.png" alt=""></b>MECZ<em>Cuiavia kontra Fioletowi</em></button><button class="mb" data-m="karne"><b><img class="pxi" src="ico_karne.png" alt=""></b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b><img class="pxi" src="ico_kapki.png" alt=""></b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b><img class="pxi" src="ico_but.png" alt=""></b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b><img class="pxi" src="ico_kapsle.png" alt=""></b>KAPSLE<em>wyścig kapsli po torze</em></button></div>
   <button class="ibtn mback" data-m="back">◀ SZATNIA</button></div></div></div>
 <div id="kapki" hidden><div class="f169"><img src="kapki_bg.jpg" alt=""></div><div id="jug"></div><div id="kdots"></div>
   <div class="khud"><div><small>KAPKI</small><b id="kscore">0</b></div><div><small>REKORD</small><b id="kbest">0</b></div></div>
