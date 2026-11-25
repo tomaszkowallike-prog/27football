@@ -235,6 +235,48 @@
   #szatnia .sbg { position: absolute; inset: -20px; background: url(szatnia.jpg) center / cover; filter: blur(12px) brightness(.45); }
   #szatnia .sbox { position: absolute; left: 50%; top: 50%; width: min(100vw, 177.7vh); aspect-ratio: 1672 / 941; transform: translate(-50%, -50%); }
   #szatnia .sbox > img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+  /* the boys in the locker room come alive: 27 floats in blue energy, 10 ties his shoe, 7 sips, 14's phone flickers */
+  #szatnia .sanim { position: absolute; inset: 0; pointer-events: none; }
+  #szatnia .sanim img { position: absolute; display: block; image-rendering: pixelated; }
+  #szatnia .lev { position: absolute; }
+  #szatnia .lev img { left: 0; top: 0; width: 100%; height: 100%; animation: lev 3.2s ease-in-out infinite; }
+  @keyframes lev { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7%); } }
+  #szatnia .aura { position: absolute; left: 8%; right: 8%; bottom: -6%; height: 22%; border-radius: 50%; background: radial-gradient(closest-side, rgba(120,220,255,.95), rgba(60,150,255,.5) 60%, transparent); animation: aura 3.2s ease-in-out infinite; }
+  @keyframes aura { 0%, 100% { transform: scale(1); opacity: .9; } 50% { transform: scale(.8); opacity: .55; } }
+  #szatnia .lev { container-type: inline-size; }
+  #szatnia .orb { position: absolute; left: 50%; top: 58%; width: 0; height: 0; transform: scaleY(.36); }
+  #szatnia .orb.front { clip-path: polygon(-600px 0, 600px 0, 600px 600px, -600px 600px); z-index: 2; } #szatnia .orb.back { z-index: 0; } #szatnia .lev img { z-index: 1; }
+  #szatnia .orb i { position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; background: #8ae8ff; box-shadow: 0 0 6px 2px rgba(80,190,255,.8); animation: orbit 2.6s linear infinite, spk .5s steps(2) infinite; animation-delay: var(--d), var(--d); }
+  #szatnia .orb i:nth-child(odd) { width: 6px; height: 6px; background: #fff; }
+  @keyframes orbit { from { transform: rotate(var(--a)) translateX(58cqw); } to { transform: rotate(calc(var(--a) + 360deg)) translateX(58cqw); } }
+  @keyframes spk { 50% { opacity: .35; } }
+  #szatnia .tie { transform-origin: 46% 100%; animation: tie .55s ease-in-out infinite alternate; }
+  @keyframes tie { from { transform: rotate(-1.4deg) translateY(0); } to { transform: rotate(1deg) translateY(1.2%); } }
+  #szatnia .sip { transform-origin: 45% 95%; animation: sip 3s ease-in-out infinite; }
+  @keyframes sip { 0%, 100% { transform: rotate(0); } 35%, 60% { transform: rotate(-6deg) translateY(-1%); } 75% { transform: rotate(1deg); } }
+  #szatnia .phone { position: absolute; background: #b8e8ff; mix-blend-mode: screen; border-radius: 2px; animation: phfl 1.7s steps(1) infinite; }
+  @keyframes phfl { 0% { opacity: .15; } 12% { opacity: .55; } 18% { opacity: .2; } 40% { opacity: .45; background: #ffd0f0; } 55% { opacity: .1; } 70% { opacity: .6; background: #b8ffcc; } 85% { opacity: .25; } }
+  @media (prefers-reduced-motion: reduce) { #szatnia .sanim * { animation: none !important; } }
+  /* settings and the match menu: a navy pixel panel with yellow buttons */
+  .setov { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(6,4,18,.6); }
+  .setov[hidden] { display: none; }
+  .setp { width: min(92vw, 560px); max-height: 92vh; overflow: auto; box-sizing: border-box; background: #1a1540; border: 4px solid #7a6ad8; border-radius: 10px; box-shadow: 0 0 0 4px #0b0820, 0 10px 0 rgba(0,0,0,.5); padding: 14px 18px 16px; font: 700 15px "Pixelify Sans", monospace; color: #e8e4ff; }
+  .setp h2 { margin: 0 0 8px; display: flex; align-items: center; justify-content: space-between; font: 700 26px "Pixelify Sans", monospace; color: #ffd21a; text-shadow: 3px 3px 0 #000; letter-spacing: .06em; }
+  .setp h2 .x { font-size: 20px; width: 36px; height: 36px; background: #0b0820; color: #fff; border: 2px solid #8a84b8; cursor: pointer; text-shadow: none; }
+  .setp .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 2px solid #2c2660; }
+  .setp .row span { font-weight: 400; }
+  .setp .v { min-width: 44%; padding: 7px 8px; font: 700 14px "Pixelify Sans", monospace; color: #1a1030; background: #ffe14a; border: 2px solid #fff6c0; box-shadow: 0 4px 0 #b08a00; cursor: pointer; }
+  .setp .v.off { background: #4a4478; color: #d8d4ff; border-color: #7a74b0; box-shadow: 0 4px 0 #2a2450; }
+  .setp .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; gap: 10px; }
+  .setp .red { padding: 8px 12px; font: 700 13px "Pixelify Sans", monospace; color: #fff; background: #e8402a; border: 2px solid #ffb0a0; box-shadow: 0 4px 0 #8a1a0a; cursor: pointer; }
+  .setp .ok { padding: 10px 28px; font: 700 18px "Pixelify Sans", monospace; color: #1a1030; background: #ffa21a; border: 2px solid #ffe0a0; box-shadow: 0 5px 0 #a05a00; cursor: pointer; }
+  .setp .big { display: block; width: 100%; margin: 10px 0 0; padding: 11px; font: 700 20px "Pixelify Sans", monospace; color: #1a1030; background: #ffe14a; border: 2px solid #fff6c0; box-shadow: 0 5px 0 #b08a00; cursor: pointer; }
+  .setp .big.grn { background: #6ee05a; border-color: #d8ffc8; box-shadow: 0 5px 0 #2a8a1a; } .setp .big.red2 { background: #e8402a; color: #fff; border-color: #ffb0a0; box-shadow: 0 5px 0 #8a1a0a; }
+  @media (max-height: 460px) { .setp { padding: 8px 14px 10px; font-size: 13px; } .setp h2 { font-size: 20px; margin-bottom: 2px; } .setp h2 .x { width: 30px; height: 30px; font-size: 16px; } .setp .row { padding: 3px 0; } .setp .v { padding: 4px 8px; font-size: 12px; box-shadow: 0 3px 0 #b08a00; } .setp .foot { margin-top: 8px; } .setp .big { padding: 7px; font-size: 16px; margin-top: 7px; } .setp .note { margin-top: 4px; } }
+  .setp .note { font-weight: 400; font-size: 12px; color: #a8a0e0; margin-top: 8px; min-height: 1em; }
+  #pbtn { position: fixed; z-index: 5; display: none; font: 700 14px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.65); border: 2px solid #ffd21a; border-radius: 6px; padding: 5px 10px; cursor: pointer; right: calc(max(10px, env(safe-area-inset-right)) + 162px); top: max(10px, env(safe-area-inset-top)); }
+  body.playing #pbtn { display: block; } body.playing #mute { display: none !important; }
+  #sset { left: 93.6%; top: 2.6%; width: 4.6%; height: 8.6%; }
   /* wide phones: yellow 90s strips on both sides, the pattern drifts up and the sparkles blink */
   .side90 { display: none; position: absolute; top: 0; bottom: 0; width: calc((100vw - 177.78vh) / 2 + 4px); z-index: 0; pointer-events: none; overflow: hidden;
     background: url(side_a.png) 0 0 / 192px 192px repeat, #ffd21a; image-rendering: pixelated; animation: side90up 8s linear infinite; }
@@ -291,6 +333,9 @@
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
 <script>
   // music volume for every track (match, locker room, penalties, keepy-uppy): 100 / 60 / 30 / off, remembered
+  window.CFG = (() => { const d = { half: 120, lvl: 1, sfx: true, vib: true, pad: 'auto' };
+    try { return Object.assign(d, JSON.parse(localStorage.getItem('cfg') || '{}')); } catch (e) { return d; } })();
+  window.saveCFG = () => { try { localStorage.setItem('cfg', JSON.stringify(window.CFG)); } catch (e) {} };
   window.MV = (() => {
     // ONE audio player for all music: every track only hands it its file, so two tracks can never sound at once;
     // a phone unlocks this one player on the first tap
@@ -324,7 +369,21 @@
 <div id="them" class="hud card"><canvas class="px" id="fThem" width="40" height="40"></canvas><div class="info"><div class="row1"><span class="n" id="nThem">11</span><span class="lbl" id="lThem">FW</span></div><div class="meter"><i id="mThem"></i></div><div class="say" id="sayThem"></div></div></div>
 <div id="minibox" class="hud"><div class="mh"><span style="color:var(--g)">CUI</span><i>MAPA</i><span style="color:var(--p)">FIO</span></div><canvas id="mini" class="px" width="210" height="126"></canvas></div>
 <div id="banner"></div>
-<button id="mute">DŹWIĘK: TAK</button>
+<button id="mute">DŹWIĘK: TAK</button><button id="pbtn" aria-label="Menu">☰ MENU</button>
+<div class="setov" id="setov" hidden><div class="setp" role="dialog" aria-label="Ustawienia"><h2>⚙ USTAWIENIA <button class="x" id="setx" aria-label="Zamknij">✕</button></h2>
+  <div class="row"><span>Głośność muzyki</span><button class="v" data-k="mus"></button></div>
+  <div class="row"><span>Efekty dźwiękowe (SFX)</span><button class="v" data-k="sfx"></button></div>
+  <div class="row"><span>Czas połowy meczu</span><button class="v" data-k="half"></button></div>
+  <div class="row"><span>Poziom rywala</span><button class="v" data-k="lvl"></button></div>
+  <div class="row"><span>Wibracje (telefon)</span><button class="v" data-k="vib"></button></div>
+  <div class="row"><span>Pad dotykowy</span><button class="v" data-k="pad"></button></div>
+  <div class="note" id="setnote"></div>
+  <div class="foot"><button class="red" id="setclr">WYCZYŚĆ REKORDY</button><button class="ok" id="setok">ZAMKNIJ</button></div></div></div>
+<div class="setov" id="pmenu" hidden><div class="setp" role="dialog" aria-label="Pauza"><h2>⏸ PAUZA</h2>
+  <button class="big grn" id="pres">▶ WZNÓW</button>
+  <button class="big" id="psnd">DŹWIĘK: TAK</button>
+  <button class="big" id="pset">⚙ USTAWIENIA</button>
+  <button class="big red2" id="pquit">WYJDŹ Z MECZU</button></div></div>
 
 <div class="ov" id="menu" hidden>
   <div class="panel">
@@ -346,13 +405,15 @@
 <div class="ov" id="end" hidden><div class="panel"><h1 id="endT">KONIEC</h1><div id="final">0 : 0</div><div class="row"><button class="btn" id="again">REWANŻ</button></div></div></div>
 <div id="penHint"></div>
 <div id="bag" class="hud"></div>
-<div id="szatnia" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg"></div><div class="sbox"><img src="szatnia.jpg" alt="">
+<div id="szatnia" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg"></div><div class="sbox"><img src="szatnia_base.jpg" alt="">
+  <div class="sanim" aria-hidden="true"><div class="lev" style="left:74.522%;top:42.402%;width:9.988%;height:21.679%"><div class="aura"></div><div class="orb back"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div><img src="kid27.png" alt=""><div class="orb front"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div></div><img class="tie" src="kid10.png" alt="" style="left:36.244%;top:41.445%;width:8.134%;height:23.061%"><img class="sip" src="kid7h.png" alt="" style="left:56.998%;top:40.701%;width:6.220%;height:13.603%"><div class="phone" style="left:19.258%;top:53.879%;width:2.093%;height:1.913%"></div></div>
   <div class="kid" data-i="0" style="left:14.5%;width:12.5%"></div><div class="kid" data-i="1" style="left:34.5%;width:12.5%"></div>
   <div class="kid" data-i="2" style="left:54.5%;width:12.5%"></div><div class="kid" data-i="3" style="left:73.5%;width:12.5%"></div>
   <div class="pick" id="spick">▼</div><div id="dog" title="Pies"></div>
   <div class="spanel"><div class="face" id="sface"></div><div class="who"><b id="sname"></b><span id="spos"></span><em>KAPITAN · ROZGRYWAJĄCY</em><i id="ssup"></i></div><div class="bars" id="sbars"></div></div>
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
+  <button class="hot" id="sset" aria-label="Ustawienia"></button>
   <div class="stitle">WYBIERZ KAPITANA</div></div></div>
 <div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt="">
   <small id="mq">CO ROBIMY?</small>
@@ -376,7 +437,7 @@
 <script>
 {
   const $ = (id) => document.getElementById(id);
-  const touch = matchMedia('(pointer: coarse)').matches; if (touch) document.body.classList.add('touch');
+  const touch = CFG.pad === 'on' ? true : CFG.pad === 'off' ? false : matchMedia('(pointer: coarse)').matches; if (touch) document.body.classList.add('touch');
   if (touch) { const goLand = () => { const el = document.documentElement, fs = el.requestFullscreen || el.webkitRequestFullscreen;
       try { const p = fs && !document.fullscreenElement ? fs.call(el, { navigationUI: 'hide' }) : null;
         Promise.resolve(p).then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape')).catch(() => {}); } catch (e) {} };
@@ -461,6 +522,38 @@
   let modeSel = 0;
   const NAMES = { 14: 'SOWA', 10: 'ARTUR', 7: 'SZYMON', 27: 'DOMINIK' };
   const TMUS = MV.reg(new Audio('tablica.mp3'), 0.5); TMUS.loop = true;   // the board's tune, from 1:54 of the user's track
+  // ---- settings panel and the match menu --------------------------------------------------------------------------------
+  const SETV = {
+    mus: () => MV.v ? Math.round(MV.v * 100) + '%' : 'WYŁĄCZONA',
+    sfx: () => CFG.sfx ? 'WŁĄCZONE' : 'WYŁĄCZONE', vib: () => CFG.vib ? 'WŁĄCZONE' : 'WYŁĄCZONE',
+    half: () => `${CFG.half / 60}:00`, lvl: () => ['ŁATWY', 'NORMALNY', 'TRUDNY'][CFG.lvl],
+    pad: () => ({ auto: 'AUTO', on: 'ZAWSZE', off: 'WYŁĄCZONY' })[CFG.pad] };
+  const setDraw = () => document.querySelectorAll('#setov .v').forEach((b) => { const k = b.dataset.k; b.textContent = SETV[k]();
+    b.classList.toggle('off', (k === 'sfx' && !CFG.sfx) || (k === 'vib' && !CFG.vib) || (k === 'mus' && !MV.v) || (k === 'pad' && CFG.pad === 'auto')); });
+  document.querySelectorAll('#setov .v').forEach((b) => b.addEventListener('click', () => { const k = b.dataset.k; $('setnote').textContent = '';
+    if (k === 'mus') MV.next();
+    else if (k === 'sfx') { CFG.sfx = !CFG.sfx; window.GAME?.sfx?.(CFG.sfx); }
+    else if (k === 'vib') { CFG.vib = !CFG.vib; if (CFG.vib) try { navigator.vibrate?.(60); } catch (e) {} }
+    else if (k === 'half') CFG.half = CFG.half >= 180 ? 60 : CFG.half + 60;
+    else if (k === 'lvl') CFG.lvl = (CFG.lvl + 1) % 3;
+    else if (k === 'pad') { CFG.pad = { auto: 'on', on: 'off', off: 'auto' }[CFG.pad]; $('setnote').textContent = 'Zmiana pada zadziała po ponownym uruchomieniu gry.'; }
+    if (k === 'half') $('setnote').textContent = 'Nowy czas połowy od następnego meczu.';
+    saveCFG(); setDraw(); }));
+  let setBack = null;
+  const openSet = (back) => { setBack = back || null; setDraw(); $('setnote').textContent = ''; $('setov').hidden = false; };
+  const closeSet = () => { $('setov').hidden = true; if (setBack) setBack(); };
+  $('setok').onclick = closeSet; $('setx').onclick = closeSet;
+  $('setclr').onclick = () => { if (!confirm('Wyczyścić wszystkie rekordy?')) return; ['kapki_best', 'lace_best', 'caps_best', 'pen_best', 'flip_best'].forEach((k) => { try { localStorage.removeItem(k); } catch (e) {} }); $('setnote').textContent = 'Rekordy wyczyszczone.'; };
+  $('sset').onclick = () => openSet();
+  const sndLbl = () => { $('psnd').textContent = window.GAME?.G && document.getElementById('mute').textContent.includes('NIE') ? 'DŹWIĘK: NIE' : 'DŹWIĘK: TAK'; };
+  const openPause = () => { window.GAME?.freeze(true); sndLbl(); $('pmenu').hidden = false; };
+  const closePause = () => { $('pmenu').hidden = true; window.GAME?.freeze(false); };
+  $('pbtn').onclick = openPause; $('pres').onclick = closePause;
+  $('psnd').onclick = () => { $('mute').click(); sndLbl(); };
+  $('pset').onclick = () => { $('pmenu').hidden = true; openSet(() => { $('pmenu').hidden = false; }); };
+  $('pquit').onclick = () => { if (!confirm('Wyjść z meczu? Wynik przepadnie.')) return; $('pmenu').hidden = true; window.GAME?.quit?.(); window.GAME?.freeze(false);
+    document.body.classList.remove('playing'); $('tip').hidden = true; showModes(); };
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('playing')) { $('pmenu').hidden ? openPause() : closePause(); } });
   const showModes = () => { TMUS.currentTime = 0; TMUS.play().catch(() => {}); $('modes').hidden = false; modeSel = 0; markMode(); $('mq').textContent = `${window.CAPTAIN} ${NAMES[window.CAPTAIN] || ''}: CO ROBIMY?`; };
   const markMode = () => document.querySelectorAll('#modes .mb').forEach((b, i) => b.classList.toggle('sel', i === modeSel));
   window.CAPTAIN = 27;

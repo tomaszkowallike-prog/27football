@@ -520,7 +520,7 @@ const SFX = (() => {
   const noise = (dur, vol = 0.12) => { const a = ctx(); if (!a || muted) return; const b = a.createBuffer(1, a.sampleRate * dur, a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
     const s = a.createBufferSource(), g = a.createGain(); g.gain.value = vol; s.buffer = b; s.connect(g).connect(a.destination); s.start(); };
   return {
-    unlock: ctx, get muted() { return muted; }, toggle() { muted = !muted; MUSIC.mute(muted); return muted; },
+    unlock: ctx, get muted() { return muted; }, setSfx(on) { muted = !on; }, toggle() { muted = !muted; MUSIC.mute(muted); return muted; },
     kick() { tone(220, 90, 0.08, 'square', 0.07); noise(0.05, 0.08); }, pass() { tone(440, 330, 0.06, 'square', 0.05); },
     charge(v) { tone(300 + v * 500, 300 + v * 520, 0.04, 'square', 0.025); },
     super() { tone(180, 1400, 0.35, 'sawtooth', 0.06); noise(0.4, 0.1); }, tackle() { noise(0.12, 0.14); tone(140, 60, 0.12, 'triangle', 0.1); },
@@ -616,6 +616,8 @@ window.MATCH_MUSIC = MUSIC;
 
 // ---- game state ----------------------------------------------------------------------------------------------------
 const ui = window.UI || {};
+const HALF = () => (window.CFG && window.CFG.half) || 120;
+const VIB = (ms) => { try { if (!window.CFG || window.CFG.vib !== false) navigator.vibrate?.(ms); } catch (e) {} };
 const G = { inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
 const GRAV = 30, JUMP_V = 11, APEX = 3.2;                       // a jump peaks ~0.37 s after take-off, ~2 units up
 const WALK = 6.4, DASH = 11.8, AI_WALK = 5.8, AI_RUN = 7.6;
@@ -866,7 +868,7 @@ function knock(p, dur = 1.5, { lie = 'lieBack', dizzy = false, push = [0, 0], by
   if (p.st === 'down' || p.st === 'getup') return;
   const hadBall = ball.owner === p || dist(ball, p) < 2.2;
   p.st = 'down'; p.t = dur; p.lie = lie; p.dizzy = dizzy; p.vx = push[0]; p.vz = push[1]; p.vy = Math.max(p.vy, 4);
-  SFX.tackle(); FX.emit('dust', p.x, 0.4, p.z, 8, 2.5, 0.25, 6); G.ca = Math.max(G.ca, 0.9); G.shake = Math.max(G.shake, 0.18);
+  SFX.tackle(); VIB(35); FX.emit('dust', p.x, 0.4, p.z, 8, 2.5, 0.25, 6); G.ca = Math.max(G.ca, 0.9); G.shake = Math.max(G.shake, 0.18);
   if (ball.owner === p) { ball.owner = null; ball.vx = (Math.random() - 0.5) * 8; ball.vz = (Math.random() - 0.5) * 8; ball.vy = 5; ball.y = 0.6; ball.last = p; ball.lastT = 0.4; }
   if (p.team === 0 || Math.random() < 0.5) shout(p, ['Oh-!!', 'Ugh-!', 'Aa--!'][Math.random() * 3 | 0]);
   // a foul on a man with the ball inside the box: penalty
@@ -970,6 +972,7 @@ function press(btn) {
 // ---- the AI ----------------------------------------------------------------------------------------------------------
 function steer(p, tx, tz, dt, speed) {
   speed *= p.spd || 1;
+  if (p.team === 1) speed *= [0.84, 1, 1.13][(window.CFG && window.CFG.lvl != null) ? window.CFG.lvl : 1];
   const dx = tx - p.x, dz = tz - p.z, d = Math.hypot(dx, dz), s = d < 0.25 ? 0 : Math.min(speed, d * 5);
   const wx = d ? dx / d * s : 0, wz = d ? dz / d * s : 0, a = Math.min(1, dt * 9);
   p.vx += (wx - p.vx) * a; p.vz += (wz - p.vz) * a;
@@ -1102,7 +1105,7 @@ function stepBall(dt) {
 function goalScored(team) {
   if (WOLF.on) { WOLF.phase = 'back'; WOLF.t = 0; }
   G.score[team]++; G.state = 'goal'; G.pause = 3.2; const shooter = ball.last; ball.sup = null; ball.vx *= 0.15; ball.vz *= 0.15; ball.x = Math.sign(ball.x) * (PX + 1.2);
-  SFX.goal(); G.shake = 0.5; G.cheer = team === 0 ? 2.5 : 1.2; G.flares = team === 0 ? 9 : 4; ui.score?.(G); ui.banner?.('GOAL!', TEAMS[team], 'goal');
+  SFX.goal(); VIB(team === 0 ? [60, 40, 120] : 200); G.shake = 0.5; G.cheer = team === 0 ? 2.5 : 1.2; G.flares = team === 0 ? 9 : 4; ui.score?.(G); ui.banner?.('GOAL!', TEAMS[team], 'goal');
   for (let i = 0; i < 4; i++) FX.emit(team === 0 ? 'goal' : 'goal2', ball.x, 1.5, ball.z, 14, 5, 0.3, 8);
   for (const p of players) if (p.team === team && !p.keeper && p.st !== 'down') { p.st = 'cheer'; p.t = 3; p.vx = p.vz = 0; }
   const who = shooter && shooter.team === team ? shooter : players.find((p) => p.team === team && p.role === 'fwd'); shout(who, 'Yeah!'); VOICE.say(who, 'goal');
@@ -1197,7 +1200,7 @@ function step(dt) {
   if (G.state !== 'play') { draw(dt); return; }
   G.clock -= dt; G.superCool[0] -= dt; G.superCool[1] -= dt; G.safe -= dt;
   if (G.clock <= 0) {
-    if (G.half === 1) { G.half = 2; G.clock = 120; G.state = 'half'; G.pause = 2.4; G.kickoff = 1; SFX.whistle(); ui.banner?.('2. POŁOWA', TEAMS[0], 'big'); }
+    if (G.half === 1) { G.half = 2; G.clock = HALF(); G.state = 'half'; G.pause = 2.4; G.kickoff = 1; SFX.whistle(); ui.banner?.('2. POŁOWA', TEAMS[0], 'big'); }
     else { G.clock = 0; G.state = 'end'; SFX.whistle(); MUSIC.stop(); ui.end?.(G); }
     ui.score?.(G); draw(dt); return;
   }
@@ -1317,7 +1320,7 @@ const covered = () => ['pen', 'kapki', 'lace', 'caps'].some((id) => { const e = 
 renderer.setAnimationLoop((now) => { if (!auto) return; if (covered()) { last = now; return; } const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; step(frozen ? 0 : dt); });
 placeKickoff(0); G.state = 'menu'; WX.set('leaves');
 window.GAME = {
-  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0 }; PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = 120; G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = Math.random() < 0.5 ? 'rain' : 'leaves'; setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
+  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0 }; PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = HALF(); SFX.setSfx(!window.CFG || window.CFG.sfx !== false); G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = Math.random() < 0.5 ? 'rain' : 'leaves'; setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
   press, setCaptain, pick: (i) => doPick(i), pickMove,
   // a finger on a teammate takes control of him (not while you are the one with the ball)
   ctx() { const c = captain, has = ball.owner === c, air = !has && !ball.owner && Math.hypot(ball.x - c.x, ball.z - c.z) < 4.5 && ball.y > 0.5 && ball.y < 2.6;
@@ -1327,7 +1330,7 @@ window.GAME = {
     const r = renderer.domElement.getBoundingClientRect(); let best = null, bd = 64; const v = new THREE.Vector3();
     for (const q of players) { if (q.team !== 0 || q.keeper || q.st === 'down') continue; v.set(q.x, q.y + 1.1, q.z).project(camera);
       const d = Math.hypot(r.left + (v.x + 1) / 2 * r.width - cx, r.top + (1 - v.y) / 2 * r.height - cy); if (d < bd) { bd = d; best = q; } }
-    if (!best || best === captain) return false; captain = best; switchT = 2.2; SFX.menu(); G.ca = Math.max(G.ca, 0.3); FX.emit('curve', best.x, 0.4, best.z, 10, 3, 0.25, 4); return true; }, powers: POWERS, icons: PU.icons, setStick(v) { stick = v; }, setDash(v) { padDash = v; }, freeze(v) { frozen = !!v; if (v) { keys.clear(); keyDash = false; } }, mute: () => SFX.toggle(),
+    if (!best || best === captain) return false; captain = best; switchT = 2.2; SFX.menu(); G.ca = Math.max(G.ca, 0.3); FX.emit('curve', best.x, 0.4, best.z, 10, 3, 0.25, 4); return true; }, powers: POWERS, icons: PU.icons, setStick(v) { stick = v; }, setDash(v) { padDash = v; }, quit() { frozen = false; G.state = 'menu'; MUSIC.stop(); PICK.open = false; ui.picker?.(null); }, sfx(on) { SFX.setSfx(on); }, freeze(v) { frozen = !!v; if (v) { keys.clear(); keyDash = false; } }, mute: () => SFX.toggle(),
   teams: TEAMS, frames: FR, images: [IMG_G, IMG_P], players, get captain() { return captain; }, get ball() { return ball; }, G,
 };
 window.__game = { goal: (t) => goalScored(t), pen: (t) => penaltyFor(t, players.find((q) => q.team === t && q.role === 'fwd')), G, ball, players, input, weather: (m) => { G.weather = m; setWeather(m); }, step(sec, fps = 30) { auto = false; for (let i = 0; i < Math.round(sec * fps); i++) step(1 / fps); }, resume() { last = performance.now(); auto = true; }, keys };
