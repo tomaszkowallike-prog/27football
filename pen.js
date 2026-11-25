@@ -307,10 +307,20 @@
       for (const [i, j] of [...ring, ...arms]) for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) blk(i + di, j + dj, '#000');
       for (const [i, j] of [...ring, ...arms]) blk(i, j, col); blk(0, 0, col);
       if (aiming && !S.drag) txt('PRZECIĄGNIJ', x, y + (R + 8) * c, 12, '#ffe14a'); }
-    if (S.phase === 'force') { const p = powNow(), x = W - 40, y0 = 90, h = 170; g.fillStyle = '#000'; g.fillRect(x - 3, y0 - 3, 26, h + 6);
-      const grd = g.createLinearGradient(0, y0 + h, 0, y0); grd.addColorStop(0, '#3fe060'); grd.addColorStop(0.7, '#ffe14a'); grd.addColorStop(0.86, '#ff8a1f'); grd.addColorStop(1, '#e8361f');
-      g.fillStyle = '#222'; g.fillRect(x, y0, 20, h); g.fillStyle = grd; g.fillRect(x, y0 + h * (1 - p), 20, h * p);
-      g.fillStyle = '#fff'; g.fillRect(x - 6, y0 + h * 0.14, 32, 2); txt('SIŁA', x + 10, y0 - 14, 12, '#fff'); }
+    if (S.phase === 'force') { const p = powNow(), N = 16, sh = 9, gap = 2, xr = W - 18, y0 = 96, H0 = N * (sh + gap);
+      // a wedge of pixel blocks: narrow and green at the bottom, wide and red at the top
+      const COLS = ['#2fb84a', '#3fe060', '#6ee85a', '#9aec4a', '#c8ee3a', '#ffe14a', '#ffe14a', '#ffc21a', '#ffa21a', '#ff8a1f', '#ff6a1f', '#ff4a1f', '#f0361f', '#e02a1a', '#c81e14', '#c81e14'];
+      const lit = Math.round(p * N), blink = Math.floor(performance.now() / 110) % 2;
+      for (let i = 0; i < N; i++) { const w = 8 + Math.round(i * 2.2) * 2, y = y0 + H0 - (i + 1) * (sh + gap), x = xr - w;
+        g.fillStyle = '#000'; g.fillRect(x - 3, y - 3, w + 6, sh + 6); }
+      for (let i = 0; i < N; i++) { const w = 8 + Math.round(i * 2.2) * 2, y = y0 + H0 - (i + 1) * (sh + gap), x = xr - w, on = i < lit;
+        g.fillStyle = on ? COLS[i] : '#2a2a36'; g.fillRect(x, y, w, sh);
+        if (on) { g.fillStyle = 'rgba(255,255,255,.45)'; g.fillRect(x, y, w, 2); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(x, y + sh - 2, w, 2); }
+        if (i === lit - 1 && blink) { g.fillStyle = '#fff'; g.fillRect(x, y, w, sh); } }
+      // the "too strong" line: blocks above it fly over the bar
+      const ym = y0 + H0 - Math.round(N * 0.86) * (sh + gap) - 1; g.fillStyle = '#fff'; for (let x = xr - 50; x < xr + 6; x += 6) g.fillRect(x, ym, 4, 3);
+      const yp = y0 + H0 - lit * (sh + gap) + 2, xa = xr - (8 + Math.round(Math.max(0, lit - 1) * 2.2) * 2) - 14; g.fillStyle = '#000'; g.fillRect(xa - 2, yp - 2, 12, 11); g.fillStyle = '#ffe14a'; g.fillRect(xa, yp, 4, 7); g.fillRect(xa + 4, yp + 2, 4, 3);
+      txt('SIŁA', xr - 26, y0 - 16, 12, '#fff'); }
     if (S.phase === 'roll' || ((S.phase === 'power') && S.t < 0.5)) { const cw = 150, gap = 10, tot = cw * 3 + gap * 2, x0 = W / 2 - tot / 2, y = 60;
       ORDER.forEach((k, i) => { const Pw = POWERS[k], sel = S.roll === i || (S.phase === 'power' && S.power === k), x = x0 + i * (cw + gap);
         g.fillStyle = sel ? Pw.col : 'rgba(0,0,0,.75)'; g.fillRect(x, y, cw, 50); g.strokeStyle = sel ? '#fff' : Pw.col; g.lineWidth = 3; g.strokeRect(x, y, cw, 50);
