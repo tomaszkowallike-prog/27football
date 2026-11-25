@@ -233,6 +233,9 @@
   #szatnia .sbg { position: absolute; inset: -20px; background: url(szatnia.jpg) center / cover; filter: blur(12px) brightness(.45); }
   #szatnia .sbox { position: absolute; left: 50%; top: 50%; width: min(100vw, 177.7vh); aspect-ratio: 1672 / 941; transform: translate(-50%, -50%); }
   #szatnia .sbox > img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+  /* wider walls on both sides, for phones wider than 16:9 */
+  #szatnia .sbox::before, #modes .tbox2::before { content: ""; position: absolute; top: 0; height: 100%; left: 50%; aspect-ratio: 2352 / 941; transform: translateX(-50%); z-index: -1; pointer-events: none; background: center / 100% 100% no-repeat; image-rendering: pixelated; }
+  #szatnia .sbox::before { background-image: url(szatnia_wide.jpg); } #modes .tbox2::before { background-image: url(tablica_wide.jpg); }
   #szatnia .kid { position: absolute; top: 31%; height: 42%; cursor: pointer; border-radius: 8px; }
   #szatnia .kid.sel { box-shadow: 0 0 0 3px #ffe14a, 0 0 22px 6px rgba(255,225,74,.55); background: rgba(255,225,74,.08); }
   #szatnia .pick { position: absolute; top: 24.5%; transform: translateX(-50%); font-size: clamp(18px, 3.4vw, 40px); color: #ffe14a; text-shadow: 3px 3px 0 #000; animation: hop .6s steps(2) infinite; pointer-events: none; }
