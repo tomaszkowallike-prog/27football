@@ -247,6 +247,12 @@
   #szatnia .hot:hover, #szatnia .hot:focus-visible { outline: 3px solid #ffe14a; border-radius: 10px; }
   #mvol { position: fixed; z-index: 40; left: 50%; top: max(4px, env(safe-area-inset-top)); transform: translateX(-50%); font: 700 13px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.6); border: 2px solid #8a8a8a; border-radius: 6px; padding: 2px 9px; cursor: pointer; }
   body.playing #mvol { left: auto; right: max(8px, env(safe-area-inset-right)); top: calc(max(10px, env(safe-area-inset-top)) + 150px); transform: none; }
+  /* the whole game is landscape: a phone held upright gets one screen asking to turn it */
+  #rot { display: none; position: fixed; inset: 0; z-index: 100; background: #02070f; color: #fff; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 20px; }
+  #rot b { font-size: 22px; color: #ffe14a; letter-spacing: .06em; } #rot span { font-size: 14px; opacity: .75; }
+  #rot .ph { font-size: 64px; animation: turnph 1.8s ease-in-out infinite; }
+  @keyframes turnph { 0%, 25% { transform: rotate(0); } 55%, 100% { transform: rotate(-90deg); } }
+  @media (orientation: portrait) { body.touch #rot { display: flex; } }
   #tip { position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; background: rgba(0,0,0,.55); padding: 12px; cursor: pointer; }
   #tip[hidden] { display: none; }
   #tip .tbox { max-height: 94vh; overflow: auto; max-width: 600px; text-align: center; background: #000; border: 3px solid #8a8a8a; padding: 14px 18px 16px; box-shadow: 0 6px 0 rgba(0,0,0,.5); }
@@ -288,6 +294,7 @@
 </head>
 <body>
 <div id="stage"></div>
+<div id="rot"><div class="ph">📱</div><b>OBRÓĆ TELEFON POZIOMO</b><span>Gra działa tylko w poziomie</span></div>
 <div id="intro"><div class="f169"><video id="v1" src="intro1.mp4" playsinline preload="auto" poster="intro1_first.jpg"></video><video id="v2" src="intro2.mp4" playsinline preload="auto" poster="intro2_last.jpg"></video>
   <img id="still" src="intro2_last.jpg" alt=""><div id="pressStart"><span><b>▶</b> PRESS START <b>◀</b></span></div></div>
   <canvas id="flash" width="96" height="54"></canvas><button class="ibtn" id="skip">POMIŃ ▶▶</button><button class="ibtn" id="snd">🔊 WŁĄCZ DŹWIĘK</button></div>
@@ -349,6 +356,10 @@
 {
   const $ = (id) => document.getElementById(id);
   const touch = matchMedia('(pointer: coarse)').matches; if (touch) document.body.classList.add('touch');
+  if (touch) { const goLand = () => { const el = document.documentElement, fs = el.requestFullscreen || el.webkitRequestFullscreen;
+      try { const p = fs && !document.fullscreenElement ? fs.call(el, { navigationUI: 'hide' }) : null;
+        Promise.resolve(p).then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape')).catch(() => {}); } catch (e) {} };
+    addEventListener('pointerup', goLand, { once: true, capture: true }); }
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
   // a big head cut from a player's front frame, pixel for pixel
   const face = (cv, p) => { const g = cv.getContext('2d'), f = (p.keeper && p.anim.keeper ? p.anim.keeper : p.anim.front)[0], img = window.GAME.images[p.team], s = Math.min(f[2], 24), hh = Math.round(f[3] * 0.52);
