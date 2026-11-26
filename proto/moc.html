@@ -37,13 +37,13 @@ const resize = () => { DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth;
 addEventListener('resize', resize); resize();
 const img = (src) => { const i = new Image(); i.src = src; return i; };
 // players: run-sideways and turn-around sheets cut from the GIFs
-const PL = { 7: { run: img('p7_run.png?v=1795710672'), rn: 8, turn: img('p7_turn.png?v=1795710672'), tn: 29 }, 10: { run: img('p10_run.png?v=1795710672'), rn: 7, turn: img('p10_turn.png?v=1795710672'), tn: 29 }, 14: { run: img('p14_run.png?v=1795710672'), rn: 8, turn: img('p14_turn.png?v=1795710672'), tn: 16 } };
+const PL = { 7: { run: img('p7_run.png?v=1795710780'), rn: 8, turn: img('p7_turn.png?v=1795710780'), tn: 29 }, 10: { run: img('p10_run.png?v=1795710780'), rn: 6, turn: img('p10_turn.png?v=1795710780'), tn: 29 }, 14: { run: img('p14_run.png?v=1795710780'), rn: 8, turn: img('p14_turn.png?v=1795710780'), tn: 16 } };
 // the pixel entrance effects: a burst of fire the dragon steps out of, steel plates that burst open for the robot
-const FX = { smok: { sheet: img('fx_ogien.png?v=1795710672'), n: 9, dt: 0.13, appear: 3 }, robot: { sheet: img('fx_plyty.png?v=1795710672'), n: 9, dt: 0.13, appear: 6 } };
+const FX = { smok: { sheet: img('fx_ogien.png?v=1795710780'), n: 9, dt: 0.13, appear: 3 }, robot: { sheet: img('fx_plyty.png?v=1795710780'), n: 9, dt: 0.13, appear: 6 } };
 let fx = null;
 // powers: frames 400x225; where the figure stands (ax, feet at fy); when the beam/fire reaches the right edge and where; which frames loop while firing
-const PW = { robot: { sheet: img('moc_robot_o.png?v=1795710672'), n: 28, ax: 95, fy: 214, hit: 15, ey: 88, loop: [18, 27], col: ['#5af0ff', '#bff8ff', '#2a8aff'], fps: 11 },
-             smok: { sheet: img('moc_smok_o.png?v=1795710672'), n: 15, ax: 190, fy: 212, hit: 9, ey: 104, loop: [10, 14], col: ['#ff8a1a', '#ffe14a', '#ff3a10'], fps: 9 } };
+const PW = { robot: { sheet: img('moc_robot_o.png?v=1795710780'), n: 28, ax: 95, fy: 214, hit: 15, ey: 88, loop: [18, 27], col: ['#5af0ff', '#bff8ff', '#2a8aff'], fps: 11 },
+             smok: { sheet: img('moc_smok_o.png?v=1795710780'), n: 15, ax: 190, fy: 212, hit: 9, ey: 104, loop: [10, 14], col: ['#ff8a1a', '#ffe14a', '#ff3a10'], fps: 9 } };
 let who = 14, power = null, st = 'run', t0 = 0, now = 0, parts = [], shake = 0, flash = 0, ball = null, beam = 0, net = 0, msg = '', msgT = 0;
 const L = () => ({ ground: H * 0.8, px: W * 0.24, goal: W * 0.92, ph: Math.min(H * 0.34, W * 0.2), big: Math.min(H * 0.5, W * 0.36) });
 const setState = (s) => { st = s; t0 = now; document.getElementById('mid').hidden = s !== 'choose'; document.getElementById('again').hidden = s !== 'done'; };
