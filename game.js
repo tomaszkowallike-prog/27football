@@ -14,7 +14,7 @@ const POSE = FR.poses;
 const loadImg = (src) => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
 const [IMG_G, IMG_P, IMG_C] = await Promise.all([loadImg('./atlas_green.png'), loadImg('./atlas_purple.png'), loadImg('./creatures.png')]);
 const [IMG_SMOK, IMG_ROB, IMG_SAT, IMG_EARTH] = await Promise.all([loadImg('./moc_smok.png?v=1'), loadImg('./moc_robot.png?v=1'), loadImg('./space_sat.png?v=1'), loadImg('./space_earth.png?v=1')]);
-const [IMG_HG, IMG_HR] = HD ? await Promise.all([loadImg('./atlas_hd_g.png?v=2'), loadImg('./atlas_hd_r.png?v=2')]) : [null, null];
+const [IMG_HG, IMG_HR] = HD ? await Promise.all([loadImg('./atlas_hd_g.png?v=2'), loadImg('./atlas_hd_p.png?v=1')]) : [null, null];
 const HD_MAP = { 0: { 7: 'h7', 10: 'h10', 14: 'h14', 27: 'h27' }, 1: { 21: 'h7', 17: 'h10', 14: 'h14', 11: 'h27' } };
 const CR = await (await fetch('./creatures.json')).json();   // wolf and dragon frames [x, y, w, h, anchorX, feet]
 const EX = await (await fetch('./extras.json')).json();
@@ -62,7 +62,7 @@ const camera = new THREE.PerspectiveCamera(42, 16 / 9, 1, 400);
 let low = null, mid = null;
 const post = new THREE.ShaderMaterial({
   glslVersion: THREE.GLSL3,
-  uniforms: { tex: { value: null }, dep: { value: null }, res: { value: new THREE.Vector2(1280, 720) }, focus: { value: 0.42 }, band: { value: 0.1 }, blur: { value: 9 }, flash: { value: 0 } },
+  uniforms: { tex: { value: null }, dep: { value: null }, res: { value: new THREE.Vector2(1280, 720) }, focus: { value: 0.42 }, band: { value: 0.16 }, blur: { value: 5 }, flash: { value: 0 } },
   vertexShader: 'out vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
   fragmentShader: `
     uniform sampler2D tex; uniform sampler2D dep; uniform vec2 res; uniform float focus, band, blur, flash; in vec2 vUv;
@@ -115,7 +115,7 @@ const fin = new THREE.ShaderMaterial({
       c = mix(c, c * vec3(0.82, 0.88, 0.98), wet);
       float v = smoothstep(1.05, 0.4, length(d * vec2(1.0, 0.85)));
       c *= mix(0.84 - wet * 0.1, 1.0, v);
-      float L = 12.0; c = mix(floor(c * L + 0.25 + bayer(cell) * 0.5) / L, c, pl); gl_FragColor = vec4(mix(c, vec3(1.0), flash), 1.0);
+      float L = 24.0; c = mix(floor(c * L + 0.4 + bayer(cell) * 0.2) / L, c, pl); gl_FragColor = vec4(mix(c, vec3(1.0), flash), 1.0);
     }`,
   depthTest: false, depthWrite: false,
 });
@@ -131,9 +131,9 @@ function resize() {
   mid?.dispose(); mid = new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: true, type: THREE.HalfFloatType });
   wld?.dispose(); wld = new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthBuffer: true, type: THREE.HalfFloatType });
   blit.uniforms.tex.value = wld.texture; blit.uniforms.dep.value = low.depthTexture; fin.uniforms.wtex.value = wld.texture;
-  fin.uniforms.tex.value = mid.texture; fin.uniforms.res.value.set(w, h); fin.uniforms.px.value = Math.max(2, Math.round(2.6 * pr));
+  fin.uniforms.tex.value = mid.texture; fin.uniforms.res.value.set(w, h); fin.uniforms.px.value = Math.max(1, Math.round(1.5 * pr));
   const portrait = H > W; camera.aspect = W / H; camera.fov = portrait ? 60 : 46; camera.updateProjectionMatrix();
-  post.uniforms.focus.value = portrait ? 0.45 : 0.42; post.uniforms.band.value = portrait ? 0.14 : 0.12;
+  post.uniforms.focus.value = portrait ? 0.45 : 0.42; post.uniforms.band.value = portrait ? 0.2 : 0.18;
 }
 addEventListener('resize', resize); resize();
 const toPlay = (o) => o.traverse((m) => m.layers.set(PLAY));
