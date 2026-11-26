@@ -707,7 +707,12 @@ const SFX = (() => {
     tick(v = 0) { tone(900 + v * 300, 900 + v * 300, 0.03, 'square', 0.05); }, portal() { tone(120, 900, 0.5, 'triangle', 0.07); tone(900, 200, 0.5, 'sine', 0.05, 0.1); },
     zap() { tone(1800, 80, 0.6, 'sawtooth', 0.08); noise(0.6, 0.16); }, boing() { tone(260, 520, 0.08, 'square', 0.07); noise(0.05, 0.1); },
     super() { tone(180, 1400, 0.35, 'sawtooth', 0.06); noise(0.4, 0.1); }, tackle() { noise(0.12, 0.14); tone(140, 60, 0.12, 'triangle', 0.1); },
-    whistle() { tone(1800, 1750, 0.18, 'sine', 0.06); tone(1800, 1760, 0.3, 'sine', 0.06, 0.22); },
+    // a referee's pea whistle: a warbling high tone; n blasts, the last one long
+    whistle(n = 1) { const a = ctx(); if (!a || muted) return; let t0 = a.currentTime;
+      for (let k = 0; k < n; k++) { const long = k === n - 1, dur = long ? 0.7 : 0.25, o = a.createOscillator(), lfo = a.createOscillator(), lg = a.createGain(), g = a.createGain();
+        o.type = 'sine'; o.frequency.value = 2900; lfo.frequency.value = 38; lg.gain.value = 140; lfo.connect(lg); lg.connect(o.frequency);
+        g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.11, t0 + 0.02); g.gain.setValueAtTime(0.11, t0 + dur - 0.05); g.gain.linearRampToValueAtTime(0, t0 + dur);
+        o.connect(g); g.connect(a.destination); o.start(t0); lfo.start(t0); o.stop(t0 + dur + 0.02); lfo.stop(t0 + dur + 0.02); t0 += dur + 0.12; } },
     goal() { [523, 659, 784, 1047].forEach((f, i) => tone(f, f, 0.16, 'square', 0.06, i * 0.12)); noise(1.2, 0.05); },
     save() { tone(660, 880, 0.12, 'square', 0.05); },
     pickup() { [660, 880, 1320, 1760].forEach((f, i) => tone(f, f, 0.09, 'square', 0.05, i * 0.06)); },
@@ -809,7 +814,8 @@ const WALK = 6.4, DASH = 11.8, AI_WALK = 5.8, AI_RUN = 7.6;
 const LV = () => (window.CFG && window.CFG.lvl != null ? window.CFG.lvl : 1);
 const DIFF = (a) => a[LV()];
 const PERK = () => (window.PERKS ? window.PERKS() : {});
-const goalX = (team) => (team === 0 ? PX : -PX);               // the goal this team attacks
+let SIDE = 1;   // +1: we attack the right goal, -1: the left one (chosen at the coin toss)
+const goalX = (team) => (team === 0 ? SIDE * PX : -SIDE * PX);               // the goal this team attacks
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const mates = (p) => players.filter((q) => q.team === p.team && q !== p);
 const grounded = (p) => p.y <= 0.001 && (p.st === 'run' || p.st === 'kick');
@@ -1278,7 +1284,7 @@ function penaltyFor(team, fouled) {
   G.state = 'penalty'; G.pause = 1.9; G.pen = { team, taker: fouled, gkSide: 0 }; SFX.whistle(); ui.banner?.('KARNY!', TEAMS[team], 'big'); G.ca = Math.max(G.ca, 0.8);
 }
 function setupPenalty() {
-  const P = G.pen, s = P.team === 0 ? 1 : -1, spot = s * (PX - 6.5), def = 1 - P.team;
+  const P = G.pen, s = Math.sign(goalX(P.team)), spot = s * (PX - 6.5), def = 1 - P.team;
   Object.assign(ball, { x: spot, z: 0, y: 0, vx: 0, vz: 0, vy: 0, owner: null, last: null, sup: null, hot: 0 });
   let k = 0;
   for (const q of players) {
@@ -1501,7 +1507,7 @@ function stepBall(dt) {
   for (const s of [-1, 1]) {
     const line = s * PX;
     if ((px - line) * (ball.x - line) <= 0 && px !== line) {
-      if (Math.abs(ball.z) < GOAL_W / 2 - 0.2 && ball.y < GOAL_H - 0.2) { goalScored(s > 0 ? 0 : 1); return; }
+      if (Math.abs(ball.z) < GOAL_W / 2 - 0.2 && ball.y < GOAL_H - 0.2) { goalScored(s === Math.sign(goalX(0)) ? 0 : 1); return; }
       ball.x = line - s * 0.3; ball.vx = -ball.vx * 0.55; if (ball.sup) { ball.sup = null; ball.vz *= 0.5; }
     }
   }
@@ -1615,8 +1621,8 @@ function step(dt) {
   if (G.state !== 'play') { draw(dt); return; }
   G.clock -= dt; G.superCool[0] -= dt; G.superCool[1] -= dt; G.safe -= dt;
   if (G.clock <= 0) {
-    if (G.half === 1) { G.half = 2; G.clock = HALF(); G.state = 'half'; G.pause = 2.4; G.kickoff = 1; SFX.whistle(); ui.banner?.('2. POŁOWA', TEAMS[0], 'big'); }
-    else { G.clock = 0; G.state = 'end'; SFX.whistle(); MUSIC.stop(); ui.end?.(G); }
+    if (G.half === 1) { G.half = 2; G.clock = HALF(); G.state = 'half'; G.pause = 2.4; G.kickoff = 1 - (window.FIRST_KICK || 0); SFX.whistle(2); ui.banner?.('2. POŁOWA', TEAMS[0], 'big'); }
+    else { G.clock = 0; G.state = 'end'; SFX.whistle(3); MUSIC.stop(); ui.end?.(G); }
     ui.score?.(G); draw(dt); return;
   }
   ui.score?.(G);
@@ -1737,11 +1743,13 @@ const covered = () => ['pen', 'kapki', 'lace', 'caps', 'flip', 'bieg'].some((id)
 renderer.setAnimationLoop((now) => { if (!auto) return; if (covered()) { last = now; return; } const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; step(frozen ? 0 : dt); });
 placeKickoff(0); G.state = 'menu'; WX.set('leaves'); try { ARENA.set(localStorage.getItem('arena') || 'stadion'); } catch (e) { ARENA.set('stadion'); }
 window.GAME = {
+  setSide(s) { SIDE = s; TEAMS[0].dir = s; TEAMS[1].dir = -s; },
+  whistle() { SFX.unlock(); SFX.whistle(1); },
   start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0 }; G.inv2 = {}; G.supGoals = 0;
     { const pk = PERK(); for (const p of players) { if (p.spd0 == null) p.spd0 = p.spd;
         if (p.team === 0 && p.stats && window.LEVELS) { const l = window.LEVELS(p.num), bb = p === captain && window.BOOT_BONUS ? window.BOOT_BONUS() : [0, 0, 0, 0, 0], v = (i) => Math.min(5.6, 2 + (l[i] + bb[i]) * 0.6);   // level 0 plays like a 2, level 5 like a 5
           p.stats = { st: v(0), pa: v(1), dr: v(2), ob: v(3), sp: v(4) }; p.spd0 = 0.9 + p.stats.sp * 0.035; } p.spd = p.spd0 * (p.team === 0 && pk.speed ? pk.speed : 1); }
-      if (pk.card) { const ks = Object.keys(G.inv); G.inv[ks[(Math.random() * ks.length) | 0]] = 1; } } PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = HALF(); SFX.setSfx(!window.CFG || window.CFG.sfx !== false); G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = ARENA.weather() || (Math.random() < 0.5 ? 'rain' : 'leaves'); setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
+      if (pk.card) { const ks = Object.keys(G.inv); G.inv[ks[(Math.random() * ks.length) | 0]] = 1; } } PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = HALF(); SFX.setSfx(!window.CFG || window.CFG.sfx !== false); G.half = 1; G.kickoff = window.FIRST_KICK != null ? window.FIRST_KICK : 0; placeKickoff(G.kickoff); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = ARENA.weather() || (Math.random() < 0.5 ? 'rain' : 'leaves'); setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
   press, setCaptain, pick: (i) => doPick(i), pickMove,
   // a finger on a teammate takes control of him (not while you are the one with the ball)
   ctx() { const c = captain, has = ball.owner === c, air = !has && !ball.owner && Math.hypot(ball.x - c.x, ball.z - c.z) < 4.5 && ball.y > 0.5 && ball.y < 2.6;

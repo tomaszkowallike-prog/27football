@@ -361,6 +361,11 @@
   #reward .stage { display: block; font: 10px "Press Start 2P", monospace; color: #6ee05a; margin-bottom: 4px; }
   #end .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
   .arenagrid[hidden] { display: none !important; }
+  #coin { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: radial-gradient(circle at 50% 40%, rgba(40,30,90,.92), rgba(6,4,16,.97)); }
+  #coin[hidden], #coin [hidden] { display: none !important; } #coincv { width: min(38vh, 200px); height: min(38vh, 200px); image-rendering: pixelated; }
+  #coinmsg { font: 16px "Press Start 2P", monospace; color: #ffe14a; text-shadow: 3px 3px 0 #000; text-align: center; } #coinq { font: 9px "Press Start 2P", monospace; color: #d8d4ff; text-align: center; line-height: 1.6; }
+  #coin .cbtns { display: flex; gap: 12px; } #coin .cbtns button { all: unset; cursor: pointer; padding: 12px 22px; font: 14px "Press Start 2P", monospace; color: #1a1030; background: #ffe14a; border: 3px solid #fff6c0; box-shadow: 0 5px 0 #b08a00; }
+  #coin .cbtns button:active { transform: translateY(3px); box-shadow: 0 2px 0 #b08a00; }
   #langpick { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; background: #0b0820; } #langpick[hidden] { display: none; }
   #langpick .lpbox { display: flex; flex-direction: column; gap: 14px; align-items: stretch; text-align: center; }
   #langpick h2 { margin: 0 0 6px; font: 16px "Press Start 2P", monospace; color: #ffe14a; line-height: 1.6; text-shadow: 3px 3px 0 #000; } #langpick h2 small { font-size: 10px; color: #b8b4e8; }
@@ -560,6 +565,9 @@
   <div id="wedit" hidden><img id="wbg" src="warsztat_side.jpg?v=1" alt=""><div class="lamp" style="left:30%;top:0;width:39%;height:12%"></div><canvas id="wcv" class="side"></canvas>
     <div id="wtabs"><button class="wbtn on" id="wtabS">BOK</button><button class="wbtn" id="wtabP">PODESZWA</button></div><div id="wcoinbox" class="coin"><span id="wcoins">0</span></div><div id="wpart"></div><div id="wpanel"></div></div>
   <button class="wbtn" id="wback">◀ WRÓĆ</button></div></div>
+<div id="coin" hidden><canvas id="coincv" width="160" height="160"></canvas><div id="coinmsg">RZUT MONETĄ</div><div id="coinq">Wybierz stronę monety</div>
+  <div class="cbtns" id="coinpick"><button data-c="27">27</button><button data-c="DS">DS</button></div>
+  <div class="cbtns" id="coinside" hidden><button data-s="-1">◀ LEWA BRAMKA</button><button data-s="1">PRAWA BRAMKA ▶</button></div></div>
 <div class="setov" id="shop" hidden><div class="setp" role="dialog" aria-label="Sklep"><h2>SKLEP <span class="coin" id="coinS">0</span><button class="x" id="shopx" aria-label="Zamknij">X</button></h2>
   <div class="shopgrid" id="shopgrid"></div>
   <p class="arenahint">Monety zdobywasz za gole, wygrane, czyste konto, gole z mocy, etapy turnieju i kapki. Na trudniejszym poziomie dostajesz więcej.</p></div></div>
@@ -695,7 +703,41 @@
   };
   let ready = false, wantStart = false;
   window.GAME_READY = () => { const P = window.GAME.players; for (const p of P) (p.team ? $('sqB') : $('sqA')).appendChild(full(p)); $('play').disabled = false; $('play').textContent = 'GRAJ'; ready = true; window.UI.inv(window.GAME.G.inv); if (wantStart) afterIntro(); };
-  const go = () => { $('menu').hidden = true; $('end').hidden = true; document.body.classList.add('playing'); meP = themP = null; meMood = themMood = '-'; window.GAME.start(); window.GAME.freeze(true); $('tip').hidden = false; tipT = performance.now(); };
+  // ---- the coin toss before the kick-off: pick 27 or DS, the coin spins; the winner picks the goal to attack, the loser kicks off
+  const COIN = (() => { const cv = $('coincv'), g = cv.getContext('2d'), N = 160; let ang = 0, y = 0, spin = 0, raf = 0, face = '27', T = null;
+    const L2 = (pl, en) => (window.LANG === 'en' ? en : pl);
+    const draw = () => { g.clearRect(0, 0, N, N); g.imageSmoothingEnabled = false; const c = Math.cos(ang), w = Math.max(0.06, Math.abs(c)), r = 52, cx = N / 2, cy = N / 2 + y;
+      const showFront = c >= 0, lbl = showFront ? '27' : 'DS';
+      // the rim (thickness) when it is edge-on, then the face, squeezed by the turn: chunky pixels, gold shades
+      const step = 4, px = (x0, y0, col) => { g.fillStyle = col; g.fillRect(Math.round(x0 / step) * step, Math.round(y0 / step) * step, step, step); };
+      g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(cx, N / 2 + 64, 40 * (1 - Math.min(1, -y / 60) * 0.5), 7, 0, 0, 7); g.fill();
+      for (let yy = -r; yy <= r; yy += step) for (let xx = -r; xx <= r; xx += step) { const d = Math.hypot(xx, yy); if (d > r) continue;
+        const X = cx + xx * w, rimSide = Math.sign(c) * 6 * (1 - w);
+        const edge = d > r - 8, shade = 0.75 + 0.25 * (-(xx + yy) / (r * 1.4)) * Math.sign(c || 1);
+        let col = edge ? `rgb(${200 * shade | 0},${140 * shade | 0},${20 * shade | 0})` : `rgb(${255 * shade | 0},${205 * shade | 0},${50 * shade | 0})`;
+        if (d > r - 4) col = '#5a3a00';
+        px(X - rimSide, cy + yy, '#8a5a00'); px(X, cy + yy, col); }
+      if (w > 0.25) { g.save(); g.translate(cx, cy); g.scale(w, 1); g.font = "26px 'Press Start 2P', monospace"; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillStyle = '#7a4a00'; g.fillText(lbl, 3, 5); g.fillStyle = '#fff6c0'; g.fillText(lbl, 0, 2); g.restore();
+        g.fillStyle = 'rgba(255,255,255,.8)'; g.fillRect(cx - 30 * w, cy - 34, 8, 4); g.fillRect(cx - 34 * w, cy - 30, 4, 8); } };
+    const idle = () => { ang += 0.05; y = Math.sin(performance.now() / 300) * 3; draw(); raf = requestAnimationFrame(idle); };
+    const start = (done) => { $('coin').hidden = false; $('coinpick').hidden = false; $('coinside').hidden = true; $('coinmsg').textContent = L2('RZUT MONETĄ', 'COIN TOSS');
+      $('coinq').textContent = L2('Wybierz stronę monety: 27 czy DS?', 'Pick a side of the coin: 27 or DS?'); cancelAnimationFrame(raf); idle();
+      $('coinpick').querySelectorAll('button').forEach((b) => (b.onclick = () => toss(b.dataset.c, done))); };
+    const toss = (pick, done) => { $('coinpick').hidden = true; cancelAnimationFrame(raf); const res = Math.random() < 0.5 ? '27' : 'DS', turns = 6 + (Math.random() * 3 | 0);
+      const end = turns * Math.PI * 2 + (res === '27' ? 0 : Math.PI), t0 = performance.now(), D = 2200; $('coinmsg').textContent = '...';
+      const anim = (now) => { const k = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - k, 3); ang = end * e; y = -Math.sin(k * Math.PI) * 70; draw();
+        if (k < 1) { raf = requestAnimationFrame(anim); return; }
+        try { window.GAME?.whistle?.(); } catch (e2) {}
+        const won = pick === res; $('coinmsg').textContent = `${res}! ` + (won ? L2('WYGRAŁEŚ LOSOWANIE', 'YOU WON THE TOSS') : L2('RYWAL WYGRAŁ', 'THE RIVALS WON'));
+        if (won) { $('coinq').textContent = L2('Na którą bramkę chcesz atakować? Rywale zaczną od środka.', 'Which goal do you attack? The rivals kick off.'); $('coinside').hidden = false;
+          $('coinside').querySelectorAll('button').forEach((b) => (b.onclick = () => { $('coin').hidden = true; done(+b.dataset.s, 1); })); }
+        else { const sd = Math.random() < 0.5 ? -1 : 1; $('coinq').textContent = L2(`Rywale wybrali stronę. Atakujesz ${sd > 0 ? 'w prawo ▶' : '◀ w lewo'} i zaczynasz od środka.`, `The rivals picked their side. You attack ${sd > 0 ? 'right ▶' : '◀ left'} and kick off.`);
+          setTimeout(() => { $('coin').hidden = true; done(sd, 0); }, 2600); } };
+      raf = requestAnimationFrame(anim); };
+    return { start }; })();
+  const go = () => COIN.start((side, first) => { window.GAME.setSide(side); window.FIRST_KICK = first; go2(); });
+  const go2 = () => { $('menu').hidden = true; $('end').hidden = true; document.body.classList.add('playing'); meP = themP = null; meMood = themMood = '-'; window.GAME.start(); window.GAME.freeze(true); $('tip').hidden = false; tipT = performance.now(); };
   let tipT = 0; const unTip = () => { if ($('tip').hidden || performance.now() - tipT < 400) return; $('tip').hidden = true; window.GAME.freeze(false); };
   $('tip').addEventListener('pointerdown', (e) => { e.preventDefault(); unTip(); });
   $('play').addEventListener('click', go); $('again').addEventListener('click', go);
