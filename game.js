@@ -9,7 +9,7 @@ import extraArenas from './arenas.js?v=15';
 const FR = await (await fetch('./frames.json')).json();
 // the new animated boys (cut from the GIFs): one frame map, a green and a red atlas; ?old=1 brings the old pixel boys back
 const HD = !/[?&]old=1/.test(location.search);
-if (HD) Object.assign(FR, await (await fetch('./frames_hd_g.json?v=2')).json());
+if (HD) Object.assign(FR, await (await fetch('./frames_hd_g.json?v=3')).json());
 const POSE = FR.poses;
 const loadImg = (src) => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
 const [IMG_G, IMG_P, IMG_C] = await Promise.all([loadImg('./atlas_green.png'), loadImg('./atlas_purple.png'), loadImg('./creatures.png')]);
@@ -1431,10 +1431,10 @@ function frameOf(p) {
   if (p.st === 'jump') {
     if (p.act === 'header') return { f: pick(p.pose.header, 0.4 + Math.min(0.6, (JUMP_V - p.vy) / (2 * JUMP_V))), flip };
     if (p.act === 'bike') return { f: pick(p.pose.bike, (JUMP_V - p.vy) / (2 * JUMP_V)), flip };
-    if (p.act === 'volley') return { f: (A.kick || p.pose.jump)[A.kick ? A.kick.length - 1 : 2], flip };
+    if (p.act === 'volley') return { f: (A.kick || p.pose.jump)[A.kick ? A.kick.length - 1 : 2], flip: A.kickFlip ? !flip : flip };
     return { f: p.vy > APEX ? p.pose.jump[0] : p.vy > -APEX ? p.pose.jump[2] : p.pose.jump[1], flip };
   }
-  if (p.st === 'kick') { const k = A.kick; return { f: pick(k, 1 - p.t / 0.25), flip }; }
+  if (p.st === 'kick') { const k = A.kick; return { f: pick(k, 1 - p.t / 0.25), flip: A.kickFlip ? !flip : flip }; }
   if (sp > (A.hd ? (p.wasRun ? 0.8 : 1.6) : 0.6)) { p.wasRun = true;
     const rate = p.dash ? 0.5 : 0.85, mostlyZ = Math.abs(p.vz) > Math.abs(p.vx) * 1.7;
     if (A.hd) { const r = p.dash ? 0.3 : 0.42, i = (p.walked / r | 0); if (mostlyZ && p.vz < 0 && A.runUp) return { f: A.runUp[i % A.runUp.length], flip }; if (mostlyZ && p.vz > 0 && A.runDown) return { f: A.runDown[i % A.runDown.length], flip }; return { f: A.run[i % A.run.length], flip }; }
