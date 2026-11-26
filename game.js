@@ -13,7 +13,7 @@ if (HD) Object.assign(FR, await (await fetch('./frames_hd_g.json?v=4')).json());
 const POSE = FR.poses;
 const loadImg = (src) => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
 const [IMG_G, IMG_P, IMG_C] = await Promise.all([loadImg('./atlas_green.png'), loadImg('./atlas_purple.png'), loadImg('./creatures.png')]);
-const [IMG_SMOK, IMG_ROB, IMG_SAT, IMG_EARTH] = await Promise.all([loadImg('./moc_smok.png?v=1'), loadImg('./moc_robot.png?v=1'), loadImg('./space_sat.png?v=1'), loadImg('./space_earth.png?v=1')]);
+const [IMG_NINJA, IMG_SMOK, IMG_ROB, IMG_SAT, IMG_EARTH] = await Promise.all([loadImg('./ninja.png?v=1'), loadImg('./moc_smok.png?v=1'), loadImg('./moc_robot.png?v=1'), loadImg('./space_sat.png?v=1'), loadImg('./space_earth.png?v=1')]);
 const [IMG_HG, IMG_HR] = HD ? await Promise.all([loadImg('./atlas_hd_g.png?v=3'), loadImg('./atlas_hd_p.png?v=2')]) : [null, null];
 const HD_MAP = { 0: { 7: 'h7', 10: 'h10', 14: 'h14', 27: 'h27' }, 1: { 21: 'h7', 17: 'h10', 14: 'h14', 11: 'h27' } };
 const CR = await (await fetch('./creatures.json')).json();   // wolf and dragon frames [x, y, w, h, anchorX, feet]
@@ -807,7 +807,7 @@ window.MATCH_MUSIC = MUSIC;
 const ui = window.UI || {};
 const HALF = () => (window.CFG && window.CFG.half) || 120;
 const VIB = (ms) => { try { if (!window.CFG || window.CFG.vib !== false) navigator.vibrate?.(ms); } catch (e) {} };
-const G = { inv2: {}, inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
+const G = { inv2: {}, inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0, ninja: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
 let GRAV = 30; const JUMP_V = 11, APEX = 3.2;                       // a jump peaks ~0.37 s after take-off, ~2 units up
 const WALK = 6.4, DASH = 11.8, AI_WALK = 5.8, AI_RUN = 7.6;
 // difficulty 0 ŁATWY, 1 NORMALNY, 2 MISTRZ; perks come from the shop (boots, balls, gloves...)
@@ -832,6 +832,7 @@ const POWERS = {
   pinball: { name: 'SZALONA PIŁKA', col: '#9aff4a', dark: '#2a5a08' },
   laser: { name: 'LASER Z KOSMOSU', col: '#ff3a4a', dark: '#5a0a14' },
   twister: { name: 'TRĄBA POWIETRZNA', col: '#cfe0ee', dark: '#3a4a5a' },
+  ninja: { name: 'NINJA', col: '#3a3a44', dark: '#c81e1e' },
 };
 const boxTex = (k) => tex(20, 20, (g) => { const P = POWERS[k];
   g.fillStyle = '#111'; g.fillRect(0, 0, 20, 20); g.fillStyle = P.dark; g.fillRect(1, 1, 18, 18); g.fillStyle = P.col; g.fillRect(2, 2, 16, 15);
@@ -848,6 +849,7 @@ const boxTex = (k) => tex(20, 20, (g) => { const P = POWERS[k];
   if (k === 'laser') { g.fillStyle = '#0a0a24'; g.fillRect(2, 2, 16, 15); g.fillStyle = '#fff'; for (const [x, y] of [[4, 4], [15, 5], [6, 14], [16, 15], [11, 3]]) g.fillRect(x, y, 1, 1);
     g.imageSmoothingEnabled = false; g.drawImage(IMG_SAT, 2, 1, 14, 11); ink('#ff2a3a', [[11, 9, 2, 2], [12, 11, 2, 2], [13, 13, 2, 2], [14, 15, 2, 2]]); ink('#ffd0d0', [[12, 10, 1, 1], [13, 12, 1, 1], [14, 14, 1, 1]]); }
   if (k === 'portal') for (const [cx, c1, c2] of [[6, '#ff9a2a', '#ffe0a0'], [14, '#5a2aff', '#c8b0ff']]) { ink('#111', [[cx - 3, 4, 6, 12], [cx - 4, 6, 8, 8]]); ink(c1, [[cx - 2, 5, 4, 10], [cx - 3, 7, 6, 6]]); ink(c2, [[cx - 1, 7, 2, 6]]); ink('#111', [[cx - 1, 8, 2, 4]]); }
+  if (k === 'ninja') { g.imageSmoothingEnabled = false; g.drawImage(IMG_NINJA, 8 * 229 + 60, 20, 110, 100, 2, 2, 16, 15); }
   if (k === 'twister') { ink('#111', [[3, 3, 14, 3], [5, 6, 11, 3], [7, 9, 8, 3], [8, 12, 6, 2], [9, 14, 4, 2]]); ink('#ffffff', [[4, 4, 12, 1], [6, 7, 9, 1], [8, 10, 6, 1], [9, 12, 4, 1]]); ink('#8a9aae', [[5, 5, 10, 1], [7, 8, 7, 1], [9, 11, 5, 1], [10, 13, 3, 1]]); ink('#ffe14a', [[3, 14, 2, 2], [15, 12, 2, 2]]); }
   if (k === 'pinball') { ink('#111', [[9, 6, 8, 8], [8, 7, 10, 6]]); ink('#fff', [[10, 7, 6, 6], [9, 8, 8, 4]]); ink('#111', [[12, 9, 2, 2]]); ink('#2a5a08', [[2, 7, 5, 1], [3, 10, 4, 1], [2, 13, 5, 1]]); ink('#fff', [[4, 4, 2, 2], [15, 15, 2, 2]]); }
   if (k === 'mega') { ink('#111', [[5, 4, 10, 12], [4, 5, 12, 10], [3, 7, 14, 6]]); ink('#fff', [[6, 5, 8, 10], [5, 6, 10, 8], [4, 8, 12, 4]]); ink('#111', [[9, 8, 3, 3], [6, 11, 2, 2], [12, 11, 2, 2], [7, 6, 2, 1], [12, 6, 2, 1]]); }
@@ -907,7 +909,7 @@ function rivalPower(c, k) {
   if (k === 'lightning') { lightning(c); return; }
   if (k === 'dragon') { beastStart(c, 'smok'); return; }
   if (k === 'robot') { beastStart(c, 'robot'); return; }
-  if (k === 'portal' || k === 'pinball' || k === 'laser' || k === 'twister') { MAGIC.start(c, k); return; }
+  if (k === 'portal' || k === 'pinball' || k === 'laser' || k === 'twister' || k === 'ninja') { MAGIC.start(c, k); return; }
   ball.owner = null; shoot(c, 0.9, { name: POWERS[k].name, kind: k === 'wolf' ? 'mega' : k });
 }
 // the super picker: in the air with the ball, STRZAŁ freezes the moment and you choose which super to fire
@@ -928,7 +930,7 @@ function doPick(i = PICK.sel) {
   if (o.id === 'wolf') { wolfStart(c); return; }
   if (o.id === 'dragon') { beastStart(c, 'smok'); return; }
   if (o.id === 'robot') { beastStart(c, 'robot'); return; }
-  if (o.id === 'portal' || o.id === 'pinball' || o.id === 'laser' || o.id === 'twister') { MAGIC.start(c, o.id); return; }
+  if (o.id === 'portal' || o.id === 'pinball' || o.id === 'laser' || o.id === 'twister' || o.id === 'ninja') { MAGIC.start(c, o.id); return; }
   ball.owner = null; shoot(c, 0.9, { name: POWERS[o.id].name, kind: o.id });
 }
 // a sprinter leaves a trail of fading copies of himself
@@ -1034,9 +1036,13 @@ const MAGIC = (() => {
   const tgeo = new THREE.PlaneGeometry(11.5, 11.7); tgeo.translate(0, 5.6, 0);
   const twister = new THREE.Mesh(tgeo, new THREE.MeshBasicMaterial({ map: twMap, alphaTest: 0.5, fog: false }));
   twister.visible = false; scene.add(twister); toPlay(twister);
+  // ninja: the user's GIF (30 frames of 229x204, feet at y 198, body centre x 112, faces right)
+  const NJ = Array.from({ length: 6 }, () => { const sp = makeSprite(IMG_NINJA, { unit: 4.2 / 198 }); sp.holder.visible = sp.blob.visible = sp.sgrp.visible = false; return sp; });
+  const njShow = (sp, f, x, y, z, dir) => { sp.show([f * 229, 0, 229, 204, 112], dir < 0); sp.holder.visible = sp.blob.visible = true; sp.holder.position.set(x, y, z); sp.blob.position.set(x, 0.02, z); sp.blob.scale.set(1.6, 0.6, 1); };
+  const njHide = () => NJ.forEach((sp) => (sp.holder.visible = sp.blob.visible = false));
   const M = { on: false, kind: '', t: 0, ph: '', c: null };
   const txt = (s, x, y, size, col, al = 'center') => { g.font = size + "px 'Press Start 2P', monospace"; g.textAlign = al; g.fillStyle = '#000'; for (const [a, b] of [[-2, 0], [2, 0], [0, -2], [0, 2], [2, 2]]) g.fillText(s, x + a, y + b); g.fillStyle = col; g.fillText(s, x, y); };
-  const end = () => { M.on = false; cv.style.display = 'none'; portals.forEach((m) => (m.visible = false)); beam.visible = false; twister.visible = false; if (G.state === 'dragon') G.state = 'play'; };
+  const end = () => { njHide(); M.on = false; cv.style.display = 'none'; portals.forEach((m) => (m.visible = false)); beam.visible = false; twister.visible = false; if (G.state === 'dragon') G.state = 'play'; };
   function start(c, kind) {
     Object.assign(M, { on: true, kind, t: 0, ph: 'a', c, dir: Math.sign(goalX(c.team)), hit: [], spin: 0 });
     c.vx = c.vz = 0; c.vy = 0; c.y = 0; c.st = 'run'; c.act = null; c.t = 0; ball.owner = c; G.state = 'dragon'; fit();
@@ -1048,6 +1054,8 @@ const MAGIC = (() => {
       const left = players.filter((q) => q.team !== c.team); let at = c; M.route = [];
       while (left.length) { left.sort((a, b) => dist(a, at) - dist(b, at)); at = left.shift(); M.route.push(at); }
       M.route.push(c); M.i = 0; ball.x = c.x; ball.z = c.z; ball.y = 1; }
+    if (kind === 'ninja') { ui.banner?.('NINJA!', c.T, 'super', c); shout(c, 'Cień!'); SFX.charge(1); ball.owner = null; ball.hidden = true;
+      const gx = goalX(c.team), sg = Math.sign(gx); M.fin = [gx - sg * 9, 0]; M.clones = [0, 1, 2, 3, 4].map((i) => [-sg * 4 + (Math.random() - 0.5) * 36, (i - 2) * 6.5 + (Math.random() - 0.5) * 3]); M.sx = c.x; M.sz = c.z; }
     if (kind === 'twister') { ui.banner?.('TRĄBA POWIETRZNA!', c.T, 'super', c); shout(c, 'Wiej!'); SFX.super(); SFX.portal();
       M.tx = c.x + M.dir * 4; M.tz = Math.max(-PZ + 5, Math.min(PZ - 2, c.z + 3)); M.dropX = goalX(1 - c.team) * 0.7;
       M.vic = players.filter((q) => q.team !== c.team).map((q, i) => ({ q, x0: q.x, z0: q.z, a: i * 1.1, r: 1.6 + (i % 3) * 0.6, h: 1 + (i % 4) * 1.6 })); }
@@ -1083,6 +1091,21 @@ const MAGIC = (() => {
         SFX.boing(); G.shake = Math.max(G.shake, 0.35); FX.emit('zigzag', ball.x, 1.2, ball.z, 16, 4, 0.35, 6); M.i++;
       } else { ball.x += dx / d * v; ball.z += dz / d * v; }
     }
+    if (M.kind === 'ninja') { const T = M.t, sg = M.dir, [fx, fz] = M.fin;
+      // 0-0.5 the boy glitches into the kneeling ninja; 0.5-1.2 he leaps up and is gone; 1.2-2.6 five ninjas stand around the pitch;
+      // 2.6-3.1 they streak into one spot before the goal; 3.1-4.3 that ninja draws his sword, leaps and kicks the ball at the goal
+      c.spr.holder.visible = T < 0.5 ? Math.random() < 0.5 : false; njHide();
+      if (T < 1.2) { const k = Math.max(0, (T - 0.5) / 0.7); njShow(NJ[0], T < 0.5 ? (T * 6 | 0) % 3 : 16 + (k * 6 | 0), M.sx, k * k * 14, M.sz, sg); if (T > 0.5 && !M.j) { M.j = true; SFX.tackle(); } }
+      else if (T < 2.6) { if (!M.ap) { M.ap = true; SFX.portal(); for (const [x, z] of M.clones) FX.emit('dust', x, 0.4, z, 10, 3, 0.4, 5); }
+        M.clones.forEach(([x, z], i) => njShow(NJ[i], 3 + ((T * 8 + i * 2) | 0) % 10, x, 0, z, sg)); }
+      else if (T < 3.1) { const k = (T - 2.6) / 0.5; M.clones.forEach(([x, z], i) => { const px = x + (fx - x) * k, pz = z + (fz - z) * k; njShow(NJ[i], 18, px, Math.sin(k * Math.PI) * 2, pz, sg); if (Math.random() < 0.6) FX.streak(px, 1.5, pz, Math.sign(fx - x) || 1); }); if (!M.mg) { M.mg = true; SFX.super(); } }
+      else { const k = (T - 3.1) / 1.2, f = Math.min(29, 3 + (k * 27 | 0)); njShow(NJ[0], f, fx, f > 13 ? Math.sin(Math.min(1, (f - 13) / 16) * Math.PI) * 1.6 : 0, fz, sg);
+        if (!M.flash) { M.flash = true; G.flash = 0.8; G.shake = 0.5; FX.emit('curve', fx, 2, fz, 30, 6, 0.4, 8); ball.hidden = false; ball.x = fx + sg * 1.2; ball.z = fz; ball.y = 0.3; ball.vx = ball.vz = ball.vy = 0; }
+        if (f >= 22 && !M.kick) { M.kick = true; const gx = goalX(c.team), tz = (Math.random() - 0.5) * 6, dx = gx + sg * 0.8 - ball.x, dz = tz - ball.z, d = Math.hypot(dx, dz);
+          ball.owner = null; ball.vx = dx / d * 34; ball.vz = dz / d * 34; ball.vy = 0; ball.y = 1; ball.last = c; ball.hot = 1; ball.sup = { name: 'NINJA', kind: 'fire', team: c.team, t: 0, ox: sg, oz: 0, by: c };
+          SFX.kick(); SFX.super(); G.state = 'play'; }
+        if (T > 4.3) { c.spr.holder.visible = true; end(); } }
+      return; }
     if (M.kind === 'twister') {
       const T = M.t; twister.visible = true; twMap.offset.x = twFrame(T) / TWN; twister.quaternion.copy(camera.quaternion);
       // grows, sucks everyone in (0-1.1 s), spins and carries them towards your goal (1.1-3.1 s), throws them out (3.1-3.8 s)
@@ -1745,7 +1768,7 @@ placeKickoff(0); G.state = 'menu'; WX.set('leaves'); try { ARENA.set(localStorag
 window.GAME = {
   setSide(s) { SIDE = s; TEAMS[0].dir = s; TEAMS[1].dir = -s; },
   whistle() { SFX.unlock(); SFX.whistle(1); },
-  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0 }; G.inv2 = {}; G.supGoals = 0;
+  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0, ninja: 0 }; G.inv2 = {}; G.supGoals = 0;
     { const pk = PERK(); for (const p of players) { if (p.spd0 == null) p.spd0 = p.spd;
         if (p.team === 0 && p.stats && window.LEVELS) { const l = window.LEVELS(p.num), bb = p === captain && window.BOOT_BONUS ? window.BOOT_BONUS() : [0, 0, 0, 0, 0], v = (i) => Math.min(5.6, 2 + (l[i] + bb[i]) * 0.6);   // level 0 plays like a 2, level 5 like a 5
           p.stats = { st: v(0), pa: v(1), dr: v(2), ob: v(3), sp: v(4) }; p.spd0 = 0.9 + p.stats.sp * 0.035; } p.spd = p.spd0 * (p.team === 0 && pk.speed ? pk.speed : 1); }
