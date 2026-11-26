@@ -454,9 +454,8 @@
   #trofea .tcount { position: absolute; right: 2%; top: 3%; padding: 8px 12px; font: 10px "Press Start 2P", monospace; color: #ffe14a; background: rgba(0,0,0,.7); }
   #trofea .tinfo { position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%); min-width: 40%; padding: 8px 14px; text-align: center; font: 9px "Press Start 2P", monospace; line-height: 1.7; color: #fff; background: rgba(10,8,24,.9); border: 3px solid #ffe14a; }
   #trofea .tinfo[hidden] { display: none; } #trofea .tinfo b { color: #ffe14a; font-weight: 400; }
-  #strophy { overflow: hidden; border-radius: 8px; } #strophy::after { content: ''; position: absolute; top: -20%; bottom: -20%; width: 35%; left: -60%; background: linear-gradient(100deg, transparent, rgba(255,250,200,.85), transparent); mix-blend-mode: screen; animation: troglint 3.2s steps(12) infinite; }
-  #strophy::before { content: '✦'; position: absolute; right: 12%; top: 4%; font: 14px monospace; color: #fff6c0; text-shadow: 0 0 6px #ffe14a; animation: trospark 3.2s steps(1) infinite; }
-  @keyframes troglint { 0%, 55% { left: -60%; } 85%, 100% { left: 130%; } } @keyframes trospark { 0%, 60% { opacity: 0; } 70%, 85% { opacity: 1; } 90%, 100% { opacity: 0; } }
+  #scup { position: absolute; left: 88.218%; top: 15.94%; width: 6.041%; height: 12.434%; pointer-events: none; image-rendering: pixelated; animation: cupflash 2.6s steps(1) infinite; }
+  @keyframes cupflash { 0%, 62%, 100% { filter: none; } 66% { filter: brightness(1.7) saturate(1.3); } 70% { filter: brightness(1.15); } 74% { filter: brightness(1.8) saturate(1.3); } 78% { filter: none; } }
   #sworks { left: 9.4%; top: 2.6%; width: 17.6%; height: 5.8%; font-size: 0; color: transparent; }
   #strophy { left: 86.5%; top: 14%; width: 9%; height: 15%; }
   #szatnia .hot { position: absolute; background: transparent; border: 0; cursor: pointer; }
@@ -600,7 +599,7 @@
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <button class="hot" id="sset" aria-label="Ustawienia"></button>
-  <div class="stitle">WYBIERZ KAPITANA</div><div class="scoin" id="coinL">0</div><button class="hot" id="sworks" aria-label="Warsztat"></button><button class="hot" id="strophy" aria-label="Trofea"></button></div></div>
+  <div class="stitle">WYBIERZ KAPITANA</div><div class="scoin" id="coinL">0</div><button class="hot" id="sworks" aria-label="Warsztat"></button><img id="scup" src="szatnia_cup.png?v=1" alt=""><button class="hot" id="strophy" aria-label="Trofea"></button></div></div>
 <div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt=""><button class="hbottle" id="hbottle" aria-label="Butelka"><img src="flip_woda.png" alt=""></button>
   <small id="mq">CO ROBIMY?</small>
   <div class="mrow"><button class="mb" data-m="match"><b><img class="pxi" src="ico_match.png" alt=""></b>MECZ<em>Pixels kontra Fioletowi</em></button><button class="mb" data-m="karne"><b><img class="pxi" src="ico_karne.png" alt=""></b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b><img class="pxi" src="ico_kapki.png" alt=""></b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b><img class="pxi" src="ico_but.png" alt=""></b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b><img class="pxi" src="ico_kapsle.png" alt=""></b>KAPSLE<em>wyścig kapsli po torze</em></button><button class="mb" data-m="bieg"><b><img class="pxi" src="ico_bieg.png" alt=""></b>BIEG<em>wyścig dookoła boiska</em></button></div>
