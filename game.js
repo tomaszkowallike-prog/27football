@@ -3,7 +3,7 @@
 // from high up as in the original. The frame is rendered small and blown up without smoothing (8-bit), then a
 // tilt-shift pass blurs its top and bottom. You steer the Cuiavia player nearest the ball (a yellow arrow over his head).
 import * as THREE from 'three';
-import extraArenas from './arenas.js?v=6';
+import extraArenas from './arenas.js?v=7';
 
 // ---- data ------------------------------------------------------------------------------------------------------------
 const FR = await (await fetch('./frames.json')).json();

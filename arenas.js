@@ -115,7 +115,8 @@ export default function extraArenas(C) {
     for (let i = 0; i < 6; i++) cloud(gr, R(-120, 120), R(30, 50), -PZ - R(80, 160), R(1.5, 3)); };
   // 6. ninja village: pagodas, a torii gate, cherry trees, stone lanterns, bamboo
   DEF.ninja = { name: 'WIOSKA NINJA', sky: '#ffd8c8', fog: '#f6d2c4', near: 70, far: 220, hemi: ['#fff2ea', '#6a5a3a', 1.9], sun: ['#ffd8b0', 2.4], grav: 30, wx: 'petals',
-    pal: pal('#6a9a4a', '#72a252', '#649244', ['#5a8a3a', '#82b25a', '#4e7e34', '#8aba62'], ['#a08a5a', '#8a7a4e', '#b09a68'], '#fff6ee'),
+    pal: pal('#e0c890', '#e0c890', '#e0c890', [], ['#cdb478', '#c4aa6e', '#d6bc82'], '#8a2a20', { txt: 'rgba(0,0,0,0)', blocks: (g, W, H, K) => { const sw = Math.round(K * 0.8); for (let x = 0, i = 0; x < W; x += sw, i++) { g.fillStyle = ['#e4cc94', '#d8bc80', '#ead6a2', '#dcc288'][i % 4]; g.fillRect(x, 0, sw, H); g.fillStyle = 'rgba(110,80,30,.35)'; g.fillRect(x, 0, 1, H);
+      for (let y = (i * 37) % (K * 6); y < H; y += K * 6) { g.fillStyle = 'rgba(120,90,40,.5)'; g.fillRect(x + 1, y, sw - 2, 1); g.fillStyle = 'rgba(255,245,210,.5)'; g.fillRect(x + 1, y + 1, sw - 2, 1); } g.fillStyle = 'rgba(255,250,225,.35)'; g.fillRect(x + 1, 0, 1, H); } } }),
     track: () => tile((g) => { fill(g, '#d8d0bc'); g.fillStyle = '#c4bca6'; for (let y = 2; y < 64; y += 4) g.fillRect(0, y, 64, 1); speck(g, ['#e8e0cc', '#b8b09a'], 80); }) };
   BUILD.ninja = (gr) => { const pagoda = (x, z, s) => { for (let k = 0; k < 4; k++) { const w = (5 - k * 0.9) * s; box(gr, w * 0.7, 2.2 * s, w * 0.7, '#8a2a20', x, (1.1 + k * 3) * s, z); const roof = box(gr, w * 1.25, 0.5 * s, w * 1.25, '#2a2a32', x, (2.4 + k * 3) * s, z); roof.rotation.y = 0; }
       cyl(gr, 0.1 * s, 0.25 * s, 3 * s, '#e8c040', x, 13.6 * s, z); };
@@ -125,9 +126,22 @@ export default function extraArenas(C) {
     const cherry = (x, z, s) => { cyl(gr, 0.3 * s, 0.5 * s, 4 * s, '#4a2a24', x, 2 * s, z, 6); for (let k = 0; k < 5; k++) sph(gr, R(1.4, 2.2) * s, pick(['#ffb6d0', '#ff9ac0', '#ffd0e2']), x + R(-2, 2) * s, R(4, 6) * s, z + R(-1, 1) * s, 0); };
     far(9, (x, z) => cherry(x, z, R(1, 1.4)), 6, 11); ends(8, (x, z) => cherry(x, z, R(0.9, 1.3)));
     const lantern = (x, z) => { box(gr, 0.5, 1.6, 0.5, '#9a9a94', x, 0.8, z); box(gr, 1.4, 0.3, 1.4, '#9a9a94', x, 1.7, z); box(gr, 0.9, 0.8, 0.9, GL('#ffd890', 0.7), x, 2.25, z); box(gr, 1.6, 0.35, 1.6, '#8a8a84', x, 2.8, z); };
-    far(8, (x, z) => lantern(x, z), 4.5, 5.5, -40, 40);
+    far(8, (x, z) => lantern(x, z), 4.4, 5, -40, 40);
     ends(6, (x, z) => { for (let k = 0; k < 7; k++) cyl(gr, 0.18, 0.2, R(6, 11), '#6aa04a', x + R(-1.5, 1.5), 4, z + R(-1.5, 1.5), 5); });
-    peak(gr, -10, -PZ - 90, 50, 46, '#7a8aa8', '#ffffff'); };
+    peak(gr, -10, -PZ - 90, 50, 46, '#7a8aa8', '#ffffff');
+    // old Japanese houses along the back: white plaster and dark timber, tiled roofs in two tiers with a ridge
+    const tile2 = '#3a3a44', timber = '#4a2e1e';
+    const jhouse = (x, z, w, h, d, tiers = 1) => { box(gr, w, h, d, '#f2ece0', x, h / 2, z); for (const dx of [-w / 2, 0, w / 2]) box(gr, 0.3, h, 0.3, timber, x + dx, h / 2, z + d / 2 + 0.1); box(gr, w, 0.3, 0.3, timber, x, h * 0.55, z + d / 2 + 0.1);
+      for (let k = 0; k < Math.floor(w / 2.4); k++) box(gr, 1.2, 1.4, 0.1, '#e8dcc0', x - w / 2 + 1.4 + k * 2.4, h * 0.3, z + d / 2 + 0.12);
+      let y = h; for (let t = 0; t < tiers; t++) { const rw = w + 3 - t * 2, rd = d + 3 - t * 2; box(gr, rw, 0.5, rd, tile2, x, y + 0.25, z); const r = add(gr, new THREE.CylinderGeometry(rd * 0.42, rd * 0.42, rw - 1, 4), M(tile2), x, y + 0.9, z); r.rotation.z = Math.PI / 2; r.scale.set(0.5, 1, 1);
+        box(gr, rw - 0.6, 0.35, 0.5, '#2a2a30', x, y + 0.3 + rd * 0.22, z); if (t < tiers - 1) { box(gr, w - 2 - t * 2, 2.4, d - 2 - t * 2, '#f2ece0', x, y + 2.2, z); y += 3.2; } } };
+    far(7, (x, z) => jhouse(x, z, R(7, 10), R(3.2, 4.2), R(5, 6), Math.random() < 0.35 ? 2 : 1), 9, 14); ends(4, (x, z) => jhouse(x, z, 6, 3.4, 5, 1), 12, 18);
+    // a castle keep: a stone base and white tiers with dark curved roofs, gold ornaments on the ridge
+    const kx = 10, kz = -PZ - 34; box(gr, 22, 6, 18, '#8a8680', kx, 3, kz); for (let t = 0; t < 4; t++) { const w = 16 - t * 3.2, d = 13 - t * 2.6, y = 6 + t * 5; box(gr, w, 4, d, '#f4f0e6', kx, y + 2, kz); for (let k = 0; k < 3; k++) box(gr, 1.2, 1.2, 0.1, '#3a2e24', kx - w / 3 + k * w / 3, y + 2.4, kz + d / 2 + 0.06);
+      box(gr, w + 3, 0.6, d + 3, tile2, kx, y + 4.3, kz); const r = add(gr, new THREE.CylinderGeometry((d + 3) * 0.4, (d + 3) * 0.4, w + 2, 4), M(tile2), kx, y + 5, kz); r.rotation.z = Math.PI / 2; r.scale.set(0.35, 1, 1); }
+    for (const dx of [-2.6, 2.6]) box(gr, 0.8, 1.4, 0.8, '#e8c040', kx + dx, 28.6, kz);
+    // a red gatehouse and a low white wall with a tiled top along the back
+    box(gr, 150, 2.4, 0.8, '#f2ece0', 0, 1.2, -PZ - 7.5); box(gr, 150.5, 0.4, 1.4, tile2, 0, 2.6, -PZ - 7.5); box(gr, 7, 4, 2, '#a82a20', -40, 2, -PZ - 7.6); box(gr, 9, 0.6, 3.2, tile2, -40, 4.3, -PZ - 7.6); box(gr, 3, 3, 0.2, '#2a1a12', -40, 1.5, -PZ - 6.5); };
   // 7. medieval castle: stone walls with battlements, round towers, banners
   DEF.zamek = { name: 'ZAMEK', sky: '#a8c8e8', fog: '#c4d8ea', near: 80, far: 220, hemi: ['#eef6ff', '#5a6a4a', 2.0], sun: ['#fff0d8', 2.5], grav: 30, wx: 'leaves',
     pal: pal('#4f8a3a', '#5a9a43', '#4a8436', ['#3f7a2e', '#62a24a', '#467e34', '#6aaa52'], ['#8a7a5a', '#7a6a4e', '#9a8a68'], '#f6f2e6'),
