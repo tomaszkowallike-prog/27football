@@ -335,6 +335,10 @@
   .flipgrid button { background: #2a2454; border: 0; clip-path: var(--notch); box-shadow: inset 0 0 0 3px #000, inset -5px -5px 0 0 rgba(0,0,0,.3), inset 5px 5px 0 0 rgba(255,255,255,.25); padding: 10px 12px 8px; cursor: pointer; }
   .flipgrid button:hover, .flipgrid button:focus-visible { background: #ffe14a; }
   .flipgrid img { height: min(26vh, 120px); display: block; image-rendering: pixelated; }
+  .arenagrid button { padding: 6px 6px 5px; } .arenagrid img { height: min(15vh, 64px); width: auto; }
+  .arenagrid span { display: block; margin-top: 5px; font: 8px "Press Start 2P", monospace; color: #fff; text-shadow: 1px 1px 0 #000; }
+  .arenagrid button.sel { background: #3fbf55; } .arenagrid button:hover span, .arenagrid button:focus-visible span { color: #1a1030; text-shadow: none; }
+  .arenahint { margin: 6px 0 0; font: 7px "Press Start 2P", monospace; color: #9ab0ff; text-align: center; line-height: 1.6; }
   .setp .yn { display: flex; gap: 12px; } .setp .yn .big { flex: 1; }
   .setp p.q { font-size: 11px; line-height: 1.7; margin: 8px 0 4px; color: #e8e4ff; }
   /* wide phones: yellow 90s strips on both sides, the pattern drifts up and the sparkles blink */
@@ -447,6 +451,9 @@
   <div class="yn"><button class="big grn" id="flipyes">TAK</button><button class="big red2" id="flipno">NIE</button></div></div></div>
 <div class="setov" id="flippick" hidden><div class="setp" role="dialog" aria-label="Wybierz butelkę"><h2>WYBIERZ BUTELKĘ <button class="x" id="flipx" aria-label="Zamknij">X</button></h2>
   <div class="flipgrid"><button data-b="woda"><img src="flip_woda.png" alt="Woda"></button><button data-b="cola"><img src="flip_cola.png" alt="Cola"></button><button data-b="cytryna"><img src="flip_cytryna.png" alt="Cytryna"></button><button data-b="truskawka"><img src="flip_truskawka.png" alt="Truskawka"></button><button data-b="fiolet"><img src="flip_fiolet.png" alt="Duża woda"></button></div></div></div>
+<div class="setov" id="arenapick" hidden><div class="setp" role="dialog" aria-label="Wybierz boisko"><h2>WYBIERZ BOISKO <button class="x" id="arenax" aria-label="Zamknij">X</button></h2>
+  <div class="flipgrid arenagrid"><button data-a="stadion"><img src="arena_stadion.png" alt=""><span>STADION</span></button><button data-a="pustynia"><img src="arena_pustynia.png" alt=""><span>PUSTYNIA</span></button><button data-a="kosmos"><img src="arena_kosmos.png" alt=""><span>KSIĘŻYC</span></button><button data-a="snieg"><img src="arena_snieg.png" alt=""><span>ŚNIEG</span></button><button data-a="klocki"><img src="arena_klocki.png" alt=""><span>KLOCKI</span></button></div>
+  <p class="arenahint">Na Księżycu niska grawitacja: piłka i skoki lecą wyżej.</p></div></div>
 <div class="setov" id="pmenu" hidden><div class="setp" role="dialog" aria-label="Pauza"><h2>PAUZA</h2>
   <button class="big grn" id="pres">WZNÓW</button>
   <button class="big" id="psnd">DŹWIĘK: TAK</button>
@@ -645,7 +652,10 @@
   const showModes = () => { TMUS.currentTime = 0; TMUS.play().catch(() => {}); $('modes').hidden = false; modeSel = 0; markMode(); $('mq').textContent = `${window.CAPTAIN} ${NAMES[window.CAPTAIN] || ''}: CO ROBIMY?`; };
   const markMode = () => document.querySelectorAll('#modes .mb').forEach((b, i) => b.classList.toggle('sel', i === modeSel));
   window.CAPTAIN = 27;
-  const pickMode = (m) => { TMUS.pause(); $('modes').hidden = true; if (m === 'back') { SZ.show(); return; } if (m === 'kapsle') window.CAPS.start(showModes); else if (m === 'bieg') window.BIEG.start(showModes); else if (m === 'but') window.LACE.start(showModes); else if (m === 'karne') window.PEN.start(showModes, window.CAPTAIN); else if (m === 'kapki') K.start(); else if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
+  const pickMode = (m) => { TMUS.pause(); $('modes').hidden = true; if (m === 'back') { SZ.show(); return; } if (m === 'kapsle') window.CAPS.start(showModes); else if (m === 'bieg') window.BIEG.start(showModes); else if (m === 'but') window.LACE.start(showModes); else if (m === 'karne') window.PEN.start(showModes, window.CAPTAIN); else if (m === 'kapki') K.start(); else arenaPick(); };
+  const arenaPick = () => { const cur = window.GAME?.arenaId || 'stadion'; document.querySelectorAll('#arenapick button[data-a]').forEach((b) => b.classList.toggle('sel', b.dataset.a === cur)); $('arenapick').hidden = false; };
+  document.querySelectorAll('#arenapick button[data-a]').forEach((b) => b.addEventListener('click', () => { $('arenapick').hidden = true; window.GAME?.arena(b.dataset.a); if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } }));
+  $('arenax').onclick = () => { $('arenapick').hidden = true; showModes(); };
   // ---- the locker room: pick the captain, who plays in the middle and kicks off ----
   const SZ = (() => {
     const MUS = MV.reg(new Audio('szatnia.mp3'), 0.5); MUS.loop = true;   // the locker-room tune, from 0:08 of the user's track

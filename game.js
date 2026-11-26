@@ -152,20 +152,25 @@ const lam = (o) => new THREE.MeshLambertMaterial(o);
 scene.add(new THREE.HemisphereLight('#dff1ff', '#5f7a3a', 1.6));
 const sun = new THREE.DirectionalLight('#fff1d6', 2.2); sun.position.set(-30, 50, 25); sun.castShadow = true;
 sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -60, right: 60, top: 40, bottom: -40, near: 1, far: 140 }); scene.add(sun);
+// pitch palettes for the arenas (the stadium's own grass first)
+const PAL = { stadion: { base: '#4f8a3a', s1: '#5aa043', s2: '#64ad4b', noise: ['#3f7a2e', '#4a8a36', '#7cc25a', '#86c862'], worn: ['#8a6a3a', '#9a7844', '#7a5c30'], wornE: 'rgba(140,110,60,.55)', line: '#f3f6ea', txt: 'rgba(255,255,255,.16)' } };
+const PITCH = {}, TOWN = [], STANDS = [];
 // the pitch: mown stripes and lines painted into one texture, 8 texels a unit
 {
   const K = 5, W = (PX + 6) * 2 * K, H = (PZ + 6) * 2 * K;
-  const t = tex(W, H, (g) => {
+  const paint = (g, P) => { g.clearRect(0, 0, W, H);
     const X = (x) => Math.round((x + PX + 6) * K), Z = (z) => Math.round((z + PZ + 6) * K);
-    g.fillStyle = '#4f8a3a'; g.fillRect(0, 0, W, H);
-    const n = 12; for (let i = 0; i < n; i++) { g.fillStyle = i % 2 ? '#5aa043' : '#64ad4b'; g.fillRect(X(-PX - 2 + i * (2 * PX + 4) / n), Z(-PZ - 2), Math.ceil((2 * PX + 4) / n * K), (2 * PZ + 4) * K); }
+    g.fillStyle = P.base; g.fillRect(0, 0, W, H);
+    if (P.blocks) P.blocks(g, W, H, K); else {
+    const n = 12; for (let i = 0; i < n; i++) { g.fillStyle = i % 2 ? P.s1 : P.s2; g.fillRect(X(-PX - 2 + i * (2 * PX + 4) / n), Z(-PZ - 2), Math.ceil((2 * PX + 4) / n * K), (2 * PZ + 4) * K); }
     // pixel grass: checker dither on the stripe edges, tufts, worn brown patches in the goalmouths and the centre
-    for (let i = 0; i <= n; i++) { const x0 = X(-PX - 2 + i * (2 * PX + 4) / n); for (let z = 0; z < H; z++) if (z % 2 === 0) { g.fillStyle = i % 2 ? '#64ad4b' : '#5aa043'; g.fillRect(x0 - 1 + ((z >> 1) % 2), z, 1, 1); } }
-    for (let i = 0; i < 1400; i++) { const x = Math.random() * W | 0, z = Math.random() * H | 0; g.fillStyle = ['#3f7a2e', '#4a8a36', '#7cc25a', '#86c862'][i % 4]; g.fillRect(x, z, 1, 1); if (i % 3 === 0) g.fillRect(x + 1, z - 1, 1, 1); }
+    for (let i = 0; i <= n; i++) { const x0 = X(-PX - 2 + i * (2 * PX + 4) / n); for (let z = 0; z < H; z++) if (z % 2 === 0) { g.fillStyle = i % 2 ? P.s2 : P.s1; g.fillRect(x0 - 1 + ((z >> 1) % 2), z, 1, 1); } }
+    for (let i = 0; i < 1400; i++) { const x = Math.random() * W | 0, z = Math.random() * H | 0; g.fillStyle = P.noise[i % 4]; g.fillRect(x, z, 1, 1); if (i % 3 === 0) g.fillRect(x + 1, z - 1, 1, 1); } }
+    if (P.extra) P.extra(g, W, H, K, X, Z);
     const worn = (cx, cz, r) => { for (let i = 0; i < r * r * 9; i++) { const a = Math.random() * 6.28, d = Math.sqrt(Math.random()) * r, x = X(cx + Math.cos(a) * d * 1.4), z = Z(cz + Math.sin(a) * d);
-      g.fillStyle = d > r * 0.7 ? 'rgba(140,110,60,.55)' : ['#8a6a3a', '#9a7844', '#7a5c30'][i % 3]; g.fillRect(x, z, 1, 1); } };
+      g.fillStyle = d > r * 0.7 ? P.wornE : P.worn[i % 3]; g.fillRect(x, z, 1, 1); } };
     worn(-PX + 3, 0, 2.2); worn(PX - 3, 0, 2.2); worn(0, 0, 1.6); worn(-PX + 7, 3, 1.1); worn(PX - 8, -4, 1.2); worn(-9, 8, 0.9); worn(11, 6, 0.9); worn(-14, -7, 0.8);
-    g.fillStyle = '#f3f6ea';
+    g.fillStyle = P.line;
     const L = (x0, z0, x1, z1) => g.fillRect(Math.min(X(x0), X(x1)), Math.min(Z(z0), Z(z1)), Math.max(2, Math.abs(X(x1) - X(x0))), Math.max(2, Math.abs(Z(z1) - Z(z0))));
     L(-PX, -PZ, PX, -PZ + 0.2); L(-PX, PZ - 0.2, PX, PZ); L(-PX, -PZ, -PX + 0.2, PZ); L(PX - 0.2, -PZ, PX, PZ); L(-0.1, -PZ, 0.1, PZ);
     const ring = (cx, cz, r, a0 = 0, a1 = 6.284) => { for (let a = a0; a < a1; a += 0.01) g.fillRect(X(cx + Math.cos(a) * r), Z(cz + Math.sin(a) * r), 2, 2); };
@@ -176,18 +181,20 @@ sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -60
       L(gx, -5.5, gx - s * 3.5, -5.3); L(gx, 5.3, gx - s * 3.5, 5.5); L(gx - s * 3.5, -5.5, gx - s * 3.3, 5.5);
       g.fillRect(X(gx - s * 6.5) - 2, Z(0) - 2, 4, 4);
       ring(gx - s * 6.5, 0, 4.2, s > 0 ? Math.PI * 0.62 : -Math.PI * 0.38, s > 0 ? Math.PI * 1.38 : Math.PI * 0.38);
-      g.fillStyle = s > 0 ? '#5aa043' : '#64ad4b';
+      g.fillStyle = P.line;
     }
-    g.fillStyle = '#f3f6ea';
+    g.fillStyle = P.line;
     // the club name mown into the grass behind the centre circle
-    g.font = `bold ${3.2 * K}px "Pixelify Sans", monospace`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = 'rgba(255,255,255,.16)'; g.fillText('CUIAVIA', X(0), Z(-11));
-  });
+    g.font = `bold ${3.2 * K}px "Pixelify Sans", monospace`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = P.txt; g.fillText('CUIAVIA', X(0), Z(-11));
+  };
+  const t = tex(W, H, (g) => paint(g, PAL.stadion));
   t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.needsUpdate = true;   // chunky pixel grass, like the old games
   const m = new THREE.Mesh(new THREE.PlaneGeometry((PX + 6) * 2, (PZ + 6) * 2), lam({ map: t }));
   m.rotation.x = -Math.PI / 2; m.receiveShadow = true; scene.add(m);
   // the surround: a red running track and grass
   const track = new THREE.Mesh(new THREE.PlaneGeometry(200, 160), lam({ map: tex(64, 64, (g) => { g.fillStyle = '#b5583c'; g.fillRect(0, 0, 64, 64); for (let i = 0; i < 300; i++) { g.fillStyle = Math.random() < .5 ? '#a54d33' : '#c4674a'; g.fillRect(Math.random() * 64 | 0, Math.random() * 64 | 0, 1, 1); } }, { repeat: [50, 40] }) }));
   track.rotation.x = -Math.PI / 2; track.position.y = -0.02; track.receiveShadow = true; scene.add(track);
+  PITCH.t = t; PITCH.paint = paint; PITCH.track = track; PITCH.trackMap = track.material.map;
 }
 // boards round the pitch, the stand on the far side, the town behind it
 const boardTex = (txt, bg, fg) => tex(96, 12, (g) => { g.fillStyle = bg; g.fillRect(0, 0, 96, 12); g.fillStyle = fg; g.font = 'bold 9px "Pixelify Sans", monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, 48, 6.5); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(0, 10, 96, 2); });
@@ -196,6 +203,7 @@ for (let i = 0; i < 8; i++) { const [t, b, f] = BOARDS[i % BOARDS.length]; const
 {
   // the stands: stepped tiers of seats, each tier's face printed with a row of supporters (Cuiavia green and black,
   // the visitors in purple, neutrals); a stand on every side, the near one at the bottom of the frame, out of focus
+  const nS = scene.children.length;
   const SKINS = ['#f1c9a0', '#e3b088', '#c98f62', '#8a5a3a', '#f6d7b8'], SHIRTS = ['#1d1f22', '#3fbf55', '#1d1f22', '#3fbf55', '#6b3fa8', '#a46ee8', '#f4ecd6', '#c84b3a', '#2b6cc4', '#e2a73f', '#7a7f88'];
   const crowdTex = (seed) => tex(192, 24, (g) => {
     let r = seed; const rnd = () => ((r = (r * 16807) % 2147483647) / 2147483647);
@@ -353,6 +361,7 @@ for (let i = 0; i < 8; i++) { const [t, b, f] = BOARDS[i % BOARDS.length]; const
   // the dugouts beside the stand
   for (const x of []) { const d = new THREE.Mesh(new THREE.BoxGeometry(7, 2.4, 2), [lam({ color: '#cfd7e0' }), lam({ color: '#cfd7e0' }), lam({ color: '#2b6cc4' }), lam({ color: '#cfd7e0' }), lam({ color: '#3a4450' }), lam({ color: '#cfd7e0' })]); d.position.set(x, 1.2, -PZ - 1.8); d.castShadow = true; scene.add(d); }
   // the town: blocks with windows, trees, floodlights
+  const n0 = scene.children.length; STANDS.push(...scene.children.slice(nS, n0));
   const win = tex(16, 16, (g) => { g.fillStyle = '#e8d9b8'; g.fillRect(0, 0, 16, 16); g.fillStyle = '#6f8fb0'; for (const x of [2, 9]) for (const y of [2, 9]) g.fillRect(x, y, 5, 5); g.fillStyle = '#c9b990'; g.fillRect(0, 15, 16, 1); }, { repeat: [1, 1] });
   for (let i = 0; i < 9; i++) { const w = 10 + Math.random() * 8, h = 8 + Math.random() * 12, t = win.clone(); t.repeat.set(w / 3, h / 3); t.needsUpdate = true;
     const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, 6), lam({ map: t })); b.position.set(-70 + i * 17 + Math.random() * 4, h / 2, -PZ - 24 - Math.random() * 8); scene.add(b); }
@@ -362,6 +371,7 @@ for (let i = 0; i < 8; i++) { const [t, b, f] = BOARDS[i % BOARDS.length]; const
     const c = new THREE.Mesh(new THREE.IcosahedronGeometry(2.2 * s, 0), leaf); c.position.set(x, 2.6 * s + 1, z); c.castShadow = true; scene.add(c); }
   for (const x of [-46, 46]) { const p = new THREE.Mesh(new THREE.BoxGeometry(0.6, 18, 0.6), lam({ color: '#cfd3d8' })); p.position.set(x, 9, -PZ - 8); scene.add(p);
     const l = new THREE.Mesh(new THREE.BoxGeometry(4, 2, 0.6), lam({ color: '#f6f2d8', emissive: '#7a7560' })); l.position.set(x, 18, -PZ - 8); scene.add(l); }
+  TOWN.push(...scene.children.slice(n0));
   // near-side trees and a fence: big, blurred, at the bottom edge of the frame
   for (let i = 0; i < 0; i++) { const x = -60 + i * 9 + Math.random() * 3, z = PZ + 9 + Math.random() * 3; const c = new THREE.Mesh(new THREE.IcosahedronGeometry(2.6, 0), leaf); c.position.set(x, 3, z); scene.add(c); const t = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 2, 5), trunk); t.position.set(x, 1, z); scene.add(t); }
   const fence = tex(8, 8, (g) => { g.fillStyle = '#9aa3ab'; for (let i = 0; i < 8; i++) { g.fillRect(i, i, 1, 1); g.fillRect(7 - i, i, 1, 1); } }, { repeat: [60, 1.2] });
@@ -488,13 +498,14 @@ const WX = (() => {
   const resetDrop = (d, any) => { const b = box(); d.x = b.x - 30 + Math.random() * 60; d.z = b.z - 18 + Math.random() * 34; d.y = any ? Math.random() * 16 : 14 + Math.random() * 4; };
   return {
     set(m) {
-      mode = m; for (const l of leaves) { l.m.visible = m === 'leaves'; resetLeaf(l, true); } rain.visible = m === 'rain'; for (const g of ghosts) g.visible = rain.visible; for (const d of drops) resetDrop(d, true);
+      mode = m; const fl = m === 'leaves' || m === 'snow' || m === 'dust'; leaves.forEach((l, i) => { l.m.visible = fl; resetLeaf(l, true);
+        l.m.material.color.set(m === 'snow' ? '#ffffff' : m === 'dust' ? ['#e8c88a', '#d4a860', '#f0dcae'][i % 3] : LC[i % LC.length]); l.m.scale.setScalar(m === 'snow' ? 0.55 : m === 'dust' ? 0.4 : 1); }); rain.visible = m === 'rain'; for (const g of ghosts) g.visible = rain.visible; for (const d of drops) resetDrop(d, true);
       scene.background.set(m === 'rain' ? '#7d8b98' : '#9fd3f2'); scene.fog.color.set(m === 'rain' ? '#8f9ba6' : '#c5e3f2'); scene.fog.near = m === 'rain' ? 50 : 90; if (LIGHTS.beam) { LIGHTS.beam.uniforms.k.value = m === 'rain' ? 0.12 : 0.09; LIGHTS.pool.opacity = m === 'rain' ? 0.3 : 0.14; }
       for (const o of scene.children) if (o.isDirectionalLight) o.intensity = m === 'rain' ? 1.1 : 2.6; else if (o.isHemisphereLight) o.intensity = m === 'rain' ? 1.5 : 2.0;
     },
     update(dt, t) {
-      if (mode === 'leaves') for (const l of leaves) {
-        l.x += (l.vx + Math.sin(t * 0.7 + l.ph) * 1.5) * dt; l.y += (l.vy + Math.sin(t * l.sp + l.ph) * 0.8) * dt; l.z += Math.cos(t * 1.3 + l.ph) * 0.6 * dt;
+      if (mode === 'leaves' || mode === 'snow' || mode === 'dust') for (const l of leaves) { const wv = mode === 'snow' ? 0.35 : mode === 'dust' ? 2.2 : 1;
+        l.x += (l.vx * wv + Math.sin(t * 0.7 + l.ph) * 1.5) * dt; l.y += (l.vy * (mode === 'dust' ? 0.3 : 1) + Math.sin(t * l.sp + l.ph) * 0.8) * dt; l.z += Math.cos(t * 1.3 + l.ph) * 0.6 * dt;
         if (l.y < 0.05) { l.y = 0.05; l.vx *= 0.97; } if (l.x > cam.x + 32 || (l.y <= 0.05 && Math.random() < dt * 0.4)) resetLeaf(l, false);
         l.m.position.set(l.x, l.y, l.z); l.m.quaternion.copy(camera.quaternion); l.m.rotateZ(t * l.sp + l.ph); l.m.rotateY(Math.sin(t * 3 + l.ph));
       }
@@ -503,7 +514,138 @@ const WX = (() => {
     },
   };
 })();
-function setWeather(m) { WX.set(m); ui.weather?.(m); }
+function setWeather(m) { WX.set(m); ARENA.sky(); ui.weather?.(m); }
+// ---- arenas: the stadium, the desert, the moon, the snow, the block world. Each one repaints the pitch and the
+// surround, sets the sky, the light, the weather and the gravity, and shows its own scenery; in the desert, on the moon
+// and in the snow the stands give way to pyramids, the moon base and the mountains.
+const ARENA = (() => {
+  const SG = new THREE.Group(); for (const o of STANDS) SG.add(o); scene.add(SG);
+  const TG = new THREE.Group(); for (const o of TOWN) TG.add(o); scene.add(TG);
+  const M = (c, o = {}) => lam({ color: c, flatShading: true, ...o });
+  const box = (gr, w, h, d, c, x, y, z, o) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), typeof c === 'string' ? M(c, o) : c); m.position.set(x, y, z); m.castShadow = true; gr.add(m); return m; };
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const tile = (draw) => tex(64, 64, draw, { repeat: [50, 40] });
+  const speck = (g, cols, n) => { for (let i = 0; i < n; i++) { g.fillStyle = cols[i % cols.length]; g.fillRect(Math.random() * 64 | 0, Math.random() * 64 | 0, 1 + (i % 5 === 0), 1); } };
+  // block painter: chunky 2x2-unit blocks, each a little different, with pixel grain and a dark seam
+  const blocks = (cols, seam) => (g, W, H, K) => { const B = 2 * K;
+    for (let y = 0; y < H; y += B) for (let x = 0; x < W; x += B) { const band = Math.floor(x / (B * 6)) % 2, c = cols[(Math.abs(Math.sin(x * 12.9 + y * 78.2)) * 9999 | 0) % cols.length];
+      g.fillStyle = c; g.fillRect(x, y, B, B); g.fillStyle = band ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.05)'; g.fillRect(x, y, B, B);
+      for (let i = 0; i < 4; i++) { g.fillStyle = i % 2 ? 'rgba(255,255,255,.18)' : 'rgba(0,0,0,.16)'; g.fillRect(x + (Math.random() * B | 0), y + (Math.random() * B | 0), 1, 1); }
+      g.fillStyle = seam; g.fillRect(x, y + B - 1, B, 1); g.fillRect(x + B - 1, y, 1, B); } };
+  const DEF = {
+    stadion: { sky: '#9fd3f2', fog: '#c5e3f2', near: 90, far: 190, hemi: ['#dff1ff', '#5f7a3a', 2.0], sun: ['#fff1d6', 2.6], grav: 30, wx: null, stands: true, town: true },
+    pustynia: { sky: '#f4dcb0', fog: '#f2e0c0', near: 80, far: 220, hemi: ['#fff6e4', '#c8b494', 2.0], sun: ['#fff0d0', 2.6], grav: 30, wx: 'dust',
+      pal: { base: '#d8bc88', s1: '#dcc292', s2: '#d4b886', noise: ['#c4a470', '#e8d2a4', '#b8986a', '#eedab0'], worn: ['#b89a68', '#a88a5c', '#c4a676'], wornE: 'rgba(150,120,80,.45)', line: '#fffaf0', txt: 'rgba(120,70,20,.2)' },
+      track: () => tile((g) => { g.fillStyle = '#dcb06c'; g.fillRect(0, 0, 64, 64); g.fillStyle = '#c99a58'; for (let y = 4; y < 64; y += 9) for (let x = 0; x < 64; x++) g.fillRect(x, y + Math.round(Math.sin(x / 6 + y) * 2), 1, 1); speck(g, ['#e8c888', '#c0904c', '#f0d8a0'], 120); }) },
+    kosmos: { sky: '#05061a', fog: '#0a0b22', near: 140, far: 320, hemi: ['#d8dcf0', '#3a3a44', 1.5], sun: ['#f4f6ff', 2.4], grav: 15, wx: 'none',
+      pal: { base: '#8a8a92', s1: '#94949c', s2: '#86868e', noise: ['#6e6e76', '#a4a4ac', '#5e5e66', '#b4b4bc'], worn: ['#6a6a72', '#5a5a62', '#74747c'], wornE: 'rgba(60,60,70,.45)', line: '#5af0ff', txt: 'rgba(90,240,255,.22)',
+        extra: (g, W, H, K) => { for (let i = 0; i < 26; i++) { const x = Math.random() * W, y = Math.random() * H, r = (0.6 + Math.random() * 1.6) * K; // craters
+          g.fillStyle = 'rgba(50,50,60,.22)'; g.beginPath(); g.ellipse(x, y, r, r * 0.8, 0, 0, 7); g.fill(); g.fillStyle = 'rgba(230,230,240,.35)'; g.fillRect(Math.round(x - r * 0.3), Math.round(y + r * 0.6), Math.round(r * 0.8), 1); } } },
+      track: () => tile((g) => { g.fillStyle = '#7a7a82'; g.fillRect(0, 0, 64, 64); speck(g, ['#606068', '#9a9aa2', '#56565e', '#acacb4'], 260); g.fillStyle = 'rgba(40,40,50,.4)'; g.beginPath(); g.ellipse(20, 30, 9, 7, 0, 0, 7); g.fill(); g.fillStyle = 'rgba(200,200,210,.4)'; g.fillRect(14, 36, 12, 1); }) },
+    snieg: { sky: '#d8e2ec', fog: '#e4ebf2', near: 70, far: 260, hemi: ['#ffffff', '#c4d0de', 2.3], sun: ['#ffffff', 2.2], grav: 30, wx: 'snow',
+      pal: { base: '#e6edf4', s1: '#f2f6fa', s2: '#e4eaf1', noise: ['#d0dae6', '#ffffff', '#c6d2e0', '#f8fbff'], worn: ['#c4d0de', '#b8c6d6', '#d0dae6'], wornE: 'rgba(170,190,215,.5)', line: '#7aaee8', txt: 'rgba(120,150,190,.22)' },
+      track: () => tile((g) => { g.fillStyle = '#eef3f8'; g.fillRect(0, 0, 64, 64); speck(g, ['#d6e0ea', '#ffffff', '#c8d6e4'], 200); }) },
+    klocki: { sky: '#7ab6ff', fog: '#a6ccf2', near: 90, far: 220, hemi: ['#eaf4ff', '#5a7a2a', 2.0], sun: ['#fff6d8', 2.7], grav: 30, wx: 'leaves', stands: true,
+      pal: { base: '#5a9a3a', s1: '#5a9a3a', s2: '#5a9a3a', noise: [], worn: ['#7a5a34', '#6a4c2a', '#86643a'], wornE: 'rgba(110,80,44,.6)', line: '#ffffff', txt: 'rgba(255,255,255,.16)',
+        blocks: blocks(['#5aa83c', '#62b244', '#54a036', '#6aba48', '#4e9832'], 'rgba(30,60,20,.35)') },
+      track: () => tile((g) => { blocks(['#8a6440', '#7c5838', '#946c46', '#6e4e30'], 'rgba(40,24,10,.5)')(g, 64, 64, 8); }) },
+  };
+  // ---- scenery for each arena ----
+  const BUILD = {
+    pustynia(gr) {
+      const sand = ['#e0b874', '#d6aa62', '#caa05c'];
+      const pyr = (x, z, s) => { const m = new THREE.Mesh(new THREE.ConeGeometry(s, s * 1.15, 4, 1), M(sand[Math.random() * 3 | 0])); m.rotation.y = Math.PI / 4; m.position.set(x, s * 0.575, z); m.castShadow = true; gr.add(m);
+        const cap = new THREE.Mesh(new THREE.ConeGeometry(s * 0.12, s * 0.14, 4, 1), M('#f4e2a0', { emissive: '#6a5a20' })); cap.rotation.y = Math.PI / 4; cap.position.set(x, s * 1.15 - s * 0.07, z); gr.add(cap); };
+      pyr(-22, -PZ - 22, 17); pyr(8, -PZ - 34, 24); pyr(36, -PZ - 20, 13); pyr(-50, -PZ - 30, 15); pyr(60, -PZ - 36, 19);
+      pyr(-PX - 22, -6, 11); pyr(PX + 24, 8, 12);
+      // dunes, cacti, palms, a few rocks
+      for (let i = 0; i < 16; i++) { const d = new THREE.Mesh(new THREE.SphereGeometry(rnd(6, 12), 7, 4), M(sand[i % 3])); d.scale.y = 0.22; const side = i % 4;
+        d.position.set(side < 2 ? rnd(-70, 70) : (side === 2 ? -1 : 1) * rnd(PX + 9, PX + 30), 0, side === 0 ? rnd(-PZ - 12, -PZ - 6) : side === 1 ? rnd(PZ + 9, PZ + 18) : rnd(-PZ, PZ)); gr.add(d); }
+      const cactus = (x, z, h) => { const c = M('#3f8a3a'); box(gr, 0.9, h, 0.9, c, x, h / 2, z); box(gr, 0.7, h * 0.35, 0.7, c, x - 1, h * 0.55, z); box(gr, 1.3, 0.6, 0.7, c, x - 0.55, h * 0.4, z); box(gr, 0.7, h * 0.3, 0.7, c, x + 1, h * 0.62, z); box(gr, 1.3, 0.6, 0.7, c, x + 0.55, h * 0.5, z); };
+      for (const [x, z] of [[-44, -PZ - 5], [-12, -PZ - 6], [21, -PZ - 7], [47, -PZ - 5], [-PX - 7, -12], [-PX - 8, 10], [PX + 7, -9], [PX + 8, 13]]) cactus(x, z, rnd(2.6, 4));
+      const palm = (x, z) => { for (let i = 0; i < 6; i++) box(gr, 0.6, 1.2, 0.6, '#8a6a3a', x + i * 0.12, 0.6 + i * 1.1, z); for (let k = 0; k < 5; k++) { const a = k / 5 * 6.28, l = box(gr, 3.4, 0.25, 0.9, '#3f9a3a', x + 0.7 + Math.cos(a) * 1.5, 7, z + Math.sin(a) * 1.5); l.rotation.y = -a; l.rotation.z = -0.35; } };
+      palm(-PX - 12, -PZ - 6); palm(PX + 12, -PZ - 7); palm(-60, -PZ - 10);
+      const sun = new THREE.Mesh(new THREE.CircleGeometry(14, 12), new THREE.MeshBasicMaterial({ color: '#fff4c8', fog: false })); sun.position.set(-40, 70, -200); gr.add(sun);
+    },
+    kosmos(gr) {
+      // stars and the Earth
+      const N = 900, pos = new Float32Array(N * 3); for (let i = 0; i < N; i++) { const a = Math.random() * 6.28, e = Math.random() * 1.2 + 0.05, r = 260; pos.set([Math.cos(a) * Math.cos(e) * r, Math.sin(e) * r, Math.sin(a) * Math.cos(e) * r], i * 3); }
+      const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(pos, 3)); gr.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: '#ffffff', size: 2, sizeAttenuation: false, fog: false })));
+      const earth = new THREE.Mesh(new THREE.IcosahedronGeometry(22, 1), lam({ color: '#3a7ae8', flatShading: true, emissive: '#0a2a6a', fog: false })); earth.position.set(-60, 75, -230); gr.add(earth);
+      for (let i = 0; i < 7; i++) { const c = new THREE.Mesh(new THREE.IcosahedronGeometry(rnd(4, 8), 0), lam({ color: '#3ac85a', flatShading: true, emissive: '#0a3a14', fog: false })); const a = rnd(0, 6.28), b = rnd(-1, 1); c.position.set(-60 + Math.cos(a) * 17, 75 + b * 15, -230 + Math.sin(a) * 17 + 8); gr.add(c); }
+      // moon hills and boulders round the pitch
+      const rock = (x, z, s, c = '#8e8e96') => { const m = new THREE.Mesh(new THREE.IcosahedronGeometry(s, 0), M(c)); m.position.set(x, s * 0.3, z); m.rotation.set(rnd(0, 3), rnd(0, 3), 0); m.castShadow = true; gr.add(m); };
+      for (let i = 0; i < 14; i++) { const h = new THREE.Mesh(new THREE.SphereGeometry(rnd(10, 18), 7, 4), M(['#8a8a92', '#7c7c84', '#96969e'][i % 3])); h.scale.y = rnd(0.3, 0.55); h.position.set(-90 + i * 14 + rnd(-4, 4), 0, -PZ - rnd(30, 44)); gr.add(h); }
+      for (let i = 0; i < 22; i++) { const s = i % 2; rock(s ? rnd(-70, 70) : (Math.random() < 0.5 ? -1 : 1) * rnd(PX + 8, PX + 26), s ? rnd(-PZ - 12, -PZ - 6) : rnd(-PZ, PZ), rnd(0.6, 1.8)); }
+      // the base: domes with lit windows, tubes between them, a tower, solar panels, a landing pad and a rocket
+      const white = M('#e8ecf2'), glass = new THREE.MeshLambertMaterial({ color: '#5af0ff', emissive: '#1a8aa0' });
+      const dome = (x, z, r) => { const d = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 6, 0, 6.28, 0, Math.PI / 2), white); d.position.set(x, 0, z); d.castShadow = true; gr.add(d);
+        for (let k = 0; k < 5; k++) { const a = -0.9 + k * 0.45, w = box(gr, 0.8, 0.5, 0.2, glass, x + Math.sin(a) * r * 0.86, r * 0.42, z + Math.cos(a) * r * 0.86); w.rotation.y = a; } box(gr, r * 0.2, 0.4, 0.2, '#e8361f', x, r + 0.1, z); };
+      dome(-30, -PZ - 14, 7); dome(-14, -PZ - 11, 4.5); dome(10, -PZ - 16, 9); dome(34, -PZ - 12, 5);
+      for (const [a, b] of [[-26, -18], [-10, 2], [18, 30]]) { const t = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, b - a, 8), white); t.rotation.z = Math.PI / 2; t.position.set((a + b) / 2, 1.1, -PZ - 13); gr.add(t); }
+      box(gr, 2.2, 16, 2.2, '#c8ccd6', -44, 8, -PZ - 12); box(gr, 4, 2, 4, '#5a606a', -44, 16.5, -PZ - 12); box(gr, 0.3, 4, 0.3, '#c8ccd6', -44, 19.5, -PZ - 12);
+      const beacon = box(gr, 0.7, 0.7, 0.7, new THREE.MeshBasicMaterial({ color: '#ff3a3a' }), -44, 21.6, -PZ - 12); BUILD.beacon = beacon;
+      for (let i = 0; i < 6; i++) { const p = box(gr, 4, 0.15, 2.6, '#2a4ad0', 46 + (i % 3) * 4.6, 2.2, -PZ - 8 - Math.floor(i / 3) * 3.6, { emissive: '#0a1a5a' }); p.rotation.x = -0.5; box(gr, 0.2, 2, 0.2, '#999', 46 + (i % 3) * 4.6, 1, -PZ - 8 - Math.floor(i / 3) * 3.6); }
+      const pad = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, 0.3, 8), M('#3a3a44')); pad.position.set(PX + 18, 0.15, -10); gr.add(pad);
+      const rx = PX + 18, rz = -10, body = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, 12, 8), white); body.position.set(rx, 6.3, rz); body.castShadow = true; gr.add(body);
+      const nose = new THREE.Mesh(new THREE.ConeGeometry(1.6, 4, 8), M('#e8361f')); nose.position.set(rx, 14.3, rz); gr.add(nose);
+      for (let k = 0; k < 4; k++) { const f = box(gr, 0.3, 3, 2.4, '#e8361f', rx + Math.cos(k * 1.57) * 1.8, 1.8, rz + Math.sin(k * 1.57) * 1.8); f.rotation.y = -k * 1.57; }
+      box(gr, 1.2, 1.2, 0.2, glass, rx, 9, rz + 1.6);
+      // a few asteroids drifting above the far side
+      BUILD.ast = []; for (let i = 0; i < 8; i++) { const m = new THREE.Mesh(new THREE.IcosahedronGeometry(rnd(1, 2.6), 0), M('#6e6e76', { fog: false })); m.position.set(rnd(-80, 80), rnd(22, 40), -PZ - rnd(40, 90)); gr.add(m); BUILD.ast.push(m); }
+    },
+    snieg(gr) {
+      // the mountains: low-poly peaks with white caps, a near ridge and a far one
+      const peak = (x, z, r, h) => { const rock = new THREE.Mesh(new THREE.ConeGeometry(r, h, 7, 1), M(['#8a96a8', '#7c889a', '#9aa6b6'][Math.random() * 3 | 0])); rock.position.set(x, h / 2, z); rock.rotation.y = rnd(0, 3); gr.add(rock);
+        const cap = new THREE.Mesh(new THREE.ConeGeometry(r * 0.5, h * 0.5, 7, 1), M('#ffffff')); cap.position.set(x, h * 0.75 + 0.05, z); cap.rotation.y = rock.rotation.y; gr.add(cap); };
+      peak(-40, -PZ - 40, 26, 44); peak(-6, -PZ - 52, 34, 62); peak(30, -PZ - 42, 24, 40); peak(62, -PZ - 50, 30, 54); peak(-74, -PZ - 52, 28, 50);
+      peak(-PX - 40, 0, 22, 36); peak(PX + 40, -4, 24, 40);
+      // snow banks, pines with snow on them, snowmen
+      for (let i = 0; i < 18; i++) { const d = new THREE.Mesh(new THREE.SphereGeometry(rnd(5, 10), 7, 4), M(i % 2 ? '#ffffff' : '#eef3f8')); d.scale.y = 0.3; const side = i % 3;
+        d.position.set(side === 0 ? rnd(-70, 70) : (side === 1 ? -1 : 1) * rnd(PX + 9, PX + 26), 0, side === 0 ? rnd(-PZ - 14, -PZ - 6) : rnd(-PZ, PZ)); gr.add(d); }
+      const pine = (x, z, s) => { box(gr, 0.6 * s, 2 * s, 0.6 * s, '#5a3e24', x, s, z); for (let k = 0; k < 3; k++) { const c = new THREE.Mesh(new THREE.ConeGeometry((2.4 - k * 0.6) * s, 2.6 * s, 7), M('#2a5a3a')); c.position.set(x, (2.6 + k * 1.6) * s, z); c.castShadow = true; gr.add(c);
+        const w = new THREE.Mesh(new THREE.ConeGeometry((1.3 - k * 0.3) * s, 1.2 * s, 7), M('#ffffff')); w.position.set(x, (3.3 + k * 1.6) * s, z); gr.add(w); } };
+      for (let i = 0; i < 16; i++) pine(-72 + i * 9.5 + rnd(-2, 2), -PZ - rnd(7, 16), rnd(1.1, 1.8));
+      for (const [x, z] of [[-PX - 9, -14], [-PX - 12, 6], [PX + 9, -12], [PX + 12, 9], [-PX - 16, 16], [PX + 16, -2]]) pine(x, z, rnd(1, 1.5));
+      const snowman = (x, z, s) => { const w = M('#ffffff'); for (const [r, y] of [[1.2, 1.1], [0.85, 2.7], [0.6, 3.9]]) { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(r * s, 1), w); b.position.set(x, y * s, z); b.castShadow = true; gr.add(b); }
+        const n = new THREE.Mesh(new THREE.ConeGeometry(0.14 * s, 0.7 * s, 5), M('#ff8a1a')); n.rotation.x = Math.PI / 2; n.position.set(x, 3.9 * s, z + 0.8 * s); gr.add(n);
+        for (const dx of [-0.2, 0.2]) box(gr, 0.12 * s, 0.12 * s, 0.1 * s, '#141414', x + dx * s, 4.05 * s, z + 0.55 * s); box(gr, 1.1 * s, 0.12 * s, 0.9 * s, '#141414', x, 4.45 * s, z); box(gr, 0.7 * s, 0.6 * s, 0.6 * s, '#141414', x, 4.8 * s, z);
+        box(gr, 1.4 * s, 0.25 * s, 0.25 * s, '#e8361f', x, 3.35 * s, z + 0.2 * s); };
+      snowman(-26, -PZ - 6, 1.2); snowman(24, -PZ - 6.5, 1); snowman(-PX - 8, -2, 1.1); snowman(PX + 8, 2, 1.1);
+    },
+    klocki(gr) {
+      const C = { grass: ['#5aa83c', '#62b244', '#54a036'], dirt: '#7c5838', wood: '#6a4a2a', leaf: ['#3a8a2a', '#4a9a32', '#2f7a24'], stone: '#8a8a8a' };
+      const cube = (x, y, z, c, s = 2) => box(gr, s, s, s, c, x, y + s / 2, z);
+      // blocky hills behind the far stand and beyond the goals
+      for (let x = -84; x <= 84; x += 3) { const h = Math.round(3 + 3 * Math.sin(x * 0.09) + 2 * Math.sin(x * 0.23 + 1)); for (let y = 0; y < h; y++) cube(x, y * 3, -PZ - 34 - (x % 2 ? 3 : 0), y === h - 1 ? C.grass[(x + y) % 3 < 0 ? 0 : (x + y) % 3] : (y < h - 3 ? C.stone : C.dirt), 3); }
+      const tree = (x, z, h) => { for (let y = 0; y < h; y++) cube(x, y * 1.5, z, C.wood, 1.5); for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) for (let dy = 0; dy < 2; dy++) if (Math.abs(dx) + Math.abs(dz) < 2 + dy) cube(x + dx * 1.5, h * 1.5 - 1.5 + dy * 1.5, z + dz * 1.5, C.leaf[(dx + dz + dy + 3) % 3], 1.5); cube(x, h * 1.5 + 1.5, z, C.leaf[0], 1.5); };
+      for (let i = 0; i < 14; i++) tree(-70 + i * 11 + rnd(-2, 2), -PZ - rnd(24, 30), 3 + (Math.random() * 3 | 0));
+      for (const [x, z] of [[-PX - 14, -10], [-PX - 16, 8], [PX + 14, -6], [PX + 16, 12]]) tree(x, z, 4);
+      // block clouds and a square sun
+      BUILD.clouds = []; for (let i = 0; i < 9; i++) { const g2 = new THREE.Group(); const w = 3 + (Math.random() * 4 | 0); for (let k = 0; k < w; k++) for (let j = 0; j < 2; j++) if (j === 0 || (k > 0 && k < w - 1)) { const m = new THREE.Mesh(new THREE.BoxGeometry(4, 1.6, 4), new THREE.MeshBasicMaterial({ color: '#ffffff', fog: false, transparent: true, opacity: 0.92 })); m.position.set(k * 4, j * 1.6, (j ? 0 : (k % 2) * 4)); g2.add(m); }
+        g2.position.set(rnd(-120, 120), rnd(38, 55), -PZ - rnd(60, 140)); gr.add(g2); BUILD.clouds.push(g2); }
+      const sq = new THREE.Mesh(new THREE.PlaneGeometry(22, 22), new THREE.MeshBasicMaterial({ color: '#fff6a0', fog: false })); sq.position.set(50, 80, -220); gr.add(sq);
+    },
+  };
+  const groups = {}; let cur = 'stadion';
+  const lights = () => { let h = null, s = null; for (const o of scene.children) { if (o.isHemisphereLight) h = o; if (o.isDirectionalLight) s = o; } return [h, s]; };
+  return {
+    get id() { return cur; }, list: Object.keys(DEF),
+    set(id) { if (!DEF[id]) id = 'stadion'; cur = id; const D = DEF[id];
+      if (BUILD[id] && !groups[id]) { groups[id] = new THREE.Group(); BUILD[id](groups[id]); scene.add(groups[id]); }
+      for (const k in groups) groups[k].visible = k === id;
+      SG.visible = !!D.stands || id === 'stadion'; TG.visible = id === 'stadion';
+      PITCH.paint(PITCH.t.image.getContext('2d'), { ...DEF.stadion.pal, ...(D.pal || PAL.stadion) }); PITCH.t.needsUpdate = true;
+      if (!D.trackMap && D.track) D.trackMap = D.track(); PITCH.track.material.map = D.trackMap || PITCH.trackMap; PITCH.track.material.needsUpdate = true;
+      GRAV = D.grav; if (id === 'stadion') { const w = typeof G !== 'undefined' && (G.weather === 'rain' || G.weather === 'leaves') ? G.weather : 'leaves'; WX.set(w); } else WX.set(D.wx || 'leaves'); this.sky(); },
+    sky() { if (cur === 'stadion') return; const D = DEF[cur]; scene.background.set(D.sky); scene.fog.color.set(D.fog); scene.fog.near = D.near; scene.fog.far = D.far;
+      const [h, s] = lights(); if (h) { h.color.set(D.hemi[0]); h.groundColor.set(D.hemi[1]); h.intensity = D.hemi[2]; } if (s) { s.color.set(D.sun[0]); s.intensity = D.sun[1]; } },
+    weather() { return DEF[cur].wx; },
+    update(dt, t) { if (cur === 'kosmos') { BUILD.ast?.forEach((m, i) => { m.rotation.x += dt * (0.2 + i * 0.03); m.rotation.y += dt * 0.15; m.position.x += Math.sin(t * 0.1 + i) * dt * 0.6; }); if (BUILD.beacon) BUILD.beacon.visible = Math.floor(t * 1.5) % 2 === 0; }
+      if (cur === 'klocki') BUILD.clouds?.forEach((c) => { c.position.x += dt * 1.2; if (c.position.x > 140) c.position.x = -140; }); },
+  };
+})();
+
 // the stands move: flags ripple, fans bounce (hard after a goal), the card display flips over
 function updateStands(dt, t) {
   for (const f of FLAGS) { const pos = f.m.geometry.attributes.position, b = f.base, w = f.w;
@@ -642,7 +784,7 @@ const ui = window.UI || {};
 const HALF = () => (window.CFG && window.CFG.half) || 120;
 const VIB = (ms) => { try { if (!window.CFG || window.CFG.vib !== false) navigator.vibrate?.(ms); } catch (e) {} };
 const G = { inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
-const GRAV = 30, JUMP_V = 11, APEX = 3.2;                       // a jump peaks ~0.37 s after take-off, ~2 units up
+let GRAV = 30; const JUMP_V = 11, APEX = 3.2;                       // a jump peaks ~0.37 s after take-off, ~2 units up
 const WALK = 6.4, DASH = 11.8, AI_WALK = 5.8, AI_RUN = 7.6;
 const goalX = (team) => (team === 0 ? PX : -PX);               // the goal this team attacks
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
@@ -1198,7 +1340,7 @@ function physics(p, dt, control) {
 }
 function step(dt) {
   FX.update(dt); BOLTS.update(dt); TRAIL.update(dt); dragonUpdate(dt); goalFireUpdate(dt);
-  if (WOLF.on && G.state !== 'play') { WOLF.t += dt; if (WOLF.phase !== 'back') { WOLF.phase = 'back'; WOLF.t = 0; } else if (WOLF.t > 0.6) wolfEnd(); } PU.update(dt, performance.now() / 1000); updateLines(dt); updateStands(dt, performance.now() / 1000); WX.update(dt, performance.now() / 1000); G.shake = Math.max(0, G.shake - dt); G.flash = Math.max(0, G.flash - dt * 2.5);
+  if (WOLF.on && G.state !== 'play') { WOLF.t += dt; if (WOLF.phase !== 'back') { WOLF.phase = 'back'; WOLF.t = 0; } else if (WOLF.t > 0.6) wolfEnd(); } PU.update(dt, performance.now() / 1000); updateLines(dt); updateStands(dt, performance.now() / 1000); WX.update(dt, performance.now() / 1000); ARENA.update(dt, performance.now() / 1000); G.shake = Math.max(0, G.shake - dt); G.flash = Math.max(0, G.flash - dt * 2.5);
   if (G.charge) { if (ball.owner !== captain || G.state !== 'play') G.charge = 0; else { G.charge += dt; if (G.charge > 1.1) press('Bup'); } }
   if (G.state === 'penExt') { draw(dt); return; }
   if (G.state === 'dragon') { for (const p of players) physics(p, dt, false); draw(dt); return; }
@@ -1341,9 +1483,9 @@ let last = performance.now(), auto = true, frozen = false;
 // the 3D pitch sleeps while a full-screen mode (penalties, keepy-uppy, lacing) covers it
 const covered = () => ['pen', 'kapki', 'lace', 'caps', 'flip', 'bieg'].some((id) => { const e = document.getElementById(id); return e && !e.hidden; });
 renderer.setAnimationLoop((now) => { if (!auto) return; if (covered()) { last = now; return; } const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; step(frozen ? 0 : dt); });
-placeKickoff(0); G.state = 'menu'; WX.set('leaves');
+placeKickoff(0); G.state = 'menu'; WX.set('leaves'); try { ARENA.set(localStorage.getItem('arena') || 'stadion'); } catch (e) { ARENA.set('stadion'); }
 window.GAME = {
-  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0 }; PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = HALF(); SFX.setSfx(!window.CFG || window.CFG.sfx !== false); G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = Math.random() < 0.5 ? 'rain' : 'leaves'; setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
+  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0 }; PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = HALF(); SFX.setSfx(!window.CFG || window.CFG.sfx !== false); G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = ARENA.weather() || (Math.random() < 0.5 ? 'rain' : 'leaves'); setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
   press, setCaptain, pick: (i) => doPick(i), pickMove,
   // a finger on a teammate takes control of him (not while you are the one with the ball)
   ctx() { const c = captain, has = ball.owner === c, air = !has && !ball.owner && Math.hypot(ball.x - c.x, ball.z - c.z) < 4.5 && ball.y > 0.5 && ball.y < 2.6;
@@ -1353,7 +1495,7 @@ window.GAME = {
     const r = renderer.domElement.getBoundingClientRect(); let best = null, bd = 64; const v = new THREE.Vector3();
     for (const q of players) { if (q.team !== 0 || q.keeper || q.st === 'down') continue; v.set(q.x, q.y + 1.1, q.z).project(camera);
       const d = Math.hypot(r.left + (v.x + 1) / 2 * r.width - cx, r.top + (1 - v.y) / 2 * r.height - cy); if (d < bd) { bd = d; best = q; } }
-    if (!best || best === captain) return false; captain = best; switchT = 2.2; SFX.menu(); G.ca = Math.max(G.ca, 0.3); FX.emit('curve', best.x, 0.4, best.z, 10, 3, 0.25, 4); return true; }, powers: POWERS, icons: PU.icons, setStick(v) { stick = v; }, setDash(v) { padDash = v; }, quit() { frozen = false; G.state = 'menu'; MUSIC.stop(); PICK.open = false; ui.picker?.(null); }, sfx(on) { SFX.setSfx(on); }, freeze(v) { frozen = !!v; if (v) { keys.clear(); keyDash = false; } }, mute: () => SFX.toggle(),
+    if (!best || best === captain) return false; captain = best; switchT = 2.2; SFX.menu(); G.ca = Math.max(G.ca, 0.3); FX.emit('curve', best.x, 0.4, best.z, 10, 3, 0.25, 4); return true; }, powers: POWERS, icons: PU.icons, arena(id) { ARENA.set(id); try { localStorage.setItem('arena', ARENA.id); } catch (e) {} }, get arenaId() { return ARENA.id; }, setStick(v) { stick = v; }, setDash(v) { padDash = v; }, quit() { frozen = false; G.state = 'menu'; MUSIC.stop(); PICK.open = false; ui.picker?.(null); }, sfx(on) { SFX.setSfx(on); }, freeze(v) { frozen = !!v; if (v) { keys.clear(); keyDash = false; } }, mute: () => SFX.toggle(),
   teams: TEAMS, frames: FR, images: [IMG_G, IMG_P], players, get captain() { return captain; }, get ball() { return ball; }, G,
 };
 window.__game = { goal: (t) => goalScored(t), pen: (t) => penaltyFor(t, players.find((q) => q.team === t && q.role === 'fwd')), G, ball, players, input, weather: (m) => { G.weather = m; setWeather(m); }, step(sec, fps = 30) { auto = false; for (let i = 0; i < Math.round(sec * fps); i++) step(1 / fps); }, resume() { last = performance.now(); auto = true; }, keys };
