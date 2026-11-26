@@ -1712,7 +1712,7 @@ placeKickoff(0); G.state = 'menu'; WX.set('leaves'); try { ARENA.set(localStorag
 window.GAME = {
   start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0 }; G.inv2 = {}; G.supGoals = 0;
     { const pk = PERK(); for (const p of players) { if (p.spd0 == null) p.spd0 = p.spd;
-        if (p.team === 0 && p.stats && window.LEVELS) { const l = window.LEVELS(p.num), v = (i) => 2 + l[i] * 0.6;   // level 0 plays like a 2, level 5 like a 5
+        if (p.team === 0 && p.stats && window.LEVELS) { const l = window.LEVELS(p.num), bb = p === captain && window.BOOT_BONUS ? window.BOOT_BONUS() : [0, 0, 0, 0, 0], v = (i) => Math.min(5.6, 2 + (l[i] + bb[i]) * 0.6);   // level 0 plays like a 2, level 5 like a 5
           p.stats = { st: v(0), pa: v(1), dr: v(2), ob: v(3), sp: v(4) }; p.spd0 = 0.9 + p.stats.sp * 0.035; } p.spd = p.spd0 * (p.team === 0 && pk.speed ? pk.speed : 1); }
       if (pk.card) { const ks = Object.keys(G.inv); G.inv[ks[(Math.random() * ks.length) | 0]] = 1; } } PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = HALF(); SFX.setSfx(!window.CFG || window.CFG.sfx !== false); G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = ARENA.weather() || (Math.random() < 0.5 ? 'rain' : 'leaves'); setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
   press, setCaptain, pick: (i) => doPick(i), pickMove,

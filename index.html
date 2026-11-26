@@ -426,10 +426,30 @@
   #trofea .tarrow.l { left: 1.5%; } #trofea .tarrow.r { right: 1.5%; } #trofea .tarrow[hidden] { display: none; }
   @keyframes tarr { 50% { transform: translateX(var(--dx, -4px)); } } #trofea .tarrow.r { --dx: 4px; }
   #trofea .tbox > img { transition: opacity .15s; }
+  #warsztat { position: fixed; inset: 0; z-index: 21; background: #0c0a16; overflow: hidden; } #warsztat[hidden], #warsztat [hidden] { display: none !important; }
+  #warsztat .wbox { position: absolute; left: 50%; top: 50%; width: min(100vw, 225.6vh); aspect-ratio: 2576 / 1142; transform: translate(-50%, -50%); }
+  #wroom, #wedit { position: absolute; inset: 0; } #wroom > img, #wedit > img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+  #warsztat .lamp { position: absolute; border-radius: 40%; background: radial-gradient(ellipse at center, rgba(255,240,210,.8) 0%, rgba(255,220,170,.3) 45%, rgba(255,200,150,0) 75%); mix-blend-mode: screen; pointer-events: none; animation: tlamp 4.6s steps(1) infinite; }
+  #wcv { position: absolute; image-rendering: pixelated; touch-action: none; cursor: crosshair; } #wcv.side { left: 14.752%; top: 19.264%; width: 58.23%; height: 66.55%; } #wcv.sole { left: 15.256%; top: 31.786%; width: 57.61%; height: 46.41%; }
+  #wtable { position: absolute; left: 38.4%; top: 21.9%; width: 34.2%; height: 57.8%; background: transparent; border: 0; cursor: pointer; }
+  #wtable:hover { outline: 3px solid #ffe14a; border-radius: 12px; }
+  #warsztat .wbtn { position: absolute; padding: 8px 12px; font: 10px "Press Start 2P", monospace; color: #fff; background: #1a1540; border: 3px solid #7a6ad8; cursor: pointer; }
+  #wback { left: 1.5%; top: 2.5%; } #wgo { left: 50%; bottom: 4%; transform: translateX(-50%); color: #1a1030 !important; background: #ffe14a !important; border-color: #fff6c0 !important; box-shadow: 0 4px 0 #b08a00; animation: tarr 0.9s steps(2) infinite; }
+  #wtabs { position: absolute; left: 1.5%; top: 14%; display: flex; flex-direction: column; gap: 6px; } #wtabs .wbtn { position: static; font-size: 8px; } #wtabs .wbtn.on { color: #1a1030; background: #6ee05a; border-color: #d8ffc8; }
+  #wpart { position: absolute; left: 1.5%; bottom: 4%; max-width: 13%; font: 9px "Press Start 2P", monospace; line-height: 1.5; color: #ffe14a; text-shadow: 2px 2px 0 #000; }
+  #wcoinbox { position: absolute; left: 1.5%; top: 34%; }
+  #wpanel { position: absolute; right: 0.8%; top: 2%; bottom: 2%; width: 24.5%; overflow-y: auto; padding: 6px; box-sizing: border-box; background: rgba(12,9,28,.9); border: 3px solid #5a4aa8; font: 7px "Press Start 2P", monospace; color: #fff; }
+  #wpanel h5 { margin: 7px 0 3px; font: 7px "Press Start 2P", monospace; color: #ffe14a; } #wpanel .wrow { display: flex; flex-wrap: wrap; gap: 3px; }
+  #wpanel .wt, #wpanel .wopt { all: unset; cursor: pointer; padding: 4px 5px; font: 7px "Press Start 2P", monospace; color: #d8d4ff; background: #2c2660; border: 2px solid #5a52a8; }
+  #wpanel .wt.on, #wpanel .wopt.on { color: #1a1030; background: #6ee05a; border-color: #d8ffc8; } #wpanel .wopt small { display: block; margin-top: 2px; font-size: 5px; opacity: .85; }
+  #wpanel .wpal i, #wpanel .wcust { width: 14px; height: 14px; border: 2px solid #000; box-shadow: 0 0 0 1px #5a52a8; cursor: pointer; display: block; } #wpanel .wpal i.on { box-shadow: 0 0 0 2px #ffe14a; }
+  #wpanel .wcust { position: relative; overflow: hidden; background-image: linear-gradient(45deg, transparent 40%, rgba(255,255,255,.7) 40% 60%, transparent 60%); } #wpanel .wcust input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  #wpanel .wstat { display: grid; grid-template-columns: 1fr auto; gap: 2px 6px; } #wpanel .wstat b { color: #6ee05a; font-weight: 400; } #wpanel .whint { margin: 5px 0; font: 400 10px "Pixelify Sans", monospace; color: #b8b4e8; }
   #trofea .tback { position: absolute; left: 1.5%; top: 2.5%; padding: 8px 12px; font: 10px "Press Start 2P", monospace; color: #fff; background: #1a1540; border: 3px solid #7a6ad8; cursor: pointer; }
   #trofea .tcount { position: absolute; right: 2%; top: 3%; padding: 8px 12px; font: 10px "Press Start 2P", monospace; color: #ffe14a; background: rgba(0,0,0,.7); }
   #trofea .tinfo { position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%); min-width: 40%; padding: 8px 14px; text-align: center; font: 9px "Press Start 2P", monospace; line-height: 1.7; color: #fff; background: rgba(10,8,24,.9); border: 3px solid #ffe14a; }
   #trofea .tinfo[hidden] { display: none; } #trofea .tinfo b { color: #ffe14a; font-weight: 400; }
+  #sworks { left: 1.8%; top: 3%; width: auto; height: auto; padding: 6px 10px; font: clamp(7px,1.1vw,12px) "Press Start 2P", monospace; color: #1a1030 !important; background: #ffe14a !important; border: 3px solid #fff6c0 !important; box-shadow: 0 4px 0 #b08a00; }
   #strophy { left: 86.5%; top: 14%; width: 9%; height: 15%; }
   #szatnia .hot { position: absolute; background: transparent; border: 0; cursor: pointer; }
   #szatnia .hot:hover, #szatnia .hot:focus-visible { outline: 3px solid #ffe14a; border-radius: 10px; }
@@ -519,7 +539,7 @@
 <div class="setov" id="arenapick" hidden><div class="setp" role="dialog" aria-label="Wybierz boisko"><h2>WYBIERZ BOISKO <button class="x" id="arenax" aria-label="Zamknij">X</button></h2>
   <div class="abar"><button id="tabTour" class="on">TURNIEJ</button><button id="tabFree">DOWOLNY MECZ</button><span class="sp"></span>
     <span class="lv" id="lvbtns"><button data-l="0">ŁATWY</button><button data-l="1">NORMALNY</button><button data-l="2">MISTRZ</button></span>
-    <span class="coin" id="coinA">0</span><button id="trobtn">TROFEA</button><button id="shopbtn">SKLEP</button></div>
+    <span class="coin" id="coinA">0</span><button id="trobtn">TROFEA</button><button id="wsbtn">WARSZTAT</button><button id="shopbtn">SKLEP</button></div>
   <div class="flipgrid arenagrid tourgrid" id="tourgrid"></div>
   <div class="flipgrid arenagrid" id="arenagrid" hidden></div>
   <p class="arenahint" id="tourhint">Turniej: wygraj mecz, żeby odblokować następne boisko. Na końcu czeka MROCZNY ZAMEK.</p>
@@ -528,6 +548,11 @@
   <div class="lamp a" style="left:19.6%;width:13%"></div><div class="lamp b" style="left:43%;width:13.5%"></div><div class="lamp c" style="left:67.5%;width:13%"></div>
   <button class="tarrow l" id="tleft" aria-label="W lewo">◀</button><button class="tarrow r" id="tright" aria-label="W prawo" hidden>▶</button>
   <button class="tback" id="tback">◀ WRÓĆ</button><div class="tcount" id="tcount"></div><div class="tinfo" id="tinfo" hidden></div></div></div>
+<div id="warsztat" hidden><div class="wbox">
+  <div id="wroom"><img src="warsztat_room.jpg?v=1" alt=""><div class="lamp" style="left:48%;top:3%;width:20%;height:11%"></div><button id="wtable" aria-label="But"></button><button class="wbtn" id="wgo">▶ EDYTUJ BUTA</button></div>
+  <div id="wedit" hidden><img id="wbg" src="warsztat_side.jpg?v=1" alt=""><div class="lamp" style="left:30%;top:0;width:39%;height:12%"></div><canvas id="wcv" class="side"></canvas>
+    <div id="wtabs"><button class="wbtn on" id="wtabS">BOK</button><button class="wbtn" id="wtabP">PODESZWA</button></div><div id="wcoinbox" class="coin"><span id="wcoins">0</span></div><div id="wpart"></div><div id="wpanel"></div></div>
+  <button class="wbtn" id="wback">◀ WRÓĆ</button></div></div>
 <div class="setov" id="shop" hidden><div class="setp" role="dialog" aria-label="Sklep"><h2>SKLEP <span class="coin" id="coinS">0</span><button class="x" id="shopx" aria-label="Zamknij">X</button></h2>
   <div class="shopgrid" id="shopgrid"></div>
   <p class="arenahint">Monety zdobywasz za gole, wygrane, czyste konto, gole z mocy, etapy turnieju i kapki. Na trudniejszym poziomie dostajesz więcej.</p></div></div>
@@ -567,7 +592,7 @@
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <button class="hot" id="sset" aria-label="Ustawienia"></button>
-  <div class="stitle">WYBIERZ KAPITANA</div><div class="scoin" id="coinL">0</div><button class="hot" id="strophy" aria-label="Trofea"></button></div></div>
+  <div class="stitle">WYBIERZ KAPITANA</div><div class="scoin" id="coinL">0</div><button class="hot" id="sworks" aria-label="Warsztat">WARSZTAT</button><button class="hot" id="strophy" aria-label="Trofea"></button></div></div>
 <div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt=""><button class="hbottle" id="hbottle" aria-label="Butelka"><img src="flip_woda.png" alt=""></button>
   <small id="mq">CO ROBIMY?</small>
   <div class="mrow"><button class="mb" data-m="match"><b><img class="pxi" src="ico_match.png" alt=""></b>MECZ<em>Pixels kontra Fioletowi</em></button><button class="mb" data-m="karne"><b><img class="pxi" src="ico_karne.png" alt=""></b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b><img class="pxi" src="ico_kapki.png" alt=""></b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b><img class="pxi" src="ico_but.png" alt=""></b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b><img class="pxi" src="ico_kapsle.png" alt=""></b>KAPSLE<em>wyścig kapsli po torze</em></button><button class="mb" data-m="bieg"><b><img class="pxi" src="ico_bieg.png" alt=""></b>BIEG<em>wyścig dookoła boiska</em></button></div>
@@ -735,7 +760,7 @@
     let P = d; try { P = { ...d, ...JSON.parse(localStorage.getItem('cs_prog') || '{}') }; } catch (e) {}
     const save = () => { try { localStorage.setItem('cs_prog', JSON.stringify(P)); } catch (e) {} for (const id of ['coinA', 'coinS', 'coinL']) { const e = $(id); if (e) e.textContent = P.coins; } };
     return { get: () => P, save, add(n) { P.coins += n; save(); } }; })();
-  setTimeout(() => PROG.save(), 0);
+  setTimeout(() => PROG.save(), 0); window.PROG = PROG;
   const ITEMS = [
     { id: 'b1', slot: 'boots', name: 'SZYBKIE BUTY', price: 150, desc: 'Drużyna biega 6% szybciej', col: ['#3a8ae8', '#fff'], perk: { speed: 1.06 } },
     { id: 'b2', slot: 'boots', name: 'TURBO BUTY', price: 400, desc: 'Biegasz 10% szybciej', col: ['#e8402a', '#ffe14a'], perk: { speed: 1.1 } },
@@ -754,6 +779,7 @@
   // Beating your own record gives much more. They can also be bought in the shop.
   const SK = window.LANG === 'en' ? ['SHOOTING', 'PASSING', 'DRIBBLING', 'DEFENCE', 'SPEED'] : ['STRZAŁ', 'PODANIE', 'DRYBLING', 'OBRONA', 'PRĘDKOŚĆ'], XPL = 100;
   window.LEVELS = (num) => { const P = PROG.get(); return (P.lv[num] || [0, 0, 0, 0, 0]).slice(); };
+  window.TOAST = (t) => toast(t);
   const toast = (t) => { const e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 2600); };
   const addXP = (num, k, n) => { const P = PROG.get(), lv = P.lv[num] || (P.lv[num] = [0, 0, 0, 0, 0]), xp = P.xp[num] || (P.xp[num] = [0, 0, 0, 0, 0]); if (lv[k] >= 5) return null;
     xp[k] += n; let up = 0; while (xp[k] >= XPL && lv[k] < 5) { xp[k] -= XPL; lv[k]++; up++; } if (lv[k] >= 5) xp[k] = 0; PROG.save(); return up; };
@@ -887,7 +913,7 @@
     const open = () => { room = 0; const fresh = check(); draw(fresh); $('tinfo').hidden = true; $('trofea').hidden = false; };
     $('tback').onclick = () => { $('trofea').hidden = true; }; $('tslots').addEventListener('click', (e) => e.stopPropagation());
     return { open, check }; })();
-  $('strophy').onclick = () => TRO.open(); $('trobtn').onclick = () => TRO.open();
+  $('strophy').onclick = () => TRO.open(); $('wsbtn').onclick = () => window.WARSZTAT?.open(); $('sworks').onclick = () => window.WARSZTAT?.open(); $('trobtn').onclick = () => TRO.open();
   window.KAPKI_COINS = (n) => { const c = Math.floor(n / 5); if (c > 0) PROG.add(c); return c; };
   // the arena cards are built and their pictures loaded once, right at start, so the list never shows names without pictures
   const AIMG = []; const buildArenas = () => { const grid = $('arenagrid'); if (grid.children.length || !window.GAME?.arenas) return; for (const a of (window.GAME?.arenas || [])) { const b = document.createElement('button'); b.dataset.a = a.id; b.innerHTML = `<img src="arena_${a.id}.png" alt="" width="120" height="84" decoding="sync"><span>${a.name}</span>`; AIMG.push(b.querySelector('img'));
@@ -1058,6 +1084,7 @@
 <script>
   document.getElementById('mvol').addEventListener('click', (e) => { e.stopPropagation(); MV.next(); }); MV.lbl();
 </script>
+<script src="./warsztat.js?v=2"></script>
 <script src="./pen.js"></script>
 <script src="./lace.js"></script>
 <script src="./caps.js"></script>
