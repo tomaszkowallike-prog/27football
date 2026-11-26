@@ -13,7 +13,7 @@
   const cv = $('laceCv'), g = cv.getContext('2d');
   const img = (s) => { const i = new Image(); i.src = s; return i; };
   const OPEN = img('but0.jpg'), TIED = img('but1.jpg');
-  const MUS = window.MV ? MV.reg(new Audio('szatnia.mp3'), 0.4) : null; if (MUS) MUS.loop = true;
+  const MUS = window.MV ? MV.reg(new Audio('szatnia.mp3?v=2'), 0.4) : null; if (MUS) MUS.loop = true;
   let AC = null;
   const tone = (f0, f1, d, type = 'square', v = 0.05, delay = 0) => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume();
     const t = AC.currentTime + delay, o = AC.createOscillator(), gn = AC.createGain(); o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + d);

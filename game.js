@@ -787,10 +787,11 @@ const CHIP = (() => {   // the old chiptune loop, kept as a fallback
 })();
 // the match music: the user's track, looped; the chiptune plays if the file cannot
 const MUSIC = (() => {
-  const a = new Audio('./mecz.mp3'); a.loop = true; if (window.MV) MV.reg(a, 0.45); else a.volume = 0.45; let on = false, muted = false, ok = true;
+  const TRACKS = ['./mecz1.mp3?v=1', './mecz2.mp3?v=1', './mecz3.mp3?v=1'];   // a random one of the three each match
+  const a = new Audio(TRACKS[(Math.random() * 3) | 0]); a.loop = true; if (window.MV) MV.reg(a, 0.45); else a.volume = 0.45; let on = false, muted = false, ok = true;
   a.addEventListener('error', () => { ok = false; });
   return {
-    start(ctx) { on = true; if (!ok) { CHIP.start(ctx); return; } a.muted = muted; a.currentTime = 0; a.play().catch(() => { ok = false; CHIP.start(ctx); }); },
+    start(ctx) { on = true; ok = true; a._src = TRACKS[(Math.random() * 3) | 0]; if (!ok) { CHIP.start(ctx); return; } a.muted = muted; a.currentTime = 0; a.play().catch(() => { ok = false; CHIP.start(ctx); }); },
     stop() { on = false; a.pause(); CHIP.stop(); },
     mute(m) { muted = m; a.muted = m; CHIP.mute(m); },
   };

@@ -495,14 +495,14 @@
     const B = new Audio(); B.loop = true; B.preload = 'auto'; let cur = null, v = 1, unlocked = false;
     try { const s = localStorage.getItem('musvol'); if (s !== null) v = +s; } catch (e) {}
     const lbl = () => { const b = document.getElementById('mvol'); if (b) b.textContent = v ? `♪ ${Math.round(v * 100)}%` : '♪ WYŁ'; };
-    const unlock = () => { if (unlocked) return; unlocked = true; if (cur) return; B.muted = true; B.src = 'tablica.mp3';
+    const unlock = () => { if (unlocked) return; unlocked = true; if (cur) return; B.muted = true; B.src = 'tablica.mp3?v=2';
       const p = B.play(); if (p && p.then) p.then(() => { if (!cur) { B.pause(); } B.muted = false; }).catch(() => { B.muted = false; unlocked = false; }); };
     ['pointerdown', 'touchend', 'click', 'keydown'].forEach((ev) => addEventListener(ev, unlock, true));
     return { get v() { return v; },
       reg(el, base) {
         if (!el.play) { el.volume = base * v; return el; }   // a WebAudio gain (the chiptune) keeps its own path
         const src = el.getAttribute ? el.getAttribute('src') || el.src : el.src; let m = false;
-        el.play = () => { cur = el; el._base = base; if (!B.src.endsWith(src.replace('./', ''))) B.src = src; B.loop = true; B.muted = m; B.volume = base * v; B.currentTime = 0; return B.play(); };
+        el.play = () => { cur = el; el._base = base; const sr = el._src || src; if (!B.src.endsWith(sr.replace('./', ''))) B.src = sr; B.loop = true; B.muted = m; B.volume = base * v; B.currentTime = 0; return B.play(); };
         el.pause = () => { if (cur === el) { B.pause(); cur = null; } };
         Object.defineProperty(el, 'muted', { get: () => m, set: (x) => { m = x; if (cur === el) B.muted = x; } });
         Object.defineProperty(el, 'paused', { get: () => cur !== el || B.paused });
@@ -706,7 +706,7 @@
   // ---- the mode screen: a match, or keepy-uppy on the stadium from the intro ----
   let modeSel = 0;
   const NAMES = { 14: 'SOWA', 10: 'ARTUR', 7: 'SZYMON', 27: 'DOMINIK' };
-  const TMUS = MV.reg(new Audio('tablica.mp3'), 0.5); TMUS.loop = true;   // the board's tune, from 1:54 of the user's track
+  const TMUS = MV.reg(new Audio('tablica.mp3?v=2'), 0.5); TMUS.loop = true;   // the board's tune, from 1:54 of the user's track
   // ---- settings panel and the match menu --------------------------------------------------------------------------------
   const SETV = {
     mus: () => MV.v ? Math.round(MV.v * 100) + '%' : 'WYŁĄCZONA',
@@ -757,8 +757,8 @@
   $('flipno').onclick = () => { $('flipask').hidden = true; };
   $('flipyes').onclick = () => { $('flipask').hidden = true; $('flippick').hidden = false; };
   $('flipx').onclick = () => { $('flippick').hidden = true; };
-  document.querySelectorAll('#flippick .flipgrid button').forEach((b) => b.addEventListener('click', () => { $('flippick').hidden = true; TMUS.pause(); $('modes').hidden = true; window.FLIP.start(b.dataset.b, showModes); }));
-  const showModes = () => { TMUS.currentTime = 0; TMUS.play().catch(() => {}); $('modes').hidden = false; modeSel = 0; markMode(); $('mq').textContent = `${window.CAPTAIN} ${NAMES[window.CAPTAIN] || ''}: CO ROBIMY?`; };
+  document.querySelectorAll('#flippick .flipgrid button').forEach((b) => b.addEventListener('click', () => { $('flippick').hidden = true; $('modes').hidden = true; window.FLIP.start(b.dataset.b, showModes); }));
+  const showModes = () => { if (TMUS.paused) { TMUS.currentTime = 0; TMUS.play().catch(() => {}); } $('modes').hidden = false; modeSel = 0; markMode(); $('mq').textContent = `${window.CAPTAIN} ${NAMES[window.CAPTAIN] || ''}: CO ROBIMY?`; };
   const markMode = () => document.querySelectorAll('#modes .mb').forEach((b, i) => b.classList.toggle('sel', i === modeSel));
   window.CAPTAIN = 27;
   const pickMode = (m) => { TMUS.pause(); $('modes').hidden = true; if (m === 'back') { SZ.show(); return; } if (m === 'kapsle') window.CAPS.start(showModes); else if (m === 'bieg') window.BIEG.start(showModes); else if (m === 'but') window.LACE.start(showModes); else if (m === 'karne') window.PEN.start(showModes, window.CAPTAIN); else if (m === 'kapki') K.start(); else arenaPick(); };
@@ -932,7 +932,7 @@
   $('arenax').onclick = () => { $('arenapick').hidden = true; showModes(); };
   // ---- the locker room: pick the captain, who plays in the middle and kicks off ----
   const SZ = (() => {
-    const MUS = MV.reg(new Audio('szatnia.mp3'), 0.5); MUS.loop = true;   // the locker-room tune, from 0:08 of the user's track
+    const MUS = MV.reg(new Audio('szatnia.mp3?v=2'), 0.5); MUS.loop = true;   // the locker-room tune, from 0:08 of the user's track
     const musOff = () => { MUS.pause(); };
     const SQ = [{ num: 14, name: 'SOWA', pos: 'POMOCNIK', sup: 'SOWIA SPIRALA', st: [3, 4, 3, 3, 3], face: 0 }, { num: 10, name: 'ARTUR', pos: 'NAPASTNIK', sup: 'ARTUROWA TRĄBA', st: [3, 3, 4, 2, 4], face: 1 },
       { num: 7, name: 'SZYMON', pos: 'OBROŃCA', sup: 'SZYMONOWY ZYGZAK', st: [2, 3, 2, 5, 3], face: 2 }, { num: 27, name: 'DOMINIK', pos: 'NAPASTNIK', sup: 'KUJAWSKA PETARDA', st: [5, 3, 4, 2, 4], face: 3 }];

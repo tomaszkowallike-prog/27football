@@ -12,7 +12,7 @@
   document.head.appendChild(st);
   const cv = $('capsCv'), g = cv.getContext('2d');
   const BG = new Image(); BG.src = 'kapsle_bg.jpg';
-  const MUS = window.MV ? MV.reg(new Audio('tablica.mp3'), 0.35) : null;
+  const MUS = window.MV ? MV.reg(new Audio('tablica.mp3?v=2'), 0.35) : null;
   let AC = null;
   const tone = (f0, f1, d, type = 'square', v = 0.05, delay = 0) => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume();
     const t = AC.currentTime + delay, o = AC.createOscillator(), gn = AC.createGain(); o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + d);
