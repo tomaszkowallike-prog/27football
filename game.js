@@ -3,6 +3,7 @@
 // from high up as in the original. The frame is rendered small and blown up without smoothing (8-bit), then a
 // tilt-shift pass blurs its top and bottom. You steer the Cuiavia player nearest the ball (a yellow arrow over his head).
 import * as THREE from 'three';
+import extraArenas from './arenas.js?v=1';
 
 // ---- data ------------------------------------------------------------------------------------------------------------
 const FR = await (await fetch('./frames.json')).json();
@@ -184,8 +185,7 @@ const PITCH = {}, TOWN = [], STANDS = [];
       g.fillStyle = P.line;
     }
     g.fillStyle = P.line;
-    // the club name mown into the grass behind the centre circle
-    g.font = `bold ${3.2 * K}px "Pixelify Sans", monospace`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = P.txt; g.fillText('CUIAVIA', X(0), Z(-11));
+
   };
   const t = tex(W, H, (g) => paint(g, PAL.stadion));
   t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.needsUpdate = true;   // chunky pixel grass, like the old games
@@ -482,6 +482,10 @@ for (let i = 0; i < 60; i++) { const m = new THREE.Mesh(lineGeo, new THREE.MeshB
 // ---- weather: autumn leaves blowing across, or rain (darker sky, wet colours, splashes) ----------------------------
 const WX = (() => {
   const leaves = [], LC = ['#d9822b', '#c4562a', '#e6b43a', '#9a5a2a', '#b9c24a'];
+  const WM = { leaves: { c: LC, s: 1, wv: 1, vk: 1 }, snow: { c: ['#ffffff'], s: 0.55, wv: 0.35, vk: 1 }, dust: { c: ['#e8c88a', '#d4a860', '#f0dcae'], s: 0.4, wv: 2.2, vk: 0.3 },
+    embers: { c: ['#ff6a1a', '#ffb02a', '#ff3a10', '#ffd24a'], s: 0.32, wv: 0.4, vk: -1.3 }, bubbles: { c: ['#bfefff', '#ffffff', '#8ad8ff'], s: 0.35, wv: 0.15, vk: -0.9 },
+    petals: { c: ['#ffb6d0', '#ff9ac0', '#ffd6e6'], s: 0.6, wv: 0.8, vk: 0.7 }, confetti: { c: ['#ff3a5a', '#ffd21a', '#3ae86a', '#3a8aff', '#ff8a1a', '#e83ac8'], s: 0.45, wv: 0.5, vk: 0.8 },
+    ash: { c: ['#8a8a8a', '#5a5a5a', '#b0a8a0'], s: 0.4, wv: 0.6, vk: 0.45 }, fireflies: { c: ['#e8ff6a', '#b8ff4a', '#fff6a0'], s: 0.3, wv: 0.1, vk: 0.12, wander: true }, sparkle: { c: ['#8af4ff', '#d88aff', '#ffffff'], s: 0.3, wv: 0.1, vk: 0.12, wander: true } };
   const leafTex = pixTex(['..gg..', '.gggg.', 'gggggg', '.gggg.', '..k...'], { g: '#fff', k: '#fff' });
   for (let i = 0; i < 46; i++) { const m = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.3), new THREE.MeshBasicMaterial({ map: leafTex, color: LC[i % LC.length], transparent: true, alphaTest: 0.5, side: THREE.DoubleSide, fog: false }));
     m.visible = false; scene.add(m); toPlay(m); leaves.push({ m, x: 0, y: 0, z: 0, vx: 0, vy: 0, ph: Math.random() * 6, sp: 2 + Math.random() * 4 }); }
@@ -498,14 +502,13 @@ const WX = (() => {
   const resetDrop = (d, any) => { const b = box(); d.x = b.x - 30 + Math.random() * 60; d.z = b.z - 18 + Math.random() * 34; d.y = any ? Math.random() * 16 : 14 + Math.random() * 4; };
   return {
     set(m) {
-      mode = m; const fl = m === 'leaves' || m === 'snow' || m === 'dust'; leaves.forEach((l, i) => { l.m.visible = fl; resetLeaf(l, true);
-        l.m.material.color.set(m === 'snow' ? '#ffffff' : m === 'dust' ? ['#e8c88a', '#d4a860', '#f0dcae'][i % 3] : LC[i % LC.length]); l.m.scale.setScalar(m === 'snow' ? 0.55 : m === 'dust' ? 0.4 : 1); }); rain.visible = m === 'rain'; for (const g of ghosts) g.visible = rain.visible; for (const d of drops) resetDrop(d, true);
+      mode = m; const W = WM[m]; leaves.forEach((l, i) => { l.m.visible = !!W; resetLeaf(l, true); if (W) { l.m.material.color.set(W.c[i % W.c.length]); l.m.scale.setScalar(W.s); } }); rain.visible = m === 'rain'; for (const g of ghosts) g.visible = rain.visible; for (const d of drops) resetDrop(d, true);
       scene.background.set(m === 'rain' ? '#7d8b98' : '#9fd3f2'); scene.fog.color.set(m === 'rain' ? '#8f9ba6' : '#c5e3f2'); scene.fog.near = m === 'rain' ? 50 : 90; if (LIGHTS.beam) { LIGHTS.beam.uniforms.k.value = m === 'rain' ? 0.12 : 0.09; LIGHTS.pool.opacity = m === 'rain' ? 0.3 : 0.14; }
       for (const o of scene.children) if (o.isDirectionalLight) o.intensity = m === 'rain' ? 1.1 : 2.6; else if (o.isHemisphereLight) o.intensity = m === 'rain' ? 1.5 : 2.0;
     },
     update(dt, t) {
-      if (mode === 'leaves' || mode === 'snow' || mode === 'dust') for (const l of leaves) { const wv = mode === 'snow' ? 0.35 : mode === 'dust' ? 2.2 : 1;
-        l.x += (l.vx * wv + Math.sin(t * 0.7 + l.ph) * 1.5) * dt; l.y += (l.vy * (mode === 'dust' ? 0.3 : 1) + Math.sin(t * l.sp + l.ph) * 0.8) * dt; l.z += Math.cos(t * 1.3 + l.ph) * 0.6 * dt;
+      if (WM[mode]) for (const l of leaves) { const W = WM[mode], wv = W.wv;
+        l.x += (l.vx * wv + Math.sin(t * 0.7 + l.ph) * 1.5 * (W.wander ? 0.6 : 1)) * dt; l.y += (l.vy * W.vk + Math.sin(t * l.sp + l.ph) * 0.8) * dt; if (l.y > 13 || l.x < cam.x - 34) resetLeaf(l, true); l.z += Math.cos(t * 1.3 + l.ph) * 0.6 * dt;
         if (l.y < 0.05) { l.y = 0.05; l.vx *= 0.97; } if (l.x > cam.x + 32 || (l.y <= 0.05 && Math.random() < dt * 0.4)) resetLeaf(l, false);
         l.m.position.set(l.x, l.y, l.z); l.m.quaternion.copy(camera.quaternion); l.m.rotateZ(t * l.sp + l.ph); l.m.rotateY(Math.sin(t * 3 + l.ph));
       }
@@ -533,19 +536,19 @@ const ARENA = (() => {
       for (let i = 0; i < 4; i++) { g.fillStyle = i % 2 ? 'rgba(255,255,255,.18)' : 'rgba(0,0,0,.16)'; g.fillRect(x + (Math.random() * B | 0), y + (Math.random() * B | 0), 1, 1); }
       g.fillStyle = seam; g.fillRect(x, y + B - 1, B, 1); g.fillRect(x + B - 1, y, 1, B); } };
   const DEF = {
-    stadion: { sky: '#9fd3f2', fog: '#c5e3f2', near: 90, far: 190, hemi: ['#dff1ff', '#5f7a3a', 2.0], sun: ['#fff1d6', 2.6], grav: 30, wx: null, stands: true, town: true },
-    pustynia: { sky: '#f4dcb0', fog: '#f2e0c0', near: 80, far: 220, hemi: ['#fff6e4', '#c8b494', 2.0], sun: ['#fff0d0', 2.6], grav: 30, wx: 'dust',
+    stadion: { name: 'STADION', sky: '#9fd3f2', fog: '#c5e3f2', near: 90, far: 190, hemi: ['#dff1ff', '#5f7a3a', 2.0], sun: ['#fff1d6', 2.6], grav: 30, wx: null, stands: true, town: true },
+    pustynia: { name: 'PUSTYNIA', sky: '#f4dcb0', fog: '#f2e0c0', near: 80, far: 220, hemi: ['#fff6e4', '#c8b494', 2.0], sun: ['#fff0d0', 2.6], grav: 30, wx: 'dust',
       pal: { base: '#d8bc88', s1: '#dcc292', s2: '#d4b886', noise: ['#c4a470', '#e8d2a4', '#b8986a', '#eedab0'], worn: ['#b89a68', '#a88a5c', '#c4a676'], wornE: 'rgba(150,120,80,.45)', line: '#fffaf0', txt: 'rgba(120,70,20,.2)' },
       track: () => tile((g) => { g.fillStyle = '#dcb06c'; g.fillRect(0, 0, 64, 64); g.fillStyle = '#c99a58'; for (let y = 4; y < 64; y += 9) for (let x = 0; x < 64; x++) g.fillRect(x, y + Math.round(Math.sin(x / 6 + y) * 2), 1, 1); speck(g, ['#e8c888', '#c0904c', '#f0d8a0'], 120); }) },
-    kosmos: { sky: '#05061a', fog: '#0a0b22', near: 140, far: 320, hemi: ['#d8dcf0', '#3a3a44', 1.5], sun: ['#f4f6ff', 2.4], grav: 15, wx: 'none',
+    kosmos: { name: 'KSIĘŻYC', sky: '#05061a', fog: '#0a0b22', near: 140, far: 320, hemi: ['#d8dcf0', '#3a3a44', 1.5], sun: ['#f4f6ff', 2.4], grav: 15, wx: 'none',
       pal: { base: '#8a8a92', s1: '#94949c', s2: '#86868e', noise: ['#6e6e76', '#a4a4ac', '#5e5e66', '#b4b4bc'], worn: ['#6a6a72', '#5a5a62', '#74747c'], wornE: 'rgba(60,60,70,.45)', line: '#5af0ff', txt: 'rgba(90,240,255,.22)',
         extra: (g, W, H, K) => { for (let i = 0; i < 26; i++) { const x = Math.random() * W, y = Math.random() * H, r = (0.6 + Math.random() * 1.6) * K; // craters
           g.fillStyle = 'rgba(50,50,60,.22)'; g.beginPath(); g.ellipse(x, y, r, r * 0.8, 0, 0, 7); g.fill(); g.fillStyle = 'rgba(230,230,240,.35)'; g.fillRect(Math.round(x - r * 0.3), Math.round(y + r * 0.6), Math.round(r * 0.8), 1); } } },
       track: () => tile((g) => { g.fillStyle = '#7a7a82'; g.fillRect(0, 0, 64, 64); speck(g, ['#606068', '#9a9aa2', '#56565e', '#acacb4'], 260); g.fillStyle = 'rgba(40,40,50,.4)'; g.beginPath(); g.ellipse(20, 30, 9, 7, 0, 0, 7); g.fill(); g.fillStyle = 'rgba(200,200,210,.4)'; g.fillRect(14, 36, 12, 1); }) },
-    snieg: { sky: '#d8e2ec', fog: '#e4ebf2', near: 70, far: 260, hemi: ['#ffffff', '#c4d0de', 2.3], sun: ['#ffffff', 2.2], grav: 30, wx: 'snow',
+    snieg: { name: 'ŚNIEG', sky: '#d8e2ec', fog: '#e4ebf2', near: 70, far: 260, hemi: ['#ffffff', '#c4d0de', 2.3], sun: ['#ffffff', 2.2], grav: 30, wx: 'snow',
       pal: { base: '#e6edf4', s1: '#f2f6fa', s2: '#e4eaf1', noise: ['#d0dae6', '#ffffff', '#c6d2e0', '#f8fbff'], worn: ['#c4d0de', '#b8c6d6', '#d0dae6'], wornE: 'rgba(170,190,215,.5)', line: '#7aaee8', txt: 'rgba(120,150,190,.22)' },
       track: () => tile((g) => { g.fillStyle = '#eef3f8'; g.fillRect(0, 0, 64, 64); speck(g, ['#d6e0ea', '#ffffff', '#c8d6e4'], 200); }) },
-    klocki: { sky: '#7ab6ff', fog: '#a6ccf2', near: 90, far: 220, hemi: ['#eaf4ff', '#5a7a2a', 2.0], sun: ['#fff6d8', 2.7], grav: 30, wx: 'leaves', stands: true,
+    klocki: { name: 'KLOCKI', sky: '#7ab6ff', fog: '#a6ccf2', near: 90, far: 220, hemi: ['#eaf4ff', '#5a7a2a', 2.0], sun: ['#fff6d8', 2.7], grav: 30, wx: 'leaves', stands: true,
       pal: { base: '#5a9a3a', s1: '#5a9a3a', s2: '#5a9a3a', noise: [], worn: ['#7a5a34', '#6a4c2a', '#86643a'], wornE: 'rgba(110,80,44,.6)', line: '#ffffff', txt: 'rgba(255,255,255,.16)',
         blocks: blocks(['#5aa83c', '#62b244', '#54a036', '#6aba48', '#4e9832'], 'rgba(30,60,20,.35)') },
       track: () => tile((g) => { blocks(['#8a6440', '#7c5838', '#946c46', '#6e4e30'], 'rgba(40,24,10,.5)')(g, 64, 64, 8); }) },
@@ -627,21 +630,22 @@ const ARENA = (() => {
       const sq = new THREE.Mesh(new THREE.PlaneGeometry(22, 22), new THREE.MeshBasicMaterial({ color: '#fff6a0', fog: false })); sq.position.set(50, 80, -220); gr.add(sq);
     },
   };
+  { const X = extraArenas({ THREE, lam, tex, PX, PZ }); Object.assign(DEF, X.DEF); Object.assign(BUILD, X.BUILD); }
   const groups = {}; let cur = 'stadion';
   const lights = () => { let h = null, s = null; for (const o of scene.children) { if (o.isHemisphereLight) h = o; if (o.isDirectionalLight) s = o; } return [h, s]; };
   return {
-    get id() { return cur; }, list: Object.keys(DEF),
+    get id() { return cur; }, get list() { return Object.keys(DEF).map((id) => ({ id, name: DEF[id].name || id })); },
     set(id) { if (!DEF[id]) id = 'stadion'; cur = id; const D = DEF[id];
       if (BUILD[id] && !groups[id]) { groups[id] = new THREE.Group(); BUILD[id](groups[id]); scene.add(groups[id]); }
       for (const k in groups) groups[k].visible = k === id;
       SG.visible = !!D.stands || id === 'stadion'; TG.visible = id === 'stadion';
       PITCH.paint(PITCH.t.image.getContext('2d'), { ...DEF.stadion.pal, ...(D.pal || PAL.stadion) }); PITCH.t.needsUpdate = true;
-      if (!D.trackMap && D.track) D.trackMap = D.track(); PITCH.track.material.map = D.trackMap || PITCH.trackMap; PITCH.track.material.needsUpdate = true;
+      if (!D.trackMap && D.track) D.trackMap = D.track(); PITCH.track.material.map = D.trackMap || PITCH.trackMap; PITCH.track.material.emissive.set(D.trackGlow || '#000000'); PITCH.track.material.emissiveMap = D.trackGlow ? PITCH.track.material.map : null; PITCH.track.material.needsUpdate = true;
       GRAV = D.grav; if (id === 'stadion') { const w = typeof G !== 'undefined' && (G.weather === 'rain' || G.weather === 'leaves') ? G.weather : 'leaves'; WX.set(w); } else WX.set(D.wx || 'leaves'); this.sky(); },
     sky() { if (cur === 'stadion') return; const D = DEF[cur]; scene.background.set(D.sky); scene.fog.color.set(D.fog); scene.fog.near = D.near; scene.fog.far = D.far;
       const [h, s] = lights(); if (h) { h.color.set(D.hemi[0]); h.groundColor.set(D.hemi[1]); h.intensity = D.hemi[2]; } if (s) { s.color.set(D.sun[0]); s.intensity = D.sun[1]; } },
     weather() { return DEF[cur].wx; },
-    update(dt, t) { if (cur === 'kosmos') { BUILD.ast?.forEach((m, i) => { m.rotation.x += dt * (0.2 + i * 0.03); m.rotation.y += dt * 0.15; m.position.x += Math.sin(t * 0.1 + i) * dt * 0.6; }); if (BUILD.beacon) BUILD.beacon.visible = Math.floor(t * 1.5) % 2 === 0; }
+    update(dt, t) { const D = DEF[cur]; if (D.flow && PITCH.track.material.map) PITCH.track.material.map.offset.x += dt * D.flow; groups[cur]?.userData.tick?.forEach((f) => f(t, dt)); if (cur === 'kosmos') { BUILD.ast?.forEach((m, i) => { m.rotation.x += dt * (0.2 + i * 0.03); m.rotation.y += dt * 0.15; m.position.x += Math.sin(t * 0.1 + i) * dt * 0.6; }); if (BUILD.beacon) BUILD.beacon.visible = Math.floor(t * 1.5) % 2 === 0; }
       if (cur === 'klocki') BUILD.clouds?.forEach((c) => { c.position.x += dt * 1.2; if (c.position.x > 140) c.position.x = -140; }); },
   };
 })();
@@ -1495,7 +1499,7 @@ window.GAME = {
     const r = renderer.domElement.getBoundingClientRect(); let best = null, bd = 64; const v = new THREE.Vector3();
     for (const q of players) { if (q.team !== 0 || q.keeper || q.st === 'down') continue; v.set(q.x, q.y + 1.1, q.z).project(camera);
       const d = Math.hypot(r.left + (v.x + 1) / 2 * r.width - cx, r.top + (1 - v.y) / 2 * r.height - cy); if (d < bd) { bd = d; best = q; } }
-    if (!best || best === captain) return false; captain = best; switchT = 2.2; SFX.menu(); G.ca = Math.max(G.ca, 0.3); FX.emit('curve', best.x, 0.4, best.z, 10, 3, 0.25, 4); return true; }, powers: POWERS, icons: PU.icons, arena(id) { ARENA.set(id); try { localStorage.setItem('arena', ARENA.id); } catch (e) {} }, get arenaId() { return ARENA.id; }, setStick(v) { stick = v; }, setDash(v) { padDash = v; }, quit() { frozen = false; G.state = 'menu'; MUSIC.stop(); PICK.open = false; ui.picker?.(null); }, sfx(on) { SFX.setSfx(on); }, freeze(v) { frozen = !!v; if (v) { keys.clear(); keyDash = false; } }, mute: () => SFX.toggle(),
+    if (!best || best === captain) return false; captain = best; switchT = 2.2; SFX.menu(); G.ca = Math.max(G.ca, 0.3); FX.emit('curve', best.x, 0.4, best.z, 10, 3, 0.25, 4); return true; }, powers: POWERS, icons: PU.icons, arena(id) { ARENA.set(id); try { localStorage.setItem('arena', ARENA.id); } catch (e) {} }, get arenaId() { return ARENA.id; }, get arenas() { return ARENA.list; }, setStick(v) { stick = v; }, setDash(v) { padDash = v; }, quit() { frozen = false; G.state = 'menu'; MUSIC.stop(); PICK.open = false; ui.picker?.(null); }, sfx(on) { SFX.setSfx(on); }, freeze(v) { frozen = !!v; if (v) { keys.clear(); keyDash = false; } }, mute: () => SFX.toggle(),
   teams: TEAMS, frames: FR, images: [IMG_G, IMG_P], players, get captain() { return captain; }, get ball() { return ball; }, G,
 };
 window.__game = { goal: (t) => goalScored(t), pen: (t) => penaltyFor(t, players.find((q) => q.team === t && q.role === 'fwd')), G, ball, players, input, weather: (m) => { G.weather = m; setWeather(m); }, step(sec, fps = 30) { auto = false; for (let i = 0; i < Math.round(sec * fps); i++) step(1 / fps); }, resume() { last = performance.now(); auto = true; }, keys };
