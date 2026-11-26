@@ -144,15 +144,17 @@ export default function extraArenas(C) {
     box(gr, 150, 2.4, 0.8, '#f2ece0', 0, 1.2, -PZ - 7.5); box(gr, 150.5, 0.4, 1.4, tile2, 0, 2.6, -PZ - 7.5); box(gr, 7, 4, 2, '#a82a20', -40, 2, -PZ - 7.6); box(gr, 9, 0.6, 3.2, tile2, -40, 4.3, -PZ - 7.6); box(gr, 3, 3, 0.2, '#2a1a12', -40, 1.5, -PZ - 6.5); };
   // 7. medieval castle: stone walls with battlements, round towers, banners
   DEF.zamek = { name: 'ZAMEK', sky: '#a8c8e8', fog: '#c4d8ea', near: 80, far: 220, hemi: ['#eef6ff', '#5a6a4a', 2.0], sun: ['#fff0d8', 2.5], grav: 30, wx: 'leaves',
-    pal: pal('#4f8a3a', '#5a9a43', '#4a8436', ['#3f7a2e', '#62a24a', '#467e34', '#6aaa52'], ['#8a7a5a', '#7a6a4e', '#9a8a68'], '#f6f2e6'),
+    pal: pal('#c8c8c4', '#c8c8c4', '#c8c8c4', [], ['#b4b4b0', '#aaaaa6', '#bcbcb8'], '#141414', { txt: 'rgba(0,0,0,0)', wornE: 'rgba(80,80,80,.2)', blocks: (g, W, H, K) => { g.fillStyle = '#8e8e8a'; g.fillRect(0, 0, W, H); const B = Math.round(K * 1.2);
+      for (let y = 0, r = 0; y < H; y += B, r++) for (let x = -(r % 2) * (B >> 1); x < W; x += B) { const c = ['#cfcfcb', '#c4c4c0', '#d6d6d2', '#bdbdb9', '#c9c9c5'][(Math.abs(Math.sin(x * 12.9 + y * 78.2)) * 9999 | 0) % 5]; g.fillStyle = c; g.fillRect(x + 1, y + 1, B - 2, B - 2);
+        g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(x + 1, y + 1, B - 3, 1); g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(x + 1, y + B - 2, B - 2, 1); } } }),
     track: () => tile((g) => { fill(g, '#7a7a74'); for (let y = 0; y < 64; y += 8) for (let x = (y / 8) % 2 * 4; x < 64; x += 8) { g.fillStyle = pick(['#8a8a84', '#9a9a92', '#828278']); g.fillRect(x + 1, y + 1, 6, 6); } }) };
-  BUILD.zamek = (gr) => { const stone = M('#9a968c'), dark = M('#7a766c');
+  BUILD.zamek = (gr) => { const stone = M('#8e9094'), dark = M('#6e7074');
     const wall = (x0, x1, z) => { box(gr, x1 - x0, 7, 2.4, stone, (x0 + x1) / 2, 3.5, z); for (let x = x0; x < x1; x += 2) box(gr, 1, 1, 2.4, dark, x + 0.5, 7.5, z); };
     const towr = (x, z, r, h, roof) => { cyl(gr, r, r * 1.05, h, stone, x, h / 2, z, 10); for (let k = 0; k < 8; k++) box(gr, 0.9, 1, 0.9, dark, x + Math.cos(k * 0.785) * r, h + 0.5, z + Math.sin(k * 0.785) * r); cone(gr, r * 1.15, r * 1.6, roof, x, h + 1 + r * 0.8, z, 10);
       box(gr, 0.7, 1.4, 0.1, '#1a1410', x, h * 0.65, z + r + 0.02); };
-    wall(-66, 66, -PZ - 10); for (const x of [-66, -33, 0, 33, 66]) towr(x, -PZ - 10, 3, 12, pick(['#2a4ab0', '#b02a2a'])); box(gr, 6, 5, 2.6, '#2a1e16', 14, 2.5, -PZ - 8.7);
-    towr(-8, -PZ - 30, 6, 28, '#2a4ab0'); towr(20, -PZ - 34, 5, 22, '#b02a2a');
-    for (const s of [-1, 1]) { box(gr, 2.4, 7, 60, stone, s * (PX + 14), 3.5, 0); for (let z = -28; z < 30; z += 2) box(gr, 2.4, 1, 1, dark, s * (PX + 14), 7.5, z + 0.5); towr(s * (PX + 14), -22, 3, 11, '#b02a2a'); towr(s * (PX + 14), 22, 3, 11, '#2a4ab0'); }
+    wall(-66, 66, -PZ - 10); for (const x of [-66, -33, 0, 33, 66]) towr(x, -PZ - 10, 3, 12, '#4a4e56'); box(gr, 6, 5, 2.6, '#2a1e16', 14, 2.5, -PZ - 8.7);
+    towr(-8, -PZ - 30, 6, 28, '#4a4e56'); towr(20, -PZ - 34, 5, 22, '#4a4e56');
+    for (const s of [-1, 1]) { box(gr, 2.4, 7, 60, stone, s * (PX + 14), 3.5, 0); for (let z = -28; z < 30; z += 2) box(gr, 2.4, 1, 1, dark, s * (PX + 14), 7.5, z + 0.5); towr(s * (PX + 14), -22, 3, 11, '#4a4e56'); towr(s * (PX + 14), 22, 3, 11, '#4a4e56'); }
     far(6, (x, z) => { cyl(gr, 0.1, 0.1, 6, '#3a2a1a', x, 3, z); const f = box(gr, 1.6, 2.4, 0.05, pick(['#b02a2a', '#2a4ab0', '#e8c040', '#2a8a3a']), x + 0.85, 4.6, z); f.castShadow = false; }, 6, 7, -50, 50); };
   // 8. candy land: jelly pitch, a chocolate river round it, lollipop trees, candy canes, gumdrops
   DEF.cukierki = { name: 'KRAINA CUKIERKÓW', sky: '#ffc8e8', fog: '#ffd8f0', near: 70, far: 220, hemi: ['#fff2fa', '#c87ab0', 2.0], sun: ['#fff0f8', 2.5], grav: 30, wx: 'confetti',
