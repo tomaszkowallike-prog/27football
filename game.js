@@ -1022,8 +1022,10 @@ const MAGIC = (() => {
   const twTex = [0, 1, 2].map((v) => tex(40, 80, (q) => { for (let y = 0; y < 80; y += 4) { const w = 6 + (80 - y) * 0.42, cx = 20 + Math.sin(y * 0.12 + v * 2.1) * 4;
       q.fillStyle = (y / 4 + v) % 3 === 0 ? '#ffffff' : (y / 4 + v) % 3 === 1 ? '#c8d4e0' : '#8a9aae'; q.fillRect(Math.round(cx - w / 2), y, Math.round(w), 4);
       q.fillStyle = 'rgba(40,50,70,.5)'; q.fillRect(Math.round(cx - w / 2), y + 3, Math.round(w), 1); } }));
-  const tgeo = new THREE.PlaneGeometry(6, 12); tgeo.translate(0, 6, 0);
-  const twister = new THREE.Mesh(tgeo, new THREE.MeshBasicMaterial({ map: twTex[0], transparent: true, opacity: 0.85, depthWrite: false, fog: false }));
+  const TWN = 30, twMap = new THREE.TextureLoader().load('./fx_tornado.png?v=1'); twMap.magFilter = twMap.minFilter = THREE.NearestFilter; twMap.colorSpace = THREE.SRGBColorSpace; twMap.repeat.set(1 / TWN, 1);
+  const twFrame = (T) => (T < 0.6 ? Math.min(9, T / 0.6 * 10 | 0) : T > 3.45 ? 26 + Math.min(3, (T - 3.45) / 0.45 * 4 | 0) : 10 + ((T - 0.6) * 14 | 0) % 16);
+  const tgeo = new THREE.PlaneGeometry(11.5, 11.7); tgeo.translate(0, 5.6, 0);
+  const twister = new THREE.Mesh(tgeo, new THREE.MeshBasicMaterial({ map: twMap, alphaTest: 0.5, fog: false }));
   twister.visible = false; scene.add(twister); toPlay(twister);
   const M = { on: false, kind: '', t: 0, ph: '', c: null };
   const txt = (s, x, y, size, col, al = 'center') => { g.font = size + "px 'Press Start 2P', monospace"; g.textAlign = al; g.fillStyle = '#000'; for (const [a, b] of [[-2, 0], [2, 0], [0, -2], [0, 2], [2, 2]]) g.fillText(s, x + a, y + b); g.fillStyle = col; g.fillText(s, x, y); };
@@ -1040,7 +1042,7 @@ const MAGIC = (() => {
       while (left.length) { left.sort((a, b) => dist(a, at) - dist(b, at)); at = left.shift(); M.route.push(at); }
       M.route.push(c); M.i = 0; ball.x = c.x; ball.z = c.z; ball.y = 1; }
     if (kind === 'twister') { ui.banner?.('TRĄBA POWIETRZNA!', c.T, 'super', c); shout(c, 'Wiej!'); SFX.super(); SFX.portal();
-      M.tx = c.x + M.dir * 4; M.tz = Math.max(-PZ + 3, Math.min(PZ - 3, c.z)); M.dropX = goalX(1 - c.team) * 0.7;
+      M.tx = c.x + M.dir * 4; M.tz = Math.max(-PZ + 5, Math.min(PZ - 2, c.z + 3)); M.dropX = goalX(1 - c.team) * 0.7;
       M.vic = players.filter((q) => q.team !== c.team).map((q, i) => ({ q, x0: q.x, z0: q.z, a: i * 1.1, r: 1.6 + (i % 3) * 0.6, h: 1 + (i % 4) * 1.6 })); }
     if (kind === 'laser') { ui.banner?.('LASER Z KOSMOSU!', c.T, 'super', c); shout(c, 'Satelita, ognia!'); SFX.charge(1); M.gk = players.find((q) => q.team !== c.team && q.keeper); cv.style.display = 'block'; }
   }
@@ -1075,11 +1077,11 @@ const MAGIC = (() => {
       } else { ball.x += dx / d * v; ball.z += dz / d * v; }
     }
     if (M.kind === 'twister') {
-      const T = M.t; twister.visible = true; twister.material.map = twTex[(T * 14 | 0) % 3]; twister.quaternion.copy(camera.quaternion);
+      const T = M.t; twister.visible = true; twMap.offset.x = twFrame(T) / TWN; twister.quaternion.copy(camera.quaternion);
       // grows, sucks everyone in (0-1.1 s), spins and carries them towards your goal (1.1-3.1 s), throws them out (3.1-3.8 s)
       const mv = Math.max(0, Math.min(1, (T - 1.1) / 2)), e = mv * mv * (3 - 2 * mv), x = M.tx + (M.dropX - M.tx) * e, z = M.tz * (1 - e);
-      twister.position.set(x, 0, z); twister.scale.setScalar(Math.min(1, T / 0.4) * (T > 3.4 ? Math.max(0.05, 1 - (T - 3.4) / 0.5) : 1));
-      for (let i = 0; i < 4; i++) { const a = Math.random() * 6.3, h = Math.random() * 9, r = 0.8 + h * 0.35; FX.emit('tornado', x + Math.cos(a) * r, h, z + Math.sin(a) * r, 1, 0.6, 0.3); }
+      twister.position.set(x, 0, z); twister.scale.setScalar(1);
+      for (let i = 0; i < 1; i++) { const a = Math.random() * 6.3, h = Math.random() * 2, r = 0.8 + h * 0.35; FX.emit('tornado', x + Math.cos(a) * r, h, z + Math.sin(a) * r, 1, 0.6, 0.3); }
       if (Math.random() < 0.5) FX.emit('dust', x + (Math.random() - 0.5) * 3, 0.2, z + (Math.random() - 0.5) * 3, 1, 2, 0.4, 4);
       G.shake = Math.max(G.shake, 0.12);
       for (const v of M.vic) { const q = v.q;
@@ -1217,6 +1219,11 @@ function shoot(p, power, sup = null, { header = false } = {}) {
   if (p.team === 0 && PERK().shot) power *= PERK().shot;
   const gx = goalX(p.team);
   const aimZ = p === captain && input.z ? input.z * 4 : p === captain ? Math.max(-4, Math.min(4, -p.z * 0.25)) : (Math.random() - 0.5) * 7.5;
+  // the captain facing his own goal (stick or last direction) kicks that way: to his keeper if he is in front, else a clearance back
+  if (p === captain && !sup && !header) { const dir = input.x ? Math.sign(input.x) : p.face, s = Math.sign(gx);
+    if (dir && dir === -s) { const k = players.find((q) => q.team === p.team && q.keeper), ahead = k && Math.sign(k.x - p.x) === dir && Math.abs(k.z - p.z) < Math.abs(k.x - p.x) * 0.6;
+      if (ahead && power < 0.6) { pass(p, k); return; }
+      const tx = p.x + dir * (14 + power * 16), tz = p.z + (input.z || 0) * 8; kick(p, tx, tz, 14 + power * 14, 1.4 + power * 3); SFX.kick(); return; } }
   if (sup && sup.kind === 'split') { const lanes = [-3.3, 0, 3.3].sort(() => Math.random() - 0.5); kick(p, gx, lanes[0], 23, 0, sup); const S = ball.sup;
     S.decoys = lanes.slice(1).map((z) => { const dx = gx - ball.x, dz = z - ball.z, d = Math.hypot(dx, dz) || 1; return { x: ball.x, z: ball.z, vx: dx / d * 23, vz: dz / d * 23, on: true }; });
     S.fakeZ = lanes[(Math.random() * 3) | 0]; return; }
@@ -1720,5 +1727,5 @@ window.GAME = {
     if (!best || best === captain) return false; captain = best; switchT = 2.2; SFX.menu(); G.ca = Math.max(G.ca, 0.3); FX.emit('curve', best.x, 0.4, best.z, 10, 3, 0.25, 4); return true; }, powers: POWERS, icons: PU.icons, arena(id) { ARENA.set(id); try { localStorage.setItem('arena', ARENA.id); } catch (e) {} }, get arenaId() { return ARENA.id; }, get arenas() { return ARENA.list; }, setStick(v) { stick = v; }, setDash(v) { padDash = v; }, quit() { frozen = false; G.state = 'menu'; MUSIC.stop(); PICK.open = false; ui.picker?.(null); }, sfx(on) { SFX.setSfx(on); }, freeze(v) { frozen = !!v; if (v) { keys.clear(); keyDash = false; } }, mute: () => SFX.toggle(),
   teams: TEAMS, frames: FR, images: [IMG_G, IMG_P], players, get captain() { return captain; }, get ball() { return ball; }, G,
 };
-window.__game = { goal: (t) => goalScored(t), pen: (t) => penaltyFor(t, players.find((q) => q.team === t && q.role === 'fwd')), G, ball, players, input, beast: (k) => beastStart(captain, k), magic: (k) => MAGIC.start(captain, k), weather: (m) => { G.weather = m; setWeather(m); }, step(sec, fps = 30) { auto = false; for (let i = 0; i < Math.round(sec * fps); i++) step(1 / fps); }, resume() { last = performance.now(); auto = true; }, keys };
+window.__game = { goal: (t) => goalScored(t), pen: (t) => penaltyFor(t, players.find((q) => q.team === t && q.role === 'fwd')), G, ball, players, input, beast: (k) => beastStart(captain, k), magic: (k) => MAGIC.start(captain, k), shoot: (pw) => shoot(captain, pw), weather: (m) => { G.weather = m; setWeather(m); }, step(sec, fps = 30) { auto = false; for (let i = 0; i < Math.round(sec * fps); i++) step(1 / fps); }, resume() { last = performance.now(); auto = true; }, keys };
 window.GAME_READY?.();
