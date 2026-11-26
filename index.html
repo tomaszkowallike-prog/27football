@@ -845,7 +845,7 @@
     let free = TSLOT.map((_, k) => k).filter((k) => k !== 3); for (const t of T) if (t.s == null) t.s = free.shift();
     let room = 0;
     const draw = (fresh = []) => { const P = PROG.get(), box = $('tslots'); box.innerHTML = ''; let n = 0;
-      $('tleft').hidden = room !== 0; $('tright').hidden = room !== 1; const bi = document.querySelector('#trofea .tbox > img'); bi.src = room ? 'trofea_bg2.jpg?v=1' : 'trofea_bg.jpg?v=3';
+      $('tleft').hidden = room !== 0; $('tright').hidden = room !== 1; const bi = document.querySelector('#trofea .tbox > img'); const en = window.LANG === 'en' ? '_en' : ''; bi.src = room ? `trofea_bg2${en}.jpg?v=1` : `trofea_bg${en}.jpg?v=3`;
       for (const t of T) { if (room !== 0) { n += !!t.ok(P); continue; } const [x, y, w, h] = TSLOT[t.s], got = !!t.ok(P); n += got; const d = document.createElement('div'); d.className = 'tro' + (got ? '' : ' off') + (fresh.includes(t.i) ? ' new' : '');
         d.style.cssText = `left:${x}%;top:${y}%;width:${w}%;height:${h}%`; d.innerHTML = `<i style="background-position:${t.i / 23 * 100}% 0"></i>`;
         d.onclick = () => { const e = $('tinfo'); e.innerHTML = `<b>${got ? t.n : '???'}</b><br>${t.how}${got ? '<br>✔ ' + L('ZDOBYTE', 'WON') : ''}`; e.hidden = false; }; box.appendChild(d); }

@@ -129,7 +129,7 @@
   for (const k of ['fillText', 'strokeText', 'measureText']) { const f = C[k]; C[k] = function (s, ...a) { return f.call(this, tr(String(s)), ...a); }; }
   // pictures with Polish words on them
   const IMG = { 'tablica.jpg': 'tablica_en.jpg', 'szatnia_base.jpg': 'szatnia_base_en.jpg' };
-  const css = document.createElement('style'); css.textContent = '#modes .sbg.tb { background-image: url(tablica_en.jpg) !important; }'; document.head.appendChild(css);
+  const css = document.createElement('style'); css.textContent = '#modes .sbg.tb { background-image: url(tablica_en.jpg) !important; } #trofea .sbg { background-image: url(trofea_bg_en.jpg?v=3) !important; }'; document.head.appendChild(css);
   // page text: translated as it appears and every time it changes
   const fix = (n) => {
     if (n.nodeType === 3) { const v = n.nodeValue, w = tr(v); if (w !== v) n.nodeValue = w; return; }
