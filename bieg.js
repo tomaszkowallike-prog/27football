@@ -17,11 +17,11 @@
   let TILE = null;
   const nightTile = () => { if (!SA.complete || !SA.naturalWidth) return null; const c = document.createElement('canvas'); c.width = 192; c.height = 192; const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
     x.fillStyle = '#0c1036'; x.fillRect(0, 0, 192, 192); x.globalAlpha = 0.55; x.drawImage(SA, 0, 0, 192, 192); x.globalAlpha = 1; return c; };
-  const AT = new Image(); AT.src = 'bieg_runners.png'; let ATJ = null;
-  fetch('bieg_runners.json').then((r) => r.json()).then((j) => { ATJ = j; });
+  const AT = new Image(); AT.src = 'bieg_runners.png?v=1795688980'; let ATJ = null;
+  fetch('bieg_runners.json?v=1795688980').then((r) => r.json()).then((j) => { ATJ = j; });
   // trees, bushes and lamp posts cut out in bands by where they stand, so a runner passing behind them is hidden
-  const FG = new Image(); FG.src = 'bieg_fg.png'; let FGJ = null, LP = null;
-  fetch('bieg_fg.json').then((r) => r.json()).then((j) => { FGJ = j.fg; buildLanes(j.path); });
+  const FG = new Image(); FG.src = 'bieg_fg.png?v=1795688980'; let FGJ = null, LP = null;
+  fetch('bieg_fg.json?v=1795688980').then((r) => r.json()).then((j) => { FGJ = j.fg; buildLanes(j.path); });
   // the line round the pitch and the lamp heads, in picture units
   const PL = 252, PR = 1418, PT = 188, PB = 742;
   const LANES = [-9, -3, 3, 9];
