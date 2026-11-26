@@ -310,23 +310,34 @@ export default function extraArenas(C) {
       wheels.forEach((w, i) => { w.position.y = 0.5 + k * (i < 2 ? 0 : 3.8); w.position.x = [-1.4, 1.4, -1.4, 1.4][i] * (1 - k * 0.3); if (k === 0) w.rotation.y += dt * 6; }); });
     const gears = []; for (const [x, z] of [[-PX - 10, -12], [PX + 10, 10]]) { const g2 = cyl(gr, 3, 3, 0.6, '#c8a040', x, 4, z, 12); g2.rotation.x = Math.PI / 2; gears.push(g2); } tick(gr, (t, dt) => gears.forEach((g2) => { g2.rotation.y += dt; })); };
   // 17. enchanted circus: striped tents, a turning carousel, a ferris wheel, strings of lights
-  DEF.cyrk = { name: 'CYRK', sky: '#1a0a3a', fog: '#2a1a4a', near: 60, far: 200, hemi: ['#ffd8f0', '#3a1a3a', 1.7], sun: ['#ffe0c0', 1.9], grav: 30, wx: 'confetti',
+  DEF.cyrk = { name: 'CYRK', sky: '#3a0a14', fog: '#4a1420', near: 70, far: 200, hemi: ['#ffd8f0', '#3a1a3a', 1.7], sun: ['#ffe0c0', 1.9], grav: 30, wx: 'confetti',
     pal: pal('#e8202a', '#e8202a', '#e8202a', [], ['#d81a24', '#c8161f', '#e82a32'], '#ffffff', { txt: 'rgba(0,0,0,0)', wornE: 'rgba(0,0,0,0)', blocks: (g, W, H, K) => { const C = ['#ff3a4a', '#ff8a1a', '#ffd21a', '#5ae04a', '#2ad0e0', '#3a6aff', '#a84aff', '#ff4ac0'], bw = 2.2 * K, d = g.getImageData(0, 0, W, H), px = d.data, cx = W / 2, cy = H / 2;
       const rgb = C.map((c) => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)]);
       for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const dx = x - cx, dy = (y - cy) * 1.0, r = Math.hypot(dx, dy), a = Math.atan2(dy, dx) / 6.2832 + 0.5, u = r / bw - a, i = Math.floor(u), f = u - i, c = rgb[((i % 8) + 8) % 8], sh = f < 0.12 ? 0.82 : f > 0.88 ? 1.12 : 1, k = (y * W + x) * 4;
         px[k] = Math.min(255, c[0] * sh); px[k + 1] = Math.min(255, c[1] * sh); px[k + 2] = Math.min(255, c[2] * sh); px[k + 3] = 255; }
       g.putImageData(d, 0, 0); } }),
     track: () => tile((g) => { fill(g, '#d8b078'); speck(g, ['#c8a068', '#e8c890', '#b89058'], 300); }) };
-  BUILD.cyrk = (gr) => { const tent = (x, z, r, h, a, b) => { const t = stripes(a, b, 8); t.repeat.set(4, 1); cyl(gr, r, r, h, lam({ map: t }), x, h / 2, z, 16); const t2 = stripes(a, b, 8); t2.repeat.set(4, 1); cone(gr, r * 1.1, h * 0.9, lam({ map: t2 }), x, h + h * 0.45, z, 16);
-      cyl(gr, 0.08, 0.08, 2, '#ffd21a', x, h * 1.9 + 1, z); box(gr, 1, 0.6, 0.05, '#ff2a3a', x + 0.5, h * 1.9 + 1.7, z); };
-    tent(-14, -PZ - 20, 11, 8, '#e8202a', '#ffffff'); tent(26, -PZ - 14, 5, 4, '#2a6ae8', '#ffd21a'); tent(-PX - 14, -8, 5, 4, '#8a2ad0', '#ffffff'); tent(PX + 14, 10, 5, 4, '#e8202a', '#ffd21a');
-    const car = new THREE.Group(); const base = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 0.6, 16), M('#e8c040')); car.add(base); const roofT = stripes('#e8202a', '#ffffff', 8); roofT.repeat.set(4, 1); const roof = new THREE.Mesh(new THREE.ConeGeometry(5.6, 2.6, 16), lam({ map: roofT })); roof.position.y = 5.4; car.add(roof);
-    for (let k = 0; k < 8; k++) { const a = k / 8 * 6.28; const p = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 4, 4), M('#ffd21a')); p.position.set(Math.cos(a) * 4, 2.5, Math.sin(a) * 4); const h = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.9, 0.5), M(pick(['#ffffff', '#ff8ad8', '#8ad8ff', '#ffe14a']))); h.position.set(Math.cos(a) * 4, 1.8, Math.sin(a) * 4); h.rotation.y = -a; car.add(p, h); }
-    car.position.set(PX + 16, 0, -14); gr.add(car); tick(gr, (t, dt) => { car.rotation.y += dt * 0.8; });
-    const wheel = new THREE.Group(); wheel.add(new THREE.Mesh(new THREE.TorusGeometry(9, 0.3, 6, 32), M('#e8ecf2'))); for (let k = 0; k < 10; k++) { const a = k / 10 * 6.28; const s = new THREE.Mesh(new THREE.BoxGeometry(0.2, 9, 0.2), M('#e8ecf2')); s.position.set(Math.cos(a) * 4.5, Math.sin(a) * 4.5, 0); s.rotation.z = a + Math.PI / 2; const c = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.2, 1.2), GL(pick(['#ff3a5a', '#ffd21a', '#3ac8ff', '#3ae86a']), 0.6)); c.position.set(Math.cos(a) * 9, Math.sin(a) * 9, 0); wheel.add(s, c); }
-    wheel.position.set(40, 12, -PZ - 26); gr.add(wheel); for (const dx of [-3, 3]) { const l = box(gr, 0.5, 13, 0.5, '#e8ecf2', 40 + dx, 6, -PZ - 26); l.rotation.z = dx > 0 ? 0.22 : -0.22; } tick(gr, (t, dt) => { wheel.rotation.z += dt * 0.3; });
-    const bulbs = []; for (let k = 0; k < 36; k++) { const x = -60 + k * 3.4; bulbs.push(sph(gr, 0.3, BA(pick(['#ff3a5a', '#ffd21a', '#3ac8ff', '#3ae86a', '#ff8ad8'])), x, 6 - Math.abs(Math.sin(k / 6 * Math.PI)) * 1.6, -PZ - 6, 0)); } for (let x = -60; x <= 62; x += 20.4) cyl(gr, 0.12, 0.12, 6, '#5a3e24', x, 3, -PZ - 6, 5);
-    tick(gr, (t) => bulbs.forEach((b, k) => { b.visible = (Math.floor(t * 4) + k) % 3 !== 0; })); stars(gr, 300); };
+  BUILD.cyrk = (gr) => {
+    // inside the big top: striped canvas walls all round, the roof rising to a pole, lights, ring props, a trapeze
+    const wall = (w, h) => { const t = stripes('#e8202a', '#fff4e8', 2); t.repeat.set(w / 3, 1); return lam({ map: t, side: THREE.DoubleSide }); };
+    add(gr, new THREE.BoxGeometry(170, 22, 1), wall(170, 22), 0, 11, -PZ - 11); for (const sx of [-1, 1]) add(gr, new THREE.BoxGeometry(1, 22, 80), wall(80, 22), sx * (PX + 17), 11, 0).material.map.repeat.set(80 / 3, 1);
+    const rt = stripes('#e8202a', '#fff4e8', 2); rt.repeat.set(30, 1); const roof = add(gr, new THREE.ConeGeometry(95, 34, 40, 1, true), lam({ map: rt, side: THREE.DoubleSide }), 0, 22 + 17, 0); cyl(gr, 0.8, 0.8, 60, '#e8c040', 0, 30, -PZ - 30, 8);
+    box(gr, 170, 1, 1.4, '#e8c040', 0, 22, -PZ - 10.4); for (const sx of [-1, 1]) box(gr, 1.4, 1, 80, '#e8c040', sx * (PX + 16.4), 22, 0);
+    const bulbs = []; for (let k = 0; k < 44; k++) bulbs.push(sph(gr, 0.35, BA(pick(['#ff3a5a', '#ffd21a', '#3ac8ff', '#3ae86a', '#ff8ad8'])), -75 + k * 3.5, 20.6 - Math.abs(Math.sin(k / 5 * Math.PI)) * 1.6, -PZ - 10.2, 0));
+    for (const sx of [-1, 1]) for (let k = 0; k < 20; k++) bulbs.push(sph(gr, 0.35, BA(pick(['#ff3a5a', '#ffd21a', '#3ac8ff', '#3ae86a'])), sx * (PX + 16.2), 20.6 - Math.abs(Math.sin(k / 5 * Math.PI)) * 1.6, -36 + k * 3.8, 0));
+    tick(gr, (t) => bulbs.forEach((b, k) => { b.visible = (Math.floor(t * 4) + k) % 3 !== 0; }));
+    // podiums with balls balanced on them, a burning hoop, a seal-style ball stack, a unicycle
+    const drum = (x, z, r, h) => { const t = stripes(pick(['#2a6ae8', '#e8202a', '#8a2ad0']), '#ffd21a', 8); t.repeat.set(3, 1); cyl(gr, r, r, h, lam({ map: t }), x, h / 2, z, 16); cyl(gr, r + 0.1, r + 0.1, 0.3, '#ffd21a', x, h, z, 16); return h; };
+    far(5, (x, z) => { const h = drum(x, z, R(1.6, 2.2), R(1.6, 2.8)); const b = sph(gr, R(0.8, 1.2), pick(['#ff3a5a', '#3ac8ff', '#ffd21a', '#3ae86a']), x, h + 1, z, 2); tick(gr, (t) => { b.rotation.z = t * 2 + x; b.position.x = x + Math.sin(t * 1.5 + x) * 0.3; }); }, 6, 8, -60, 60);
+    const hoop = (x, z) => { box(gr, 0.3, 4, 0.3, '#5a5e66', x, 2, z); const r = add(gr, new THREE.TorusGeometry(2, 0.25, 6, 20), M('#c8ccd2'), x, 6, z); const fl = []; for (let k = 0; k < 10; k++) { const a = k / 10 * 6.28; fl.push(cone(gr, 0.35, 1, GL('#ff8a1a', 1.6), x + Math.cos(a) * 2, 6 + Math.sin(a) * 2, z, 5)); } tick(gr, (t) => fl.forEach((f, k) => f.scale.y = 1 + Math.sin(t * 12 + k * 1.7) * 0.4)); };
+    hoop(-24, -PZ - 7); hoop(PX + 10, 8);
+    // a trapeze swinging high up near the back wall
+    const trap = new THREE.Group(); for (const dx of [-1.4, 1.4]) { const r = new THREE.Mesh(new THREE.BoxGeometry(0.08, 10, 0.08), M('#e8e0d0')); r.position.set(dx, -5, 0); trap.add(r); } const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3, 6), M('#e8c040')); bar.rotation.z = Math.PI / 2; bar.position.y = -10; trap.add(bar); trap.position.set(10, 30, -PZ - 8); gr.add(trap);
+    tick(gr, (t) => { trap.rotation.x = Math.sin(t * 1.2) * 0.5; });
+    // spotlights sweeping the floor
+    const spots = []; for (const x of [-30, 0, 30]) { const c = add(gr, new THREE.ConeGeometry(5, 26, 16, 1, true), BA('#fff4c0', { transparent: true, opacity: 0.12, depthWrite: false, side: THREE.DoubleSide }), x, 13, -PZ - 4); spots.push([c, x]); }
+    tick(gr, (t) => spots.forEach(([c, x], k) => { c.rotation.z = Math.sin(t * 0.6 + k * 2) * 0.35; c.rotation.x = 0.35 + Math.sin(t * 0.4 + k) * 0.1; }));
+    ends(4, (x, z) => { const h = drum(x, z, 1.6, 1.4); }, 7, 12); };
   // 18. metropolis: streets with taxis, billboards, skyscrapers
   DEF.metropolia = { name: 'METROPOLIA', sky: '#9ab8d8', fog: '#b8c8d8', near: 70, far: 240, hemi: ['#eef4ff', '#5a6066', 2.0], sun: ['#fff4e0', 2.5], grav: 30, wx: 'none',
     pal: pal('#4f8a3a', '#5aa043', '#64ad4b', ['#3f7a2e', '#4a8a36', '#7cc25a', '#86c862'], ['#8a6a3a', '#9a7844', '#7a5c30'], '#f3f6ea'),
