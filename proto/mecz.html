@@ -67,7 +67,7 @@ const img = (s) => { const i = new Image(); i.src = s + V; return i; };
 
 // ---------- sprites ----------
 const META = { 7: { bieg_bok: 8, bieg_do_kamery: 8, glowka: 8, obrot: 29, radosc: 4, strzal: 6, szczupak: 7, wslizg: 10 }, 10: { bieg_bok: 6, bieg_do_kamery: 8, bieg_od_kamery: 7, obrot: 29, strzal: 8, zonglerka: 18 },
-  14: { bieg_bok: 8, bieg_do_kamery: 7, glowka: 5, obrot: 16, wslizg: 10, zonglerka: 9 }, 27: { bieg_bok: 7, bieg_do_kamery: 7, glowka: 9, obrot: 18, strzal: 6, wslizg: 8 } };
+  14: { bieg_bok: 8, bieg_do_kamery: 7, glowka: 5, obrot: 16, wslizg: 10, zonglerka: 9 }, 27: { bieg_bok: 8, bieg_do_kamery: 7, glowka: 9, obrot: 18, strzal: 6, wslizg: 8 } };
 const SH = {}; let toLoad = 0, loaded = 0;
 function sheet(p, clip, kit) { const key = `${p}_${clip}${kit}`; if (!SH[key]) { toLoad++; const i = img(`anim/${key}.png`); i.onload = () => { loaded++; $('load').textContent = `ładowanie animacji… ${loaded}/${toLoad}`; if (loaded >= toLoad) $('load').textContent = 'gotowe'; }; SH[key] = { im: i, n: META[p][clip] }; } return SH[key]; }
 // a set of clips for one player in one kit, with stand-ins where a clip is missing

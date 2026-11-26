@@ -9,11 +9,11 @@ import extraArenas from './arenas.js?v=15';
 const FR = await (await fetch('./frames.json')).json();
 // the new animated boys (cut from the GIFs): one frame map, a green and a red atlas; ?old=1 brings the old pixel boys back
 const HD = !/[?&]old=1/.test(location.search);
-if (HD) Object.assign(FR, await (await fetch('./frames_hd_g.json?v=1')).json());
+if (HD) Object.assign(FR, await (await fetch('./frames_hd_g.json?v=2')).json());
 const POSE = FR.poses;
 const loadImg = (src) => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
 const [IMG_G, IMG_P, IMG_C] = await Promise.all([loadImg('./atlas_green.png'), loadImg('./atlas_purple.png'), loadImg('./creatures.png')]);
-const [IMG_HG, IMG_HR] = HD ? await Promise.all([loadImg('./atlas_hd_g.png?v=1'), loadImg('./atlas_hd_r.png?v=1')]) : [null, null];
+const [IMG_HG, IMG_HR] = HD ? await Promise.all([loadImg('./atlas_hd_g.png?v=2'), loadImg('./atlas_hd_r.png?v=2')]) : [null, null];
 const HD_MAP = { 0: { 7: 'h7', 10: 'h10', 14: 'h14', 27: 'h27' }, 1: { 21: 'h7', 17: 'h10', 14: 'h14', 11: 'h27' } };
 const CR = await (await fetch('./creatures.json')).json();   // wolf and dragon frames [x, y, w, h, anchorX, feet]
 const EX = await (await fetch('./extras.json')).json();
