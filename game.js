@@ -13,7 +13,7 @@ const [IMG_G, IMG_P, IMG_C] = await Promise.all([loadImg('./atlas_green.png'), l
 const CR = await (await fetch('./creatures.json')).json();   // wolf and dragon frames [x, y, w, h, anchorX, feet]
 const EX = await (await fetch('./extras.json')).json();
 const [IMG_FANS, IMG_FRONT, ...IMG_FLAGS] = await Promise.all([loadImg('./fans.png'), loadImg('./crowdfront.png'), ...EX.flags.map((_, i) => loadImg(`./flag${i}.png`))]);
-const TIERS = [], FLAGS = [], FANS = {}, CARDS = {}, FLARES = [], SMOKES = [], LIGHTS = { glows: [] }, FRONT = []; let GLOW = null;
+const TIERS = [], FLAGS = [], FANS = {}, CARDS = {}, FLARES = [], SMOKES = [], LIGHTS = { glows: [] }, FRONT = []; let GLOW = null, STANDS_ON = true;
 
 const PX = 30, PZ = 18, GOAL_W = 10, GOAL_H = 3.4, GOAL_D = 2.2;
 const UNIT = 2.5 / 46;                  // world units per sprite pixel (a player ~2.5 tall)
@@ -638,7 +638,7 @@ const ARENA = (() => {
     set(id) { if (!DEF[id]) id = 'stadion'; cur = id; const D = DEF[id];
       if (BUILD[id] && !groups[id]) { groups[id] = new THREE.Group(); BUILD[id](groups[id]); scene.add(groups[id]); }
       for (const k in groups) groups[k].visible = k === id;
-      SG.visible = !!D.stands || id === 'stadion'; TG.visible = id === 'stadion';
+      SG.visible = STANDS_ON = !!D.stands || id === 'stadion'; TG.visible = id === 'stadion';
       PITCH.paint(PITCH.t.image.getContext('2d'), { ...DEF.stadion.pal, ...(D.pal || PAL.stadion) }); PITCH.t.needsUpdate = true;
       if (!D.trackMap && D.track) D.trackMap = D.track(); PITCH.track.material.map = D.trackMap || PITCH.trackMap; PITCH.track.material.emissive.set(D.trackGlow || '#000000'); PITCH.track.material.emissiveMap = D.trackGlow ? PITCH.track.material.map : null; PITCH.track.material.needsUpdate = true;
       GRAV = D.grav; if (id === 'stadion') { const w = typeof G !== 'undefined' && (G.weather === 'rain' || G.weather === 'leaves') ? G.weather : 'leaves'; WX.set(w); } else WX.set(D.wx || 'leaves'); this.sky(); },
@@ -657,7 +657,7 @@ function updateStands(dt, t) {
       pos.array[i * 3 + 2] = Math.sin(t * f.sp + u * 7 + f.ph) * 0.45 * u; pos.array[i * 3 + 1] = y + Math.sin(t * f.sp * 0.7 + u * 5 + f.ph) * 0.12 * u; }
     pos.needsUpdate = true; }
   G.flares = Math.max(0, (G.flares || 0) - dt * 0.6);
-  FLARES.forEach((f, i) => { const on = f.on || i < 4 + Math.ceil(G.flares) - 1 && G.flares > 0.3;
+  FLARES.forEach((f, i) => { const on = STANDS_ON && (f.on || i < 4 + Math.ceil(G.flares) - 1 && G.flares > 0.3);
     f.core.visible = f.halo.visible = on; if (f.light) f.light.intensity = on ? 6 + Math.sin(t * 23 + f.ph) * 2 + Math.random() * 2 : 0;
     if (!on) return; const fl = 0.85 + Math.sin(t * 31 + f.ph) * 0.1 + Math.random() * 0.12;
     f.core.scale.setScalar(1.3 * fl); f.halo.scale.setScalar(5 * fl); if (Math.random() < 0.5) FX.emit('fire', f.v.x + (Math.random() - 0.5) * 0.4, f.v.y + 0.2, f.v.z, 1, 1.2, 0.14, 2); f.core.quaternion.copy(camera.quaternion); f.halo.quaternion.copy(camera.quaternion);
