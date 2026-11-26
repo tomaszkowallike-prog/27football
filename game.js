@@ -1403,7 +1403,7 @@ function step(dt) {
   for (let i = 0; i < players.length; i++) for (let j = i + 1; j < players.length; j++) { const a = players[i], b = players[j], dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz);
     if (d > 0 && d < 0.8 && a.y < 1 && b.y < 1) { const k = (0.8 - d) / 2 / d; a.x -= dx * k; a.z -= dz * k; b.x += dx * k; b.z += dz * k; } }
   for (const p of players) { const lim = p.keeper && p.st === 'down' ? PX + GOAL_D - 0.3 : PX - 0.4; p.x = Math.max(-lim, Math.min(lim, p.x)); p.z = Math.max(-PZ + 0.4, Math.min(PZ - 0.4, p.z));
-    if (Math.abs(p.vx) > 0.4 && free(p)) p.face = Math.sign(p.vx); if (p.y <= 0) p.walked += Math.hypot(p.vx, p.vz) * dt; }
+    if (Math.abs(p.vx) > (p.hd ? 1.5 : 0.4) && free(p)) p.face = Math.sign(p.vx); if (p.y <= 0) p.walked += Math.hypot(p.vx, p.vz) * dt; }
   stepBall(dt);
   draw(dt);
 }
@@ -1435,14 +1435,14 @@ function frameOf(p) {
     return { f: p.vy > APEX ? p.pose.jump[0] : p.vy > -APEX ? p.pose.jump[2] : p.pose.jump[1], flip };
   }
   if (p.st === 'kick') { const k = A.kick; return { f: pick(k, 1 - p.t / 0.25), flip }; }
-  if (sp > 0.6) {
+  if (sp > (A.hd ? (p.wasRun ? 0.8 : 1.6) : 0.6)) { p.wasRun = true;
     const rate = p.dash ? 0.5 : 0.85, mostlyZ = Math.abs(p.vz) > Math.abs(p.vx) * 1.7;
+    if (A.hd) { const r = p.dash ? 0.3 : 0.42, i = (p.walked / r | 0); if (mostlyZ && p.vz < 0 && A.runUp) return { f: A.runUp[i % A.runUp.length], flip }; if (mostlyZ && p.vz > 0 && A.runDown) return { f: A.runDown[i % A.runDown.length], flip }; return { f: A.run[i % A.run.length], flip }; }
     if (mostlyZ && p.vz < 0) { if (A.runUp) return { f: A.runUp[(p.walked / rate | 0) % A.runUp.length], flip }; return { f: A.back[0], flip: (p.walked / 0.8 | 0) % 2 === 1, hop: Math.abs(Math.sin(p.walked * 2)) * 0.12 }; }
-    if (A.hd) { const r = p.dash ? 0.28 : 0.4; if (mostlyZ && p.vz < 0 && A.runUp) return { f: A.runUp[(p.walked / r | 0) % A.runUp.length], flip }; if (mostlyZ && p.vz > 0 && A.runDown) return { f: A.runDown[(p.walked / r | 0) % A.runDown.length], flip }; if (!mostlyZ || !A.runUp) return { f: A.run[(p.walked / r | 0) % A.run.length], flip }; }
     if (mostlyZ && p.vz > 0) return { f: A.front[0], flip: (p.walked / 0.8 | 0) % 2 === 1, hop: Math.abs(Math.sin(p.walked * 2)) * 0.12 };
     return { f: A.run[(p.walked / rate | 0) % A.run.length], flip };
   }
-  const lookX = ball.x - p.x; return { f: A.side[0], flip: (Math.abs(lookX) > 0.5 ? Math.sign(lookX) : p.face) < 0 };
+  p.wasRun = false; const lookX = ball.x - p.x; if (A.hd) { if (Math.abs(lookX) > 2.5) p.face = Math.sign(lookX); return { f: A.side[0], flip: p.face < 0 }; } return { f: A.side[0], flip: (Math.abs(lookX) > 0.5 ? Math.sign(lookX) : p.face) < 0 };
 }
 function draw(dt) {
   const t = performance.now() / 1000;
