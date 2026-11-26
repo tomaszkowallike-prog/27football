@@ -81,19 +81,23 @@ const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1, 
 postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), post));
 // the final pass: chromatic aberration on hard moments (a shot, a sprint, a big hit), grade, vignette, flash
 const fin = new THREE.ShaderMaterial({
-  uniforms: { tex: { value: null }, res: { value: new THREE.Vector2(1280, 720) }, ca: { value: 0 }, flash: { value: 0 }, wet: { value: 0 } },
+  uniforms: { tex: { value: null }, res: { value: new THREE.Vector2(1280, 720) }, ca: { value: 0 }, flash: { value: 0 }, wet: { value: 0 }, px: { value: 3 } },
   vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
   fragmentShader: `
-    uniform sampler2D tex; uniform vec2 res; uniform float ca, flash, wet; varying vec2 vUv;
+    uniform sampler2D tex; uniform vec2 res; uniform float ca, flash, wet, px; varying vec2 vUv;
+    float b2(vec2 p){ p = mod(p, 2.0); return mod(p.x * 3.0 + p.y * 2.0, 4.0); }
+    float bayer(vec2 p){ return (4.0 * b2(p) + b2(floor(p / 2.0))) / 16.0; }
     void main(){
-      vec2 d = (vUv - 0.5); vec2 o = d * ca * 0.018 + vec2(ca * 2.0 / res.x, 0.0);
-      vec3 c = vec3(texture2D(tex, vUv + o).r, texture2D(tex, vUv).g, texture2D(tex, vUv - o).b);
+      // 8-bit look: the picture is sampled on a coarse grid of big square pixels
+      vec2 cell = floor(vUv * res / px); vec2 uv = (cell + 0.5) * px / res;
+      vec2 d = (uv - 0.5); vec2 o = d * ca * 0.018 + vec2(ca * 2.0 * px / res.x, 0.0);
+      vec3 c = vec3(texture2D(tex, uv + o).r, texture2D(tex, uv).g, texture2D(tex, uv - o).b);
       c = pow(c, vec3(1.0 / 2.2));
       c = mix(vec3(dot(c, vec3(0.299, 0.587, 0.114))), c, 1.1 - wet * 0.25);
       c = mix(c, c * vec3(0.82, 0.88, 0.98), wet);
       float v = smoothstep(1.05, 0.4, length(d * vec2(1.0, 0.85)));
       c *= mix(0.84 - wet * 0.1, 1.0, v);
-      gl_FragColor = vec4(mix(c, vec3(1.0), flash), 1.0);
+      float L = 12.0; c = floor(c * L + 0.25 + bayer(cell) * 0.5) / L; gl_FragColor = vec4(mix(c, vec3(1.0), flash), 1.0);
     }`,
   depthTest: false, depthWrite: false,
 });
@@ -107,7 +111,7 @@ function resize() {
   low.depthTexture = new THREE.DepthTexture(w, h); low.depthTexture.type = THREE.UnsignedIntType;
   post.uniforms.tex.value = low.texture; post.uniforms.dep.value = low.depthTexture; post.uniforms.res.value.set(w, h);
   mid?.dispose(); mid = new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: true, type: THREE.HalfFloatType });
-  fin.uniforms.tex.value = mid.texture; fin.uniforms.res.value.set(w, h);
+  fin.uniforms.tex.value = mid.texture; fin.uniforms.res.value.set(w, h); fin.uniforms.px.value = Math.max(2, Math.round(2.6 * pr));
   const portrait = H > W; camera.aspect = W / H; camera.fov = portrait ? 60 : 46; camera.updateProjectionMatrix();
   post.uniforms.focus.value = portrait ? 0.45 : 0.42; post.uniforms.band.value = portrait ? 0.14 : 0.12;
 }
@@ -136,12 +140,17 @@ const sun = new THREE.DirectionalLight('#fff1d6', 2.2); sun.position.set(-30, 50
 sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -60, right: 60, top: 40, bottom: -40, near: 1, far: 140 }); scene.add(sun);
 // the pitch: mown stripes and lines painted into one texture, 8 texels a unit
 {
-  const K = 14, W = (PX + 6) * 2 * K, H = (PZ + 6) * 2 * K;
+  const K = 5, W = (PX + 6) * 2 * K, H = (PZ + 6) * 2 * K;
   const t = tex(W, H, (g) => {
     const X = (x) => Math.round((x + PX + 6) * K), Z = (z) => Math.round((z + PZ + 6) * K);
     g.fillStyle = '#4f8a3a'; g.fillRect(0, 0, W, H);
     const n = 12; for (let i = 0; i < n; i++) { g.fillStyle = i % 2 ? '#5aa043' : '#64ad4b'; g.fillRect(X(-PX - 2 + i * (2 * PX + 4) / n), Z(-PZ - 2), Math.ceil((2 * PX + 4) / n * K), (2 * PZ + 4) * K); }
-    for (let i = 0; i < 2600; i++) { g.fillStyle = Math.random() < 0.5 ? 'rgba(30,70,25,.25)' : 'rgba(170,220,120,.18)'; g.fillRect(Math.random() * W | 0, Math.random() * H | 0, 1, 1); }
+    // pixel grass: checker dither on the stripe edges, tufts, worn brown patches in the goalmouths and the centre
+    for (let i = 0; i <= n; i++) { const x0 = X(-PX - 2 + i * (2 * PX + 4) / n); for (let z = 0; z < H; z++) if (z % 2 === 0) { g.fillStyle = i % 2 ? '#64ad4b' : '#5aa043'; g.fillRect(x0 - 1 + ((z >> 1) % 2), z, 1, 1); } }
+    for (let i = 0; i < 1400; i++) { const x = Math.random() * W | 0, z = Math.random() * H | 0; g.fillStyle = ['#3f7a2e', '#4a8a36', '#7cc25a', '#86c862'][i % 4]; g.fillRect(x, z, 1, 1); if (i % 3 === 0) g.fillRect(x + 1, z - 1, 1, 1); }
+    const worn = (cx, cz, r) => { for (let i = 0; i < r * r * 9; i++) { const a = Math.random() * 6.28, d = Math.sqrt(Math.random()) * r, x = X(cx + Math.cos(a) * d * 1.4), z = Z(cz + Math.sin(a) * d);
+      g.fillStyle = d > r * 0.7 ? 'rgba(140,110,60,.55)' : ['#8a6a3a', '#9a7844', '#7a5c30'][i % 3]; g.fillRect(x, z, 1, 1); } };
+    worn(-PX + 3, 0, 2.2); worn(PX - 3, 0, 2.2); worn(0, 0, 1.6); worn(-PX + 7, 3, 1.1); worn(PX - 8, -4, 1.2); worn(-9, 8, 0.9); worn(11, 6, 0.9); worn(-14, -7, 0.8);
     g.fillStyle = '#f3f6ea';
     const L = (x0, z0, x1, z1) => g.fillRect(Math.min(X(x0), X(x1)), Math.min(Z(z0), Z(z1)), Math.max(2, Math.abs(X(x1) - X(x0))), Math.max(2, Math.abs(Z(z1) - Z(z0))));
     L(-PX, -PZ, PX, -PZ + 0.2); L(-PX, PZ - 0.2, PX, PZ); L(-PX, -PZ, -PX + 0.2, PZ); L(PX - 0.2, -PZ, PX, PZ); L(-0.1, -PZ, 0.1, PZ);
@@ -159,7 +168,7 @@ sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -60
     // the club name mown into the grass behind the centre circle
     g.font = `bold ${3.2 * K}px "Pixelify Sans", monospace`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = 'rgba(255,255,255,.16)'; g.fillText('CUIAVIA', X(0), Z(-11));
   });
-  t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.anisotropy = 8; t.needsUpdate = true;   // the pitch is HD; only the players are pixel art
+  t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.needsUpdate = true;   // chunky pixel grass, like the old games
   const m = new THREE.Mesh(new THREE.PlaneGeometry((PX + 6) * 2, (PZ + 6) * 2), lam({ map: t }));
   m.rotation.x = -Math.PI / 2; m.receiveShadow = true; scene.add(m);
   // the surround: a red running track and grass
@@ -1316,7 +1325,7 @@ function draw(dt) {
 // ---- the loop and the page's handle --------------------------------------------------------------------------------
 let last = performance.now(), auto = true, frozen = false;
 // the 3D pitch sleeps while a full-screen mode (penalties, keepy-uppy, lacing) covers it
-const covered = () => ['pen', 'kapki', 'lace', 'caps', 'flip'].some((id) => { const e = document.getElementById(id); return e && !e.hidden; });
+const covered = () => ['pen', 'kapki', 'lace', 'caps', 'flip', 'bieg'].some((id) => { const e = document.getElementById(id); return e && !e.hidden; });
 renderer.setAnimationLoop((now) => { if (!auto) return; if (covered()) { last = now; return; } const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; step(frozen ? 0 : dt); });
 placeKickoff(0); G.state = 'menu'; WX.set('leaves');
 window.GAME = {

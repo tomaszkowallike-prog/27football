@@ -194,8 +194,8 @@
   #modes .sbg.tb { position: absolute; inset: -20px; background: url(tablica.jpg) center / cover; filter: blur(12px) brightness(.45); }
   #modes .tbox2 { position: absolute; left: 50%; top: 50%; width: min(100vw, 177.7vh); aspect-ratio: 1672 / 941; transform: translate(-50%, -50%); }
   #modes .tbox2 > img { width: 100%; height: 100%; display: block; }
-  #modes .tbox2 small { position: absolute; left: 6%; width: 50%; top: 65.5%; text-align: center; margin: 0; font-size: clamp(10px, 1.5vw, 18px); color: #ffe14a; background: rgba(0,0,0,.65); }
-  #modes .tbox2 .mrow { position: absolute; left: 7%; width: 48%; top: 20%; height: 45%; display: flex; flex-direction: column; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 0; }
+  #modes .tbox2 small { position: absolute; left: 6%; width: 50%; top: 67.5%; text-align: center; margin: 0; font-size: clamp(10px, 1.5vw, 18px); color: #ffe14a; background: rgba(0,0,0,.65); }
+  #modes .tbox2 .mrow { position: absolute; left: 7%; width: 48%; top: 18%; height: 47%; display: flex; flex-direction: column; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 0; }
   #modes .tbox2 .mb { width: auto; min-width: 46%; padding: 0 .7em; line-height: 1.25; background: rgba(255,240,250,.93); border: 3px solid #2a2a6a; border-radius: 10px; color: #1a1a5a;
     font-size: clamp(12px, 2.5vw, 32px); box-shadow: 0 .25em 0 rgba(40,20,80,.45); animation: float 2.4s ease-in-out infinite; display: flex; align-items: center; gap: .35em; }
   #modes .tbox2 .mb:nth-child(2) { animation-delay: -.8s; color: #c21a1a; } #modes .tbox2 .mb:nth-child(1) { color: #127a2a; } #modes .tbox2 .mb:nth-child(3) { animation-delay: -1.6s; color: #2a3ab0; } #modes .tbox2 .mb:nth-child(4) { animation-delay: -.4s; color: #c25a00; } #modes .tbox2 .mb:nth-child(5) { animation-delay: -1.2s; color: #6a2aa8; }
@@ -315,7 +315,8 @@
   #modes .tbox2 small, #szatnia .stitle { font-family: var(--px) !important; font-size: clamp(7px, 1.1vw, 14px) !important; letter-spacing: .05em !important; padding: 5px 10px !important; }
   #modes .mback, #mvol { font-family: var(--px) !important; font-size: 9px !important; border-radius: 0 !important; }
   body:has(#szatnia:not([hidden])) #mvol { display: none; }
-  body:has(#flip:not([hidden])) #mvol { display: none; }
+  body:has(#flip:not([hidden])) #mvol, body:has(#bieg:not([hidden])) #mvol { display: none; }
+  #modes .tbox2 .mb { padding-top: .42em !important; padding-bottom: .42em !important; }
   /* board buttons stand still; now and then a pixel glitch with colour fringes runs through one of them */
   #modes .tbox2 .mb { animation: none !important; transform: none; }
   #modes .tbox2 .mb.glitch { animation: mbg .32s steps(1) 1 !important; }
@@ -487,7 +488,7 @@
   <div class="stitle">WYBIERZ KAPITANA</div></div></div>
 <div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt=""><button class="hbottle" id="hbottle" aria-label="Butelka"><img src="flip_woda.png" alt=""></button>
   <small id="mq">CO ROBIMY?</small>
-  <div class="mrow"><button class="mb" data-m="match"><b><img class="pxi" src="ico_match.png" alt=""></b>MECZ<em>Cuiavia kontra Fioletowi</em></button><button class="mb" data-m="karne"><b><img class="pxi" src="ico_karne.png" alt=""></b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b><img class="pxi" src="ico_kapki.png" alt=""></b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b><img class="pxi" src="ico_but.png" alt=""></b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b><img class="pxi" src="ico_kapsle.png" alt=""></b>KAPSLE<em>wyścig kapsli po torze</em></button></div>
+  <div class="mrow"><button class="mb" data-m="match"><b><img class="pxi" src="ico_match.png" alt=""></b>MECZ<em>Cuiavia kontra Fioletowi</em></button><button class="mb" data-m="karne"><b><img class="pxi" src="ico_karne.png" alt=""></b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b><img class="pxi" src="ico_kapki.png" alt=""></b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b><img class="pxi" src="ico_but.png" alt=""></b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b><img class="pxi" src="ico_kapsle.png" alt=""></b>KAPSLE<em>wyścig kapsli po torze</em></button><button class="mb" data-m="bieg"><b><img class="pxi" src="ico_bieg.png" alt=""></b>BIEG<em>wyścig dookoła boiska</em></button></div>
   <button class="ibtn mback" data-m="back">◀ SZATNIA</button></div></div></div>
 <div id="kapki" hidden><div class="f169"><img src="kapki_bg.jpg" alt=""></div><div id="jug"></div><div id="kdots"></div>
   <div class="khud"><div><small>KAPKI</small><b id="kscore">0</b></div><div><small>REKORD</small><b id="kbest">0</b></div></div>
@@ -646,7 +647,7 @@
   const showModes = () => { TMUS.currentTime = 0; TMUS.play().catch(() => {}); $('modes').hidden = false; modeSel = 0; markMode(); $('mq').textContent = `${window.CAPTAIN} ${NAMES[window.CAPTAIN] || ''}: CO ROBIMY?`; };
   const markMode = () => document.querySelectorAll('#modes .mb').forEach((b, i) => b.classList.toggle('sel', i === modeSel));
   window.CAPTAIN = 27;
-  const pickMode = (m) => { TMUS.pause(); $('modes').hidden = true; if (m === 'back') { SZ.show(); return; } if (m === 'kapsle') window.CAPS.start(showModes); else if (m === 'but') window.LACE.start(showModes); else if (m === 'karne') window.PEN.start(showModes, window.CAPTAIN); else if (m === 'kapki') K.start(); else if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
+  const pickMode = (m) => { TMUS.pause(); $('modes').hidden = true; if (m === 'back') { SZ.show(); return; } if (m === 'kapsle') window.CAPS.start(showModes); else if (m === 'bieg') window.BIEG.start(showModes); else if (m === 'but') window.LACE.start(showModes); else if (m === 'karne') window.PEN.start(showModes, window.CAPTAIN); else if (m === 'kapki') K.start(); else if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
   // ---- the locker room: pick the captain, who plays in the middle and kicks off ----
   const SZ = (() => {
     const MUS = MV.reg(new Audio('szatnia.mp3'), 0.5); MUS.loop = true;   // the locker-room tune, from 0:08 of the user's track
@@ -811,6 +812,7 @@
 <script src="./lace.js"></script>
 <script src="./caps.js"></script>
 <script src="./flip.js"></script>
+<script src="./bieg.js"></script>
 <script type="module" src="./game.js"></script>
 </body>
 </html>
