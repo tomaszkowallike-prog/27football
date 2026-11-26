@@ -333,7 +333,7 @@ for (let i = 0; i < 8; i++) { const [t, b, f] = BOARDS[i % BOARDS.length]; const
     for (const side of [-1, 1]) {
       const t = new THREE.Texture(IMG_FRONT); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping; t.repeat.set(1.3, 1); t.offset.x = side > 0 ? 0.37 : 0; t.needsUpdate = true;
       const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: t, transparent: true, alphaTest: 0.5, fog: false, depthTest: false }));
-      m.renderOrder = -1; camera.add(m); FRONT.push({ m, t, side, base: t.offset.x });
+      m.renderOrder = -1; m.visible = false; camera.add(m); FRONT.push({ m, t, side, base: t.offset.x });   // hidden: they covered the play at the bottom
     }
   }
   // ---- the card display: after a goal the main stand turns white cards over to spell GOAL! ------------------------
