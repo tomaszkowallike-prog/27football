@@ -13,6 +13,7 @@ if (HD) Object.assign(FR, await (await fetch('./frames_hd_g.json?v=3')).json());
 const POSE = FR.poses;
 const loadImg = (src) => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
 const [IMG_G, IMG_P, IMG_C] = await Promise.all([loadImg('./atlas_green.png'), loadImg('./atlas_purple.png'), loadImg('./creatures.png')]);
+const [IMG_SMOK, IMG_ROB] = await Promise.all([loadImg('./moc_smok.png?v=1'), loadImg('./moc_robot.png?v=1')]);
 const [IMG_HG, IMG_HR] = HD ? await Promise.all([loadImg('./atlas_hd_g.png?v=2'), loadImg('./atlas_hd_r.png?v=2')]) : [null, null];
 const HD_MAP = { 0: { 7: 'h7', 10: 'h10', 14: 'h14', 27: 'h27' }, 1: { 21: 'h7', 17: 'h10', 14: 'h14', 11: 'h27' } };
 const CR = await (await fetch('./creatures.json')).json();   // wolf and dragon frames [x, y, w, h, anchorX, feet]
@@ -798,7 +799,7 @@ window.MATCH_MUSIC = MUSIC;
 const ui = window.UI || {};
 const HALF = () => (window.CFG && window.CFG.half) || 120;
 const VIB = (ms) => { try { if (!window.CFG || window.CFG.vib !== false) navigator.vibrate?.(ms); } catch (e) {} };
-const G = { inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
+const G = { inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
 let GRAV = 30; const JUMP_V = 11, APEX = 3.2;                       // a jump peaks ~0.37 s after take-off, ~2 units up
 const WALK = 6.4, DASH = 11.8, AI_WALK = 5.8, AI_RUN = 7.6;
 const goalX = (team) => (team === 0 ? PX : -PX);               // the goal this team attacks
@@ -813,6 +814,7 @@ const POWERS = {
   mega: { name: 'MEGA PIŁKA', col: '#ff6ab8', dark: '#6a0a3a' },
   wolf: { name: 'WILK', col: '#aab4c8', dark: '#252a36' },
   dragon: { name: 'SMOK', col: '#ff6a2a', dark: '#5a1408' },
+  robot: { name: 'ROBOT', col: '#5af0ff', dark: '#0a3a6a' },
 };
 const boxTex = (k) => tex(20, 20, (g) => { const P = POWERS[k];
   g.fillStyle = '#111'; g.fillRect(0, 0, 20, 20); g.fillStyle = P.dark; g.fillRect(1, 1, 18, 18); g.fillStyle = P.col; g.fillRect(2, 2, 16, 15);
@@ -823,7 +825,9 @@ const boxTex = (k) => tex(20, 20, (g) => { const P = POWERS[k];
   // the wolf and dragon boxes show the creature's own head, cut from its frames
   const head = (f, fx, fy, fw, fh) => { g.imageSmoothingEnabled = false; const [x, y, w, h] = f; g.drawImage(IMG_C, x + w * fx, y + h * fy, w * fw, h * fh, 2, 2, 16, 15); };
   if (k === 'wolf') head(CR.wolf[12], 0.52, 0.0, 0.48, 0.5);
-  if (k === 'dragon') head(CR.dragon[0], 0.48, 0.0, 0.52, 0.42);
+  const head2 = (im, i, sx, sy, sw, sh) => { g.imageSmoothingEnabled = false; g.drawImage(im, i * 400 + sx, sy, sw, sh, 2, 2, 16, 15); };
+  if (k === 'dragon') head2(IMG_SMOK, 4, 120, 0, 150, 140);
+  if (k === 'robot') head2(IMG_ROB, 12, 20, 30, 190, 170);
   if (k === 'mega') { ink('#111', [[5, 4, 10, 12], [4, 5, 12, 10], [3, 7, 14, 6]]); ink('#fff', [[6, 5, 8, 10], [5, 6, 10, 8], [4, 8, 12, 4]]); ink('#111', [[9, 8, 3, 3], [6, 11, 2, 2], [12, 11, 2, 2], [7, 6, 2, 1], [12, 6, 2, 1]]); }
 });
 const PU = (() => {
@@ -888,7 +892,8 @@ function doPick(i = PICK.sel) {
   G.inv[o.id]--; ui.inv?.(G.inv);
   if (o.id === 'lightning') { lightning(c); return; }
   if (o.id === 'wolf') { wolfStart(c); return; }
-  if (o.id === 'dragon') { dragonStart(c); return; }
+  if (o.id === 'dragon') { beastStart(c, 'smok'); return; }
+  if (o.id === 'robot') { beastStart(c, 'robot'); return; }
   ball.owner = null; shoot(c, 0.9, { name: POWERS[o.id].name, kind: o.id });
 }
 // a sprinter leaves a trail of fading copies of himself
@@ -933,6 +938,44 @@ function wolfFlee(q, dt) {   // rivals scatter away from the wolf; the keeper le
   if (q.flee !== true) { q.flee = true; if (Math.random() < 0.5) shout(q, ['Aaa!', 'Ratunku!', 'Wilk!'][q.id % 3]); }
 }
 // ---- SMOK: a dragon swoops down holding the ball, breathes fire and the burning ball flies into a goal that catches fire ----
+// ---- the new transformations: the boy glitches into the dragon or the robot from the GIFs, the fire or the beam carries the ball, then he glitches back
+const BEAST_DEF = { smok: { im: () => IMG_SMOK, n: 15, ax: 190, fy: 212, hit: 9, ey: 104, mx: 250, loop: [10, 14], fps: 9, fx: 'fire', h: 6.2 },
+                    robot: { im: () => IMG_ROB, n: 28, ax: 95, fy: 214, hit: 15, ey: 88, mx: 280, loop: [18, 27], fps: 11, fx: 'zigzag', h: 5.2 } };
+const BEAST = { on: false, kind: 'smok', t: 0, ph: 'in', c: null, dir: 1, spr: {}, launched: false };
+function beastStart(c, kind) {
+  const B = BEAST_DEF[kind]; if (!BEAST.spr[kind]) { const s2 = makeSprite(B.im(), { unit: B.h / B.fy }); s2.sgrp.visible = false; s2.holder.visible = s2.blob.visible = false; BEAST.spr[kind] = s2; }
+  Object.assign(BEAST, { on: true, kind, t: 0, ph: 'in', c, dir: Math.sign(goalX(c.team)), launched: false });
+  c.face = BEAST.dir; ball.owner = c; c.vx = c.vz = 0; c.vy = 0; c.y = 0; G.state = 'dragon'; G.ca = 1.6; SFX.charge(1);
+  ui.banner?.(kind === 'smok' ? 'SMOK!' : 'ROBOT!', c.T, 'super', c); shout(c, kind === 'smok' ? 'Smoku!' : 'Robot, start!');
+  for (const q of players) if (q.team !== c.team) { q.vx *= 0.2; q.vz *= 0.2; }
+}
+function beastUpdate(dt) {
+  if (!BEAST.on) return; const b = BEAST, B = BEAST_DEF[b.kind], c = b.c; b.t += dt;
+  if (b.ph === 'in' && b.t > 0.8) { b.ph = 'show'; b.t = 0; G.shake = 0.6; G.flash = 0.5; b.kind === 'smok' ? SFX.roar() : SFX.thunder(); }
+  else if (b.ph === 'show') {
+    const fi = b.t * B.fps; if (fi >= B.hit && !b.launched) {
+      b.launched = true; const gx = goalX(c.team), u = B.h / B.fy, mx = c.x + b.dir * (B.mx - B.ax) * u, my = (B.fy - B.ey) * u;
+      ball.hidden = false; ball.owner = null; ball.x = mx; ball.y = my; ball.z = c.z;
+      const tx = gx + b.dir * 0.8, ty = 1.2, tz = (Math.random() - 0.5) * 3, dx = tx - ball.x, dy = ty - ball.y, dz = tz - ball.z, d = Math.hypot(dx, dy, dz), v = 32;
+      ball.vx = dx / d * v; ball.vy = dy / d * v; ball.vz = dz / d * v; ball.sup = { name: b.kind === 'smok' ? 'SMOK' : 'ROBOT', kind: 'dragon', team: c.team, t: 0, ox: b.dir, by: c }; ball.last = c; ball.hot = 1;
+      b.mouth = [mx, my, c.z]; G.state = 'play'; G.flash = 1; G.shake = 0.9; G.ca = 2.6; b.kind === 'smok' ? SFX.flame() : SFX.thunder(); SFX.super(); }
+    // the fire or the beam: a stream of particles from the mouth / the cannon after the ball
+    if (b.launched && b.t < B.hit / B.fps + 1.4) { const [mx, my, mz] = b.mouth; for (let i = 0; i < 6; i++) { const u2 = Math.random(); FX.emit(B.fx, mx + (ball.x - mx) * u2, my + (ball.y - my) * u2 + (Math.random() - 0.5) * 0.4, mz + (ball.z - mz) * u2, 1, 1.2, 0.25, b.kind === 'smok' ? 5 : 3); } }
+    if (b.t > B.hit / B.fps + 1.6) { b.ph = 'out'; b.t = 0; }
+  }
+  else if (b.ph === 'out' && b.t > 1.3) { b.on = false; const s2 = b.spr[b.kind]; s2.holder.visible = s2.blob.visible = false; c.spr.holder.visible = true; }
+}
+function beastDraw() {
+  const b = BEAST; for (const k in b.spr) { if (!b.on || k !== b.kind) { b.spr[k].holder.visible = b.spr[k].blob.visible = false; } }
+  if (!b.on) return; const B = BEAST_DEF[b.kind], c = b.c, s2 = b.spr[b.kind], fw = 400;
+  const glitch = (sp, amt) => { sp.mesh.position.x += (Math.random() - 0.5) * amt * 1.2; sp.mat.color.set(Math.random() < 0.5 ? (Math.random() < 0.5 ? '#ff5a7a' : '#5affff') : '#ffffff'); sp.holder.visible = Math.random() > amt * 0.35; };
+  const reset = (sp) => sp.mat.color.set('#ffffff');
+  const showBeast = (fi) => { const f = [(fi | 0) * fw, 0, fw, 225, B.ax]; s2.show(f, b.dir < 0); s2.holder.visible = s2.blob.visible = true; s2.holder.position.set(c.x, 0, c.z); s2.blob.position.set(c.x, 0.02, c.z); s2.blob.scale.set(b.kind === 'smok' ? 3.2 : 2.2, 1.1, 1); };
+  if (b.ph === 'in') { glitch(c.spr, 0.2 + Math.min(1, b.t / 0.8)); return; }
+  reset(c.spr);
+  if (b.ph === 'show') { c.spr.holder.visible = false; const base = b.t * B.fps, span = B.loop[1] - B.loop[0] + 1, fi = base < B.loop[0] ? base : B.loop[0] + ((base - B.loop[0]) % span); showBeast(Math.min(fi, B.n - 1)); reset(s2); return; }
+  if (b.ph === 'out') { const k = Math.min(1, b.t / 1.3); if (k < 0.5) { c.spr.holder.visible = false; showBeast(B.loop[0]); glitch(s2, 0.2 + k * 1.6); } else { s2.holder.visible = s2.blob.visible = false; reset(s2); c.spr.holder.visible = true; glitch(c.spr, Math.max(0, 1 - (k - 0.5) * 2)); } }
+}
 const DRAGON = { on: false, t: 0, c: null, x: 0, z: 0, y: 0, dir: 1, spr: null, launched: false };
 const DF = CR.dragon, DR_FLY = [0, 1, 2, 3, 4, 5, 6, 7], DR_S = 1.45;
 function dragonStart(c) {
@@ -1354,7 +1397,7 @@ function physics(p, dt, control) {
   if (spd > 7.2 && p.y < 0.5 && free(p) && Math.random() < 0.7) FX.streak(p.x - p.vx * 0.06, 0.5 + Math.random() * 1.3, p.z + (Math.random() - 0.5) * 0.4, Math.sign(p.vx) || p.face);
 }
 function step(dt) {
-  FX.update(dt); BOLTS.update(dt); TRAIL.update(dt); dragonUpdate(dt); goalFireUpdate(dt);
+  FX.update(dt); BOLTS.update(dt); TRAIL.update(dt); dragonUpdate(dt); beastUpdate(dt); goalFireUpdate(dt);
   if (WOLF.on && G.state !== 'play') { WOLF.t += dt; if (WOLF.phase !== 'back') { WOLF.phase = 'back'; WOLF.t = 0; } else if (WOLF.t > 0.6) wolfEnd(); } PU.update(dt, performance.now() / 1000); updateLines(dt); updateStands(dt, performance.now() / 1000); WX.update(dt, performance.now() / 1000); ARENA.update(dt, performance.now() / 1000); G.shake = Math.max(0, G.shake - dt); G.flash = Math.max(0, G.flash - dt * 2.5);
   if (G.charge) { if (ball.owner !== captain || G.state !== 'play') G.charge = 0; else { G.charge += dt; if (G.charge > 1.1) press('Bup'); } }
   if (G.state === 'penExt') { draw(dt); return; }
@@ -1466,6 +1509,7 @@ function draw(dt) {
     else f = WF[WOLF_RUN[(performance.now() / 70 | 0) % WOLF_RUN.length]];
     w.holder.visible = w.blob.visible = w.sgrp.visible = true; w.show(f, p.face < 0); w.holder.position.set(p.x, 0, p.z); w.blob.position.set(p.x, 0.02, p.z); w.blob.scale.set(1.3, 0.7, 1);
     w.sgrp.position.set(p.x, 0.02, p.z); }
+  beastDraw();
   if (DRAGON.on && DRAGON.spr) { const D = DRAGON, d = D.spr, T = D.t; let f;
     if (T < 1.4) f = DF[DR_FLY[(T * 12 | 0) % DR_FLY.length]]; else if (T < 1.75) f = DF[8]; else if (T < 1.95) f = DF[9]; else if (T < 2.1) f = DF[11]; else if (T < 2.35) f = DF[12]; else if (T < 2.6) f = DF[13]; else f = DF[(T * 12 | 0) % 2 ? 14 : 4];
     d.holder.visible = d.blob.visible = true; d.show(f, D.dir < 0); d.holder.scale.setScalar(DR_S); d.holder.position.set(D.x, D.y, D.z); d.blob.position.set(D.x, 0.02, D.z); const k = Math.max(0.3, 2.6 - D.y * 0.12); d.blob.scale.set(k, k * 0.5, 1); }
@@ -1501,7 +1545,7 @@ const covered = () => ['pen', 'kapki', 'lace', 'caps', 'flip', 'bieg'].some((id)
 renderer.setAnimationLoop((now) => { if (!auto) return; if (covered()) { last = now; return; } const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; step(frozen ? 0 : dt); });
 placeKickoff(0); G.state = 'menu'; WX.set('leaves'); try { ARENA.set(localStorage.getItem('arena') || 'stadion'); } catch (e) { ARENA.set('stadion'); }
 window.GAME = {
-  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0 }; PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = HALF(); SFX.setSfx(!window.CFG || window.CFG.sfx !== false); G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = ARENA.weather() || (Math.random() < 0.5 ? 'rain' : 'leaves'); setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
+  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0 }; PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = HALF(); SFX.setSfx(!window.CFG || window.CFG.sfx !== false); G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = ARENA.weather() || (Math.random() < 0.5 ? 'rain' : 'leaves'); setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
   press, setCaptain, pick: (i) => doPick(i), pickMove,
   // a finger on a teammate takes control of him (not while you are the one with the ball)
   ctx() { const c = captain, has = ball.owner === c, air = !has && !ball.owner && Math.hypot(ball.x - c.x, ball.z - c.z) < 4.5 && ball.y > 0.5 && ball.y < 2.6;
@@ -1514,5 +1558,5 @@ window.GAME = {
     if (!best || best === captain) return false; captain = best; switchT = 2.2; SFX.menu(); G.ca = Math.max(G.ca, 0.3); FX.emit('curve', best.x, 0.4, best.z, 10, 3, 0.25, 4); return true; }, powers: POWERS, icons: PU.icons, arena(id) { ARENA.set(id); try { localStorage.setItem('arena', ARENA.id); } catch (e) {} }, get arenaId() { return ARENA.id; }, get arenas() { return ARENA.list; }, setStick(v) { stick = v; }, setDash(v) { padDash = v; }, quit() { frozen = false; G.state = 'menu'; MUSIC.stop(); PICK.open = false; ui.picker?.(null); }, sfx(on) { SFX.setSfx(on); }, freeze(v) { frozen = !!v; if (v) { keys.clear(); keyDash = false; } }, mute: () => SFX.toggle(),
   teams: TEAMS, frames: FR, images: [IMG_G, IMG_P], players, get captain() { return captain; }, get ball() { return ball; }, G,
 };
-window.__game = { goal: (t) => goalScored(t), pen: (t) => penaltyFor(t, players.find((q) => q.team === t && q.role === 'fwd')), G, ball, players, input, weather: (m) => { G.weather = m; setWeather(m); }, step(sec, fps = 30) { auto = false; for (let i = 0; i < Math.round(sec * fps); i++) step(1 / fps); }, resume() { last = performance.now(); auto = true; }, keys };
+window.__game = { goal: (t) => goalScored(t), pen: (t) => penaltyFor(t, players.find((q) => q.team === t && q.role === 'fwd')), G, ball, players, input, beast: (k) => beastStart(captain, k), weather: (m) => { G.weather = m; setWeather(m); }, step(sec, fps = 30) { auto = false; for (let i = 0; i < Math.round(sec * fps); i++) step(1 / fps); }, resume() { last = performance.now(); auto = true; }, keys };
 window.GAME_READY?.();
