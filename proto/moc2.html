@@ -31,7 +31,7 @@ button.on { background: #1a9a3a; box-shadow: inset -3px -3px 0 #0a5a1a, inset 3p
 <script>
 (() => {
 'use strict';
-const cv = document.getElementById('cv'), g = cv.getContext('2d');
+const cv = document.getElementById('cv'); let g = cv.getContext('2d');
 let W = 0, H = 0, DPR = 1;
 const resize = () => { DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; g.setTransform(DPR, 0, 0, DPR, 0, 0); };
 addEventListener('resize', resize); resize();
@@ -73,6 +73,7 @@ function goalFront(l) { const gx = l.goal, gh = l.ph * 0.95; g.fillStyle = '#000
 function drawBall(x, y, r, spin) { g.save(); g.translate(x, y); g.rotate(spin); g.fillStyle = '#fff'; g.beginPath(); g.arc(0, 0, r, 0, 7); g.fill(); g.fillStyle = '#141414'; for (let k = 0; k < 5; k++) { const a = k * 1.257; g.beginPath(); g.arc(Math.cos(a) * r * 0.62, Math.sin(a) * r * 0.62, r * 0.24, 0, 7); g.fill(); } g.beginPath(); g.arc(0, 0, r * 0.26, 0, 7); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, r, 0, 7); g.stroke(); g.restore(); }
 function sheetFrame(im, n, i, x, y, h) { if (!im.complete || !im.naturalWidth) return; const fw = im.naturalWidth / n, k = h / im.naturalHeight; g.imageSmoothingEnabled = false; g.drawImage(im, (i | 0) * fw, 0, fw, im.naturalHeight, x - fw * k / 2, y - h, fw * k, h); g.imageSmoothingEnabled = true; }
 function powerFrame(p, i, l) { const im = p.sheet; if (!im.complete || !im.naturalWidth) return null; const fw = im.naturalWidth / p.n, fh = im.naturalHeight, k = l.big / (p.fy), x = l.px - p.ax * k, y = l.ground - p.fy * k;
+  if (!p.noShadow) { const sw = (power === 'smok' ? 130 : 80) * k, cx = l.px + (power === 'smok' ? -20 : 10) * k; const gr = g.createRadialGradient(cx, l.ground - 2, 0, cx, l.ground - 2, sw); gr.addColorStop(0, 'rgba(10,20,10,.55)'); gr.addColorStop(0.7, 'rgba(10,20,10,.25)'); gr.addColorStop(1, 'rgba(10,20,10,0)'); g.save(); g.translate(cx, l.ground - 2); g.scale(1, 0.18); g.translate(-cx, -(l.ground - 2)); g.fillStyle = gr; g.beginPath(); g.arc(cx, l.ground - 2, sw, 0, 7); g.fill(); g.restore(); }
   g.drawImage(im, (i | 0) * fw, 0, fw, fh, x, y, fw * k, fh * k); return { ex: x + fw * k - 2, ey: y + p.ey * k, k, x, y }; }
 function drawFx(l) { if (!fx) return; const F = FX[fx.m], im = F.sheet, i = Math.floor((now - fx.t) / F.dt); if (i >= F.n) { fx = null; return; } if (!im.complete || !im.naturalWidth) return;
   const fw = im.naturalWidth / F.n, h = l.big * 1.05, k = h / im.naturalHeight; g.imageSmoothingEnabled = false; g.drawImage(im, i * fw, 0, fw, im.naturalHeight, l.px - fw * k / 2 + (fx.m === 'smok' ? l.big * 0.12 : 0), l.ground - h + 6, fw * k, h); g.imageSmoothingEnabled = true; }
@@ -80,6 +81,17 @@ function drawFx(l) { if (!fx) return; const F = FX[fx.m], im = F.sheet, i = Math
 function bolt(f, l, fi) { if (power !== 'robot' || fi > 3.5 || !f) return; const x = f.x + 188 * f.k, w = (20 + Math.sin(now * 50) * 5) * f.k * (fi > 2.5 ? 3.5 - fi : 1), y1 = f.y + 4;
   g.globalCompositeOperation = 'lighter'; const gr = g.createLinearGradient(x - w * 2, 0, x + w * 2, 0); gr.addColorStop(0, '#2a8aff00'); gr.addColorStop(0.3, '#2a8affaa'); gr.addColorStop(0.45, '#5af0ffee'); gr.addColorStop(0.5, '#ffffff'); gr.addColorStop(0.55, '#5af0ffee'); gr.addColorStop(0.7, '#2a8affaa'); gr.addColorStop(1, '#2a8aff00');
   g.fillStyle = gr; g.fillRect(x - w * 2, 0, w * 4, y1 + 40 * f.k); g.strokeStyle = '#ffffffcc'; g.lineWidth = 2; g.beginPath(); let yy = 0, xx = x; g.moveTo(xx, yy); while (yy < y1) { yy += 18; xx = x + (Math.random() - 0.5) * w * 2.5; g.lineTo(xx, yy); } g.stroke(); g.globalCompositeOperation = 'source-over'; }
+// glitch with colour aberration: draws a callback into an offscreen canvas, then paints it back in shifted slices with red / cyan ghosts
+const OFF = document.createElement('canvas'), OG = OFF.getContext('2d'), TIN = document.createElement('canvas'), TG = TIN.getContext('2d');
+function glitchDraw(drawFn, amt) { if (OFF.width !== cv.width || OFF.height !== cv.height) { OFF.width = TIN.width = cv.width; OFF.height = TIN.height = cv.height; }
+  OG.setTransform(1, 0, 0, 1, 0, 0); OG.clearRect(0, 0, OFF.width, OFF.height); OG.setTransform(DPR, 0, 0, DPR, 0, 0); const keep = g; g = OG; drawFn(); g = keep;
+  const sh = amt * 18;
+  for (const [col, dx] of [['#ff2a4a', -sh], ['#2affff', sh]]) { TG.setTransform(1, 0, 0, 1, 0, 0); TG.clearRect(0, 0, TIN.width, TIN.height); TG.globalCompositeOperation = 'source-over'; TG.drawImage(OFF, 0, 0); TG.globalCompositeOperation = 'source-in'; TG.fillStyle = col; TG.fillRect(0, 0, TIN.width, TIN.height);
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 0.55 * Math.min(1, amt * 2); g.globalCompositeOperation = 'lighter'; g.drawImage(TIN, dx * DPR, 0); g.restore(); }
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); const n = 18, bh = Math.ceil(OFF.height / n);
+  for (let i = 0; i < n; i++) { const off = Math.random() < amt * 0.8 ? (Math.random() - 0.5) * amt * 90 * DPR : 0; if (Math.random() < amt * 0.25) continue; g.drawImage(OFF, 0, i * bh, OFF.width, bh, off, i * bh, OFF.width, bh); }
+  g.restore();
+  if (amt > 0.3) for (let i = 0; i < 4; i++) { g.fillStyle = ['#ff2a4a', '#2affff', '#ffffff'][i % 3]; g.globalAlpha = 0.5; g.fillRect(Math.random() * W, Math.random() * H, 20 + Math.random() * 120, 2 + Math.random() * 5); } g.globalAlpha = 1; }
 // ---- particles ----
 const spark = (x, y, n, cols, sp = 200, life = 0.8, sz = 4, grav = 0) => { for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, v = sp * (0.3 + Math.random()); parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, l: life * (0.5 + Math.random() * 0.5), L: life, c: cols[i % cols.length], s: sz * (0.5 + Math.random()), grav }); } };
 function drawParts(dt) { for (const p of parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.grav * dt; p.vx *= 0.98; p.l -= dt; } parts = parts.filter((p) => p.l > 0);
@@ -133,14 +145,11 @@ function frame(t) { requestAnimationFrame(frame); const dt = Math.min(0.05, (t -
       if (fe > 0.2) { drawBall(bx, by, l.ph * 0.09, ball.spin); spark(bx - 10, by, 2, pw.col, 80, 0.4, 5); }
       if (ball.u >= 1 && !ball.hit) { ball.hit = true; net = 1; shake = 0.5; flash = 0.6; spark(l.goal + W * 0.03, l.ground - l.ph * 0.5, 140, pw.col.concat(['#ffffff', '#ffe14a']), W * 0.6, 1.4, 7, 300); noise(1, 0.16, 1500); [523, 659, 784, 1046].forEach((fq, i) => setTimeout(() => tone(fq, fq, 0.2, 'square', 0.05), i * 110)); msg = 'GOOOL!'; msgT = 2.4; }
       if (fe > 2.4) { setState('back'); noise(0.8, 0.1, 2500); tone(300, 1200, 0.5, 'triangle', 0.06); } } }
-  else if (st === 'back') { const k = Math.min(1, e / 1.2); const pwc = pw.col;
-    // the creature shrinks into a spinning ball of light that bursts back into the player
-    if (k < 0.55) { g.save(); g.globalAlpha = 1 - k / 0.55; powerFrame(pw, pw.loop[0], l); g.restore(); }
-    const cx = l.px, cy = l.ground - l.ph * 0.6, rr = l.big * 0.5 * (1 - Math.min(1, k / 0.6));
-    g.globalCompositeOperation = 'lighter'; for (let i = 0; i < 24; i++) { const a = now * 8 + i * 0.26, r = rr + 6; g.fillStyle = pwc[i % 3]; g.fillRect(cx + Math.cos(a) * r, cy + Math.sin(a) * r * 0.8, 6, 6); } g.globalCompositeOperation = 'source-over';
-    if (k > 0.6 && !ball.back) { ball.back = true; flash = 0.8; spark(cx, cy, 90, ['#ffffff', '#ffe14a'].concat(pwc), W * 0.4, 1, 5); for (let i = 0; i < 16; i++) parts.push({ x: cx, y: cy, vx: Math.cos(i * 0.39) * W * 0.25, vy: Math.sin(i * 0.39) * W * 0.25, l: 0.6, L: 0.6, c: '#ffffff', s: 8, grav: 0 }); tone(800, 1600, 0.3, 'square', 0.05); }
-    if (k > 0.6) sheetFrame(P.turn, P.tn, ((e - 0.72) * 14) % P.tn, l.px, l.ground, l.ph);
-    if (e > 3.2) setState('done'); }
+  else if (st === 'back') { const k = Math.min(1, e / 1.3);
+    // the creature breaks up into glitches, a flicker swaps it for the player, then the player's glitch settles
+    if (k < 0.5) { const amt = 0.2 + k * 1.6; glitchDraw(() => powerFrame(pw, pw.loop[0] + ((e * 12) % 2 | 0), l), amt); if (Math.random() < 0.3) tone(200 + Math.random() * 1500, 100, 0.05, 'square', 0.03); }
+    else { const amt = Math.max(0, 1 - (k - 0.5) * 2); if (!ball.back) { ball.back = true; flash = 0.35; noise(0.25, 0.1, 4000); tone(1200, 300, 0.25, 'square', 0.05); } glitchDraw(() => sheetFrame(P.turn, P.tn, 0, l.px, l.ground, l.ph), amt); if (amt > 0.2 && Math.random() < 0.3) tone(300 + Math.random() * 1500, 120, 0.04, 'square', 0.03); }
+    if (e > 2.2) setState('done'); }
   else if (st === 'done') sheetFrame(P.turn, P.tn, 0, l.px, l.ground, l.ph);
   if (st === 'emerge') drawFx(l);
   goalFront(l); net = Math.max(0, net - dt * 0.8);
