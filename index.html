@@ -691,7 +691,7 @@
   document.querySelectorAll('#modes .mb, #modes .mback').forEach((b) => b.addEventListener('click', () => pickMode(b.dataset.m)));
   // keepy-uppy: a dot appears, you have about a second to tap it; every tap is a touch on the ball
   const K = (() => {
-    let FW = 16; const HDJ = { 10: { n: 18, step: 3, ar: '206 / 307' }, 14: { n: 9, step: 3, ar: '215 / 313' } }; let J = null, cur = 0, seqT = 0; const jug = $('jug'), dots = $('kdots'); let score = 0, best = 0, alive = false, timer = 0, AC = null, airT = 0, pairI = 0;
+    let FW = 16; const HDJ = {}; let J = null, cur = 0, seqT = 0; const jug = $('jug'), dots = $('kdots'); let score = 0, best = 0, alive = false, timer = 0, AC = null, airT = 0, pairI = 0;
     try { best = +localStorage.getItem('kapki_best') || 0; } catch (e) {}
     const PAIRS = [[3, 5], [6, 4], [8, 10], [11, 9], [12, 14], [15, 13], [4, 6], [9, 11]];   // a touch, then the ball in the air
     const frame = (i) => { jug.style.backgroundPosition = `${(i / (FW - 1)) * 100}% 0`; };

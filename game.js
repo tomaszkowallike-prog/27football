@@ -955,7 +955,7 @@ const BEAST = { on: false, kind: 'smok', t: 0, ph: 'in', c: null, dir: 1, spr: {
 function beastStart(c, kind) {
   const B = BEAST_DEF[kind]; if (!BEAST.spr[kind]) { const s2 = makeSprite(B.im(), { unit: B.h / B.fy }); s2.sgrp.visible = false; s2.holder.visible = s2.blob.visible = false; BEAST.spr[kind] = s2; }
   Object.assign(BEAST, { on: true, kind, t: 0, ph: 'in', c, dir: Math.sign(goalX(c.team)), launched: false });
-  c.face = BEAST.dir; ball.owner = c; c.vx = c.vz = 0; c.vy = 0; c.y = 0; G.state = 'dragon'; G.ca = 1.6; SFX.charge(1);
+  c.face = BEAST.dir; ball.owner = c; c.vx = c.vz = 0; c.vy = 0; c.y = 0; c.st = 'run'; c.act = null; c.t = 0; G.state = 'dragon'; G.ca = 1.6; SFX.charge(1);
   ui.banner?.(kind === 'smok' ? 'SMOK!' : 'ROBOT!', c.T, 'super', c); shout(c, kind === 'smok' ? 'Smoku!' : 'Robot, start!');
   for (const q of players) if (q.team !== c.team) { q.vx *= 0.2; q.vz *= 0.2; }
 }
@@ -1005,7 +1005,7 @@ const MAGIC = (() => {
   const end = () => { M.on = false; cv.style.display = 'none'; portals.forEach((m) => (m.visible = false)); beam.visible = false; if (G.state === 'dragon') G.state = 'play'; };
   function start(c, kind) {
     Object.assign(M, { on: true, kind, t: 0, ph: 'a', c, dir: Math.sign(goalX(c.team)), hit: [], spin: 0 });
-    c.vx = c.vz = 0; c.vy = 0; c.y = 0; ball.owner = c; G.state = 'dragon'; fit();
+    c.vx = c.vz = 0; c.vy = 0; c.y = 0; c.st = 'run'; c.act = null; c.t = 0; ball.owner = c; G.state = 'dragon'; fit();
     for (const q of players) if (q.team !== c.team) { q.vx *= 0.2; q.vz *= 0.2; }
     if (kind === 'portal') { ui.banner?.('PORTALE!', c.T, 'super', c); shout(c, 'Losujemy!'); SFX.portal(); ball.owner = null;
       M.px = [goalX(c.team) - M.dir * 7, goalX(1 - c.team) + M.dir * 7]; M.good = Math.random() < 0.6; M.sel = 0; M.nextTick = 0; M.tick = 0.07; }
