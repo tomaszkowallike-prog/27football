@@ -16,6 +16,7 @@
   const cv = $('penCv'); let g = cv.getContext('2d'); const G0 = g;
   let W = 640; const H = 360;
   const img = (src) => { const i = new Image(); i.src = src; return i; };
+  const GFIRE = img('fx_goalfire.png?v=1');   // the burning-goal GIF, cut: 30 frames of 240x145, posts at 24.5/215, bar 56, ground 142.5
   const ATL = img('pen.png'), BG = img('kapki_bg.jpg'); let M = null;
   fetch('pen.json').then((r) => r.json()).then((j) => (M = j));
 
@@ -132,7 +133,7 @@
     ball: null, keeper: null, result: '', banner: '', bannerT: 0, flash: 0, shake: 0, netFire: 0, rings: [] };
   const KICKS = 5;
   const reset = () => { Object.assign(S, { round: 0, us: [], them: [] }); };
-  const newKick = () => { Object.assign(S, { phase: 'intro', t: 0, drag: false, stopV: null, stopH: null, power: null, ball: null, result: '', netFire: 0, rings: [], dotV: 0, dotH: 0, aim: [0, 0.45] });
+  const newKick = () => { Object.assign(S, { phase: 'intro', t: 0, drag: false, stopV: null, stopH: null, power: null, ball: null, result: '', netFire: 0, gfT: null, rings: [], dotV: 0, dotH: 0, aim: [0, 0.45] });
     S.keeper = { st: 'idle', side: 0, high: false, t: 0, save: false, x: 0, y: 0 }; bolts.length = 0; SND.whistle(); };
   // the dots ride the cross at a steady speed, back and forth
   const CROSS_V = 58, CROSS_H = 140, PERFECT = 7;
@@ -228,7 +229,7 @@
   const arrive = () => { const B = S.ball; B.gone = true; S.phase = 'after'; S.t = 0;
     const inside = B.tx > L.gx0 + 3 && B.tx < L.gx1 - 3 && B.ty > L.gtop + 3 && B.ty < L.gbot;
     if (!inside) { S.result = 'miss'; SND.groan(); banner(B.ty <= L.gtop + 3 ? 'NAD POPRZECZKĄ!' : 'OBOK!', '#ff8a6a'); return; }
-    S.result = 'goal'; SND.net(); SND.crowd(); banner('GOOOL!', '#3fe060'); S.shake = 0.35; B.inNet = [B.tx, B.ty];
+    S.result = 'goal'; S.gfT = 0; SND.net(); SND.crowd(); banner('GOOOL!', '#3fe060'); S.shake = 0.35; B.inNet = [B.tx, B.ty];
     emit(B.tx, B.ty, 26, B.kind ? POWERS[B.kind].fx : 'grass'); for (let i = 0; i < 40; i++) P.push({ x: Math.random() * W, y: -10, vx: (Math.random() - 0.5) * 60, vy: 40 + Math.random() * 80, life: 2.2, kind: 'confetti' });
     if (B.kind === 'smok') { S.netFire = 3.2; SND.boom(); S.flash = 1; }
     if (B.kind === 'zap') { for (let i = 0; i < 7; i++) bolts.push({ x: L.gx0 + 10 + Math.random() * (L.gx1 - L.gx0 - 20), life: 1.4 }); S.flash = 1; }
@@ -337,7 +338,11 @@
     drawPitch(); drawGoalBack();
     const B = S.ball, behind = B && B.inNet;
     if (behind) drawBall(B.inNet[0], B.inNet[1], 3.6, B.kind ? POWERS[B.kind].col : null);
-    drawKeeper(); drawGoalFront(); drawBolts();
+    drawKeeper(); drawGoalFront();
+    if (S.gfT != null && GFIRE.complete) { S.gfT += 1 / 60; const T = S.gfT, f = T < 0.8 ? 4 + (T / 0.8 * 8 | 0) : 12 + ((T - 0.8) * 10 | 0) % 18;
+      const sx = (L.gx1 - L.gx0) / 190.5, sy = (L.gbot - L.gtop) / 86.5; g.imageSmoothingEnabled = false;
+      g.drawImage(GFIRE, f * 240, 0, 240, 145, L.gx0 - 24.5 * sx, L.gtop - 56 * sy, 240 * sx, 145 * sy); }
+    drawBolts();
     for (const r of S.rings) if (r.t > 0) { g.strokeStyle = `rgba(200,110,255,${1 - r.t})`; g.lineWidth = 4; g.beginPath(); g.ellipse(r.x, r.y, 20 + r.t * 160, 8 + r.t * 60, 0, 0, 7); g.stroke(); }
     drawShooter();
     if (S.phase === 'cross1' || S.phase === 'cross2' || S.phase === 'judge') drawCross();

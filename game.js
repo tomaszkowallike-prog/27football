@@ -1155,8 +1155,24 @@ function dragonUpdate(dt) {
   if (D.t > 4.2) { D.on = false; D.spr.holder.visible = D.spr.blob.visible = false; }
 }
 // a goal on fire: flames along the posts, the bar and the net for a few seconds
+// the burning goal: flames cut from the user's GIF, billboards standing along the crossbar, the posts and the goal line
+const GFIRE = (() => {
+  const base = new THREE.TextureLoader().load('./fx_flame.png?v=1'); base.magFilter = base.minFilter = THREE.NearestFilter; base.colorSpace = THREE.SRGBColorSpace;
+  const pts = []; const W2 = GOAL_W / 2;
+  for (let k = 0; k <= 5; k++) pts.push([0, GOAL_H, -W2 + k * GOAL_W / 5, 1.5]);                 // crossbar
+  for (const z of [-W2, W2]) for (const y of [0.1, 1.1, 2.2]) pts.push([0, y, z, 1.25]);         // posts
+  for (let k = 1; k < 5; k++) pts.push([0, 0.05, -W2 + k * GOAL_W / 5, 1.1]);                     // goal line
+  for (let k = 0; k <= 3; k++) pts.push([1, GOAL_H, -W2 + k * GOAL_W / 3, 1.2]);                 // back of the net
+  const spr = pts.map(([back, y, z, sc], i) => { const t = base.clone(); t.repeat.set(1 / 30, 1); t.needsUpdate = true;
+    const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, alphaTest: 0.4, depthWrite: false, fog: false })); m.center.set(0.5, 0.12); m.scale.set(sc * 1.6, sc * 1.6, 1);
+    m.visible = false; m.renderOrder = 5; scene.add(m); toPlay(m); return { m, t, back, y, z, ph: (i * 7) % 18 }; });
+  return { spr, T: 0 }; })();
 function goalFireUpdate(dt) {
-  const F = G.goalFire; if (!F || F.t <= 0) return; F.t -= dt; const s = Math.sign(F.x), n = F.t > 1 ? 7 : 3;
+  const F = G.goalFire; if (!F || F.t <= 0) { for (const q of GFIRE.spr) q.m.visible = false; return; } if (F.t >= 5.5) GFIRE.T = 0; F.t -= dt; GFIRE.T += dt;
+  { const T = GFIRE.T, sg = Math.sign(F.x);
+    for (const q of GFIRE.spr) { const f = T < 0.8 ? 4 + (T / 0.8 * 8 | 0) : F.t < 0.6 ? 29 : 12 + (((T - 0.8) * 10 | 0) + q.ph) % 18; q.t.offset.x = f / 30;
+      q.m.visible = true; q.m.position.set(F.x + sg * q.back * GOAL_D, q.y, q.z); } }
+  const s = Math.sign(F.x), n = F.t > 1 ? 2 : 1;
   for (let i = 0; i < n; i++) { const r = Math.random(); let x = F.x, y, z;
     if (r < 0.3) { z = (Math.random() < 0.5 ? -1 : 1) * GOAL_W / 2; y = Math.random() * GOAL_H; }
     else if (r < 0.55) { z = (Math.random() - 0.5) * GOAL_W; y = GOAL_H; }
