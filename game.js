@@ -9,12 +9,12 @@ import extraArenas from './arenas.js?v=15';
 const FR = await (await fetch('./frames.json')).json();
 // the new animated boys (cut from the GIFs): one frame map, a green and a red atlas; ?old=1 brings the old pixel boys back
 const HD = !/[?&]old=1/.test(location.search);
-if (HD) Object.assign(FR, await (await fetch('./frames_hd_g.json?v=3')).json());
+if (HD) Object.assign(FR, await (await fetch('./frames_hd_g.json?v=4')).json());
 const POSE = FR.poses;
 const loadImg = (src) => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
 const [IMG_G, IMG_P, IMG_C] = await Promise.all([loadImg('./atlas_green.png'), loadImg('./atlas_purple.png'), loadImg('./creatures.png')]);
 const [IMG_SMOK, IMG_ROB, IMG_SAT, IMG_EARTH] = await Promise.all([loadImg('./moc_smok.png?v=1'), loadImg('./moc_robot.png?v=1'), loadImg('./space_sat.png?v=1'), loadImg('./space_earth.png?v=1')]);
-const [IMG_HG, IMG_HR] = HD ? await Promise.all([loadImg('./atlas_hd_g.png?v=2'), loadImg('./atlas_hd_p.png?v=1')]) : [null, null];
+const [IMG_HG, IMG_HR] = HD ? await Promise.all([loadImg('./atlas_hd_g.png?v=3'), loadImg('./atlas_hd_p.png?v=2')]) : [null, null];
 const HD_MAP = { 0: { 7: 'h7', 10: 'h10', 14: 'h14', 27: 'h27' }, 1: { 21: 'h7', 17: 'h10', 14: 'h14', 11: 'h27' } };
 const CR = await (await fetch('./creatures.json')).json();   // wolf and dragon frames [x, y, w, h, anchorX, feet]
 const EX = await (await fetch('./extras.json')).json();
@@ -1299,7 +1299,7 @@ function jump(p) { if (!grounded(p)) return; p.jumpBall = ball.owner === p; p.st
 function dive(p, tx, tz) { const dx = tx - p.x, dz = tz - p.z, d = Math.hypot(dx, dz) || 1; p.st = 'dive'; p.t = 0.75; p.vx = dx / d * 12; p.vz = dz / d * 12; p.vy = 4; p.y = 0.01; p.face = Math.sign(dx) || p.face; p.hit = false; }
 function tackle(p, kind) {   // 'slide' takes the ball; 'shoulder' knocks the man over
   p.st = kind; p.t = kind === 'slide' ? 0.5 : 0.3; p.hit = false;
-  const sx = input.x || p.face, sz = input.z, l = Math.hypot(sx, sz) || 1, ai = p !== captain;
+  const ai = p !== captain, sx = ai ? p.face : (input.x || p.face), sz = ai ? 0 : input.z, l = Math.hypot(sx, sz) || 1;
   let dx = sx / l, dz = sz / l;
   if (ai && ball.owner) { const d = dist(ball.owner, p) || 1; dx = (ball.owner.x - p.x) / d; dz = (ball.owner.z - p.z) / d; }
   const s = kind === 'slide' ? 12 : 10; p.vx = dx * s; p.vz = dz * s; p.face = Math.sign(dx) || p.face;
@@ -1496,7 +1496,11 @@ function goalScored(team) {
   G.score[team]++; if (team === 0 && ball.sup) G.supGoals = (G.supGoals || 0) + 1; G.state = 'goal'; G.pause = 3.2; const shooter = ball.last; ball.sup = null; ball.vx *= 0.15; ball.vz *= 0.15; ball.x = Math.sign(ball.x) * (PX + 1.2);
   SFX.goal(); VIB(team === 0 ? [60, 40, 120] : 200); G.shake = 0.5; G.cheer = team === 0 ? 2.5 : 1.2; G.flares = team === 0 ? 9 : 4; ui.score?.(G); ui.banner?.('GOAL!', TEAMS[team], 'goal');
   for (let i = 0; i < 4; i++) FX.emit(team === 0 ? 'goal' : 'goal2', ball.x, 1.5, ball.z, 14, 5, 0.3, 8);
-  for (const p of players) if (p.team === team && !p.keeper && p.st !== 'down') { p.st = 'cheer'; p.t = 3; p.vx = p.vz = 0; }
+  // after a goal nobody runs on into the stands: the scorers cheer and hop, the others stand, turn round or walk back to the middle
+  for (const p of players) { if (p.st === 'down') { p.vx *= 0.3; p.vz *= 0.3; continue; }
+    p.vx = p.vz = 0; p.act = null; if (p.st !== 'jump') p.st = 'run';
+    if (p.team === team && !p.keeper) { p.st = 'cheer'; p.t = 3.4; p.goalMode = 'hop'; }
+    else p.goalMode = p.keeper ? 'stand' : ['stand', 'turn', 'walk'][(Math.random() * 3) | 0]; }
   const who = shooter && shooter.team === team ? shooter : players.find((p) => p.team === team && p.role === 'fwd'); shout(who, 'Yeah!'); VOICE.say(who, 'goal');
   G.kickoff = 1 - team;
 }
@@ -1579,7 +1583,13 @@ function step(dt) {
   }
   if (G.state === 'goal' || G.state === 'kickoff' || G.state === 'half') {
     G.pause -= dt;
-    if (G.state === 'goal') { ball.x += ball.vx * dt; ball.z += ball.vz * dt; for (const p of players) physics(p, dt, false); }
+    if (G.state === 'goal') { ball.x += ball.vx * dt; ball.z += ball.vz * dt;
+      for (const p of players) {
+        if (p.goalMode === 'hop' && p.st === 'cheer' && p.y <= 0 && Math.random() < dt * 1.8) { p.vy = 7.5; p.y = 0.01; }
+        else if (p.goalMode === 'turn' && p.st === 'run' && Math.random() < dt * 2) p.face = -p.face;
+        else if (p.goalMode === 'walk' && p.st === 'run') { steer(p, 0, p.z * 0.6, dt, 2.6); p.face = Math.sign(p.vx) || p.face; }
+        else if (p.st === 'run') { p.vx *= 0.8; p.vz *= 0.8; }
+        physics(p, dt, false); } }
     if (G.pause <= 0) {
       if (G.state === 'goal' || G.state === 'half') { placeKickoff(G.kickoff); G.state = 'kickoff'; G.pause = 1.2; }
       else { G.state = 'play'; SFX.whistle(); G.safe = 1.5; const k = players.find((p) => p.team === G.kickoff && p.role === 'fwd'); ball.owner = k; k.hold = 0; }
@@ -1625,7 +1635,7 @@ function frameOf(p) {
   if (p.st === 'down') return { f: p.pose[p.lie][0], flip, flat: true };
   if (p.st === 'getup') return { f: pick(p.pose.getup, 1 - p.t / 0.45), flip };
   if (p.st === 'dizzy') return { f: p.pose.dizzy[(t * 4 | 0) % 2], flip };
-  if (p.st === 'cheer') return { f: p.pose.cheer[(t * 5 + p.id | 0) % 3], flip };
+  if (p.st === 'cheer') return p.y > 0.05 ? { f: p.pose.jump[Math.min(p.pose.jump.length - 1, 1)], flip } : { f: p.pose.cheer[(t * 5 + p.id | 0) % 3], flip };
   if (p.keeper) {
     const kf = p.T.dir < 0;
     if (p.st === 'gkdive') return { f: p.pose.gkDive[ball.owner === p ? 0 : 1], flip: kf, flat: true };
@@ -1634,7 +1644,7 @@ function frameOf(p) {
     return { f: p.pose.gkReady[0], flip: kf, hop: sp > 0.5 ? Math.abs(Math.sin(t * 14)) * 0.12 : 0 };
   }
   if (p.st === 'dive') return { f: p.y > 0.2 ? p.pose.dive[1] : p.t > 0.5 ? p.pose.dive[0] : p.pose.dive[2], flip, flat: p.y > 0.2 || p.t <= 0.5 };
-  if (p.st === 'slide') return A.hd ? { f: pick(A.slide, Math.min(0.999, 1 - p.t / 0.5)), flip } : { f: A.slide ? A.slide[0] : p.pose.dive[2], flip, flat: !A.slide };
+  if (p.st === 'slide') return A.hd ? { f: pick(A.slide, Math.min(0.999, 1 - p.t / 0.5)), flip: A.slideFlip ? !flip : flip } : { f: A.slide ? A.slide[0] : p.pose.dive[2], flip, flat: !A.slide };
   if (p.st === 'shoulder') return { f: p.pose.dive[0], flip };
   if (p.st === 'dropkick') return { f: p.pose.dive[1], flip, flat: true };
   if (p.st === 'jump') {
