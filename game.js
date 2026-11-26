@@ -1,7 +1,7 @@
-// CUIAVIA SOCCER: a 5-a-side arcade football game after the old Kunio-kun football games. The pitch and the stadium are
+// PIXELS SOCCER: a 5-a-side arcade football game after the old Kunio-kun football games. The pitch and the stadium are
 // 3D; the players are the user's pixel-art sprites, standing in it as flat figures that always face the camera, seen
 // from high up as in the original. The frame is rendered small and blown up without smoothing (8-bit), then a
-// tilt-shift pass blurs its top and bottom. You steer the Cuiavia player nearest the ball (a yellow arrow over his head).
+// tilt-shift pass blurs its top and bottom. You steer the Pixels player nearest the ball (a yellow arrow over his head).
 import * as THREE from 'three';
 import extraArenas from './arenas.js?v=15';
 
@@ -26,7 +26,7 @@ const UNIT = 2.5 / 46;                  // world units per sprite pixel (a playe
 const CAM_EL = 0.5, CAM_YAW = 0.22;     // a broadcast camera: ~29 degrees down, turned a little, the stands in view
 const LEAN = 0.3;                       // the sprites lean back a little toward it
 const TEAMS = [
-  { name: 'CUIAVIA', short: 'CUI', img: IMG_G, color: '#3fbf55', dir: 1,
+  { name: 'PIXELS', short: 'PIX', img: IMG_G, color: '#3fbf55', dir: 1,
     squad: [
       { sheet: '10', num: 1, name: 'MAREK', role: 'gk', pos: 'GK', keeper: true },
       // stats 1-5: st shot, pa pass, dr dribble, ob defence, sp speed; the captain chosen in the locker room plays in the middle
@@ -204,10 +204,10 @@ const PITCH = {}, TOWN = [], STANDS = [];
 }
 // boards round the pitch, the stand on the far side, the town behind it
 const boardTex = (txt, bg, fg) => tex(96, 12, (g) => { g.fillStyle = bg; g.fillRect(0, 0, 96, 12); g.fillStyle = fg; g.font = 'bold 9px "Pixelify Sans", monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, 48, 6.5); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(0, 10, 96, 2); });
-const BOARDS = [['CUIAVIA', '#1d1f22', '#3fbf55'], ['INOWROCŁAW', '#3fbf55', '#1d1f22'], ['KUJAWY', '#f4ecd6', '#1d1f22'], ['FIOLETOWI', '#6b3fa8', '#f4ecd6'], ['SOLANKI', '#2b6cc4', '#f4ecd6'], ['GOL!', '#e2a73f', '#1d1f22']];
+const BOARDS = [['PIXELS', '#1d1f22', '#3fbf55'], ['INOWROCŁAW', '#3fbf55', '#1d1f22'], ['KUJAWY', '#f4ecd6', '#1d1f22'], ['FIOLETOWI', '#6b3fa8', '#f4ecd6'], ['SOLANKI', '#2b6cc4', '#f4ecd6'], ['GOL!', '#e2a73f', '#1d1f22']];
 for (let i = 0; i < 8; i++) { const [t, b, f] = BOARDS[i % BOARDS.length]; const m = new THREE.Mesh(new THREE.BoxGeometry(8, 1.1, 0.3), [lam({ color: '#333' }), lam({ color: '#333' }), lam({ color: '#333' }), lam({ color: '#333' }), lam({ map: boardTex(t, b, f) }), lam({ color: '#333' })]); m.position.set(-31.5 + i * 9, 0.55, -PZ - 3); m.castShadow = true; scene.add(m); }
 {
-  // the stands: stepped tiers of seats, each tier's face printed with a row of supporters (Cuiavia green and black,
+  // the stands: stepped tiers of seats, each tier's face printed with a row of supporters (Pixels green and black,
   // the visitors in purple, neutrals); a stand on every side, the near one at the bottom of the frame, out of focus
   const nS = scene.children.length;
   const SKINS = ['#f1c9a0', '#e3b088', '#c98f62', '#8a5a3a', '#f6d7b8'], SHIRTS = ['#1d1f22', '#3fbf55', '#1d1f22', '#3fbf55', '#6b3fa8', '#a46ee8', '#f4ecd6', '#c84b3a', '#2b6cc4', '#e2a73f', '#7a7f88'];
@@ -1266,7 +1266,7 @@ function setupPenalty() {
   }
   if (P.team === 0) captain = P.taker;
   G.state = 'penAim'; G.penT = 0; FX.clear();
-  // Cuiavia's own penalties are taken in the behind-the-taker view (pen.js); the match waits for the result
+  // Pixels's own penalties are taken in the behind-the-taker view (pen.js); the match waits for the result
   if (P.team === 0 && window.PEN) { G.state = 'penExt'; window.PEN.single((goal) => {
     const kp = players.find((q) => q.keeper && q.team === 1);
     if (goal) { Object.assign(ball, { x: goalX(0) + 0.8, z: (Math.random() - 0.5) * 6, y: 0.6, vx: 0, vz: 0, vy: 0, owner: null, last: P.taker }); G.state = 'play'; goalScored(0); }
@@ -1704,7 +1704,9 @@ renderer.setAnimationLoop((now) => { if (!auto) return; if (covered()) { last = 
 placeKickoff(0); G.state = 'menu'; WX.set('leaves'); try { ARENA.set(localStorage.getItem('arena') || 'stadion'); } catch (e) { ARENA.set('stadion'); }
 window.GAME = {
   start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0 }; G.inv2 = {}; G.supGoals = 0;
-    { const pk = PERK(); for (const p of players) { if (p.spd0 == null) p.spd0 = p.spd; p.spd = p.spd0 * (p.team === 0 && pk.speed ? pk.speed : 1); }
+    { const pk = PERK(); for (const p of players) { if (p.spd0 == null) p.spd0 = p.spd;
+        if (p.team === 0 && p.stats && window.LEVELS) { const l = window.LEVELS(p.num), v = (i) => 2 + l[i] * 0.6;   // level 0 plays like a 2, level 5 like a 5
+          p.stats = { st: v(0), pa: v(1), dr: v(2), ob: v(3), sp: v(4) }; p.spd0 = 0.9 + p.stats.sp * 0.035; } p.spd = p.spd0 * (p.team === 0 && pk.speed ? pk.speed : 1); }
       if (pk.card) { const ks = Object.keys(G.inv); G.inv[ks[(Math.random() * ks.length) | 0]] = 1; } } PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = HALF(); SFX.setSfx(!window.CFG || window.CFG.sfx !== false); G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = ARENA.weather() || (Math.random() < 0.5 ? 'rain' : 'leaves'); setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
   press, setCaptain, pick: (i) => doPick(i), pickMove,
   // a finger on a teammate takes control of him (not while you are the one with the ball)

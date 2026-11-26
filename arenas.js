@@ -343,7 +343,7 @@ export default function extraArenas(C) {
     pal: pal('#4f8a3a', '#5aa043', '#64ad4b', ['#3f7a2e', '#4a8a36', '#7cc25a', '#86c862'], ['#8a6a3a', '#9a7844', '#7a5c30'], '#f3f6ea'),
     track: () => tile((g) => { fill(g, '#3a3c40'); speck(g, ['#2e3034', '#46484c', '#505256'], 200); g.fillStyle = '#ffffff'; for (let x = 4; x < 64; x += 16) g.fillRect(x, 31, 8, 2); }) };
   BUILD.metropolia = (gr) => { far(14, (x, z) => building(gr, x, z, R(8, 14), R(20, 60), R(8, 12), pick(['#b8a890', '#9aa4b0', '#c8c0b0', '#8a96a4', '#a88a7a']), '#eef6ff', '#4a5866', 0, 0.2), 20, 34); ends(6, (x, z) => building(gr, x, z, R(8, 12), R(16, 40), R(8, 12), pick(['#b8a890', '#9aa4b0']), '#eef6ff', '#4a5866', 0, 0.2), 22, 32);
-    const ads = [['GOL!', '#e8202a', '#ffffff'], ['CUIAVIA', '#141414', '#3fbf55'], ['PIZZA', '#ffd21a', '#141414'], ['27', '#2a6ae8', '#ffffff'], ['KINO', '#8a2ad0', '#ffe14a']];
+    const ads = [['GOL!', '#e8202a', '#ffffff'], ['PIXELS', '#141414', '#3fbf55'], ['PIZZA', '#ffd21a', '#141414'], ['27', '#2a6ae8', '#ffffff'], ['KINO', '#8a2ad0', '#ffe14a']];
     far(5, (x, z, i) => { const [s, bg, fg] = ads[i % ads.length]; box(gr, 0.4, 8, 0.4, '#5a5e66', x, 4, z); sign(gr, s, bg, fg, x, 9.5, z + 0.3, 9, 3, 0.9); }, 13, 16);
     box(gr, 150, 0.2, 3, '#c8c8c4', 0, 0.1, -PZ - 11.5); for (const s of [-1, 1]) box(gr, 3, 0.2, 60, '#c8c8c4', s * (PX + 18.5), 0.1, 0);
     far(8, (x, z) => { cyl(gr, 0.15, 0.2, 6, '#3a3c40', x, 3, z); box(gr, 1.2, 0.3, 0.5, '#3a3c40', x + 0.5, 6, z); box(gr, 0.6, 0.15, 0.4, GL('#fff6d0', 1), x + 0.9, 5.85, z); }, 10.5, 10.6);

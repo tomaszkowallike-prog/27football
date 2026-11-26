@@ -124,7 +124,7 @@
         if (r.tired && r.sta > 0.65) r.tired = false;
         r.d += r.v * dt; r.ft += dt * (2 + r.v / 22); r.lap = Math.min(LAPS, Math.floor(r.d / perim(r.lane)) + 1);
         if (r.d >= r.dist) { r.done = true; r.time = S.t; r.place = S.runners.filter((q) => q.done).length;
-          if (r.me) { tone(523, 1046, 0.4); S.phase = 'finish'; S.fin = S.t; if (r.place === 1 && (!S.best || r.time < S.best)) { S.best = r.time; try { localStorage.setItem(bestKey(), S.best.toFixed(2)); } catch (e) {} } } } }
+          if (r.me) { tone(523, 1046, 0.4); S.phase = 'finish'; S.fin = S.t; let rec = false; if (r.place === 1 && (!S.best || r.time < S.best)) { rec = true; S.best = r.time; try { localStorage.setItem(bestKey(), S.best.toFixed(2)); } catch (e) {} } window.TRAIN?.('bieg', { place: r.place, record: rec }); } } }
       if (S.phase === 'finish' && (S.runners.every((r) => r.done) || S.t - S.fin > 3)) { S.phase = 'over'; S.t = 0; } } };
 
   // ---- drawing ----

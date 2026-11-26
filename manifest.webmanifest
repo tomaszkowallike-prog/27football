@@ -1,6 +1,6 @@
 {
-  "name": "Cuiavia Soccer",
-  "short_name": "Cuiavia",
+  "name": "Pixels Soccer",
+  "short_name": "Pixels",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

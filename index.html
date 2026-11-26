@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#120a24">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Cuiavia Soccer</title>
+<title>Pixels Soccer</title>
 <link rel="icon" href="data:,">
 <style>
 @font-face { font-family: 'Press Start 2P'; font-weight: 400; font-display: swap; src: url(fonts/press-start-2p-latin-400-normal.woff2) format('woff2'); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
@@ -20,7 +20,7 @@
 </style>
 <style>
   /* VOICE an 8-bit cartridge. IDEA the original's black status bar under a 3D pitch. PICTURE the game itself.
-     COLOUR Cuiavia green, the rivals purple, white type on black, GOAL! in orange. TYPE Pixelify Sans. */
+     COLOUR Pixels green, the rivals purple, white type on black, GOAL! in orange. TYPE Pixelify Sans. */
   :root { --ink: #000; --g: #3fbf55; --p: #b98cf2; --w: #f4f1e8; --o: #ffa62b; --barH: 74px; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; overflow: hidden; background: #000; font-family: "Pixelify Sans", monospace; color: var(--w); user-select: none; -webkit-user-select: none; touch-action: none; }
@@ -361,6 +361,19 @@
   #reward .stage { display: block; font: 10px "Press Start 2P", monospace; color: #6ee05a; margin-bottom: 4px; }
   #end .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
   .arenagrid[hidden] { display: none !important; }
+  #langpick { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; background: #0b0820; } #langpick[hidden] { display: none; }
+  #langpick .lpbox { display: flex; flex-direction: column; gap: 14px; align-items: stretch; text-align: center; }
+  #langpick h2 { margin: 0 0 6px; font: 16px "Press Start 2P", monospace; color: #ffe14a; line-height: 1.6; text-shadow: 3px 3px 0 #000; } #langpick h2 small { font-size: 10px; color: #b8b4e8; }
+  #langpick button { all: unset; cursor: pointer; padding: 14px 40px; font: 14px "Press Start 2P", monospace; color: #1a1030; background: #6ee05a; border: 3px solid #d8ffc8; box-shadow: 0 5px 0 #2a8a1a; }
+  #langpick button + button { background: #ffe14a; border-color: #fff6c0; box-shadow: 0 5px 0 #b08a00; }
+  #toast { position: fixed; left: 50%; top: 14px; transform: translate(-50%, -140%); z-index: 250; padding: 8px 14px; font: 10px "Press Start 2P", monospace; line-height: 1.6; color: #fff; background: #1a1540; border: 3px solid #6ee05a; box-shadow: 0 4px 0 #000; transition: transform .25s steps(4); pointer-events: none; text-align: center; white-space: pre-line; }
+  #toast.on { transform: translate(-50%, 0); }
+  #szatnia .scoin { position: absolute; left: 85.6%; top: 4.9%; width: 5.6%; height: 4.6%; display: flex; align-items: center; justify-content: center; font: 700 clamp(9px, 2vw, 24px) "Pixelify Sans", monospace; color: #fff; }
+  .arenagrid button.lock { position: relative; } .arenagrid button.lock img { filter: grayscale(1) brightness(.45); } .arenagrid button.lock span { color: #8a84b8; }
+  .arenagrid button.lock::after { content: ''; position: absolute; left: 50%; top: 32%; width: 18px; height: 14px; margin-left: -9px; background: #ffe14a; box-shadow: 0 0 0 2px #000; border-radius: 2px; }
+  .shopgrid h3 { grid-column: 1 / -1; margin: 6px 0 0; font: 10px "Press Start 2P", monospace; color: #ffe14a; }
+  .shopgrid .it .lvl { display: flex; gap: 3px; } .shopgrid .it .lvl u { width: 10px; height: 10px; background: #2c2660; border: 1px solid #000; } .shopgrid .it .lvl u.on { background: #6ee05a; }
+  .shopgrid .it .xp { width: 80%; height: 5px; background: #2c2660; } .shopgrid .it .xp i { display: block; height: 100%; background: #5fd8ff; }
   .arenagrid button { padding: 6px 6px 5px; } .arenagrid img { height: auto; width: 100%; max-width: 96px; aspect-ratio: 120 / 84; margin: 0 auto; }
   .arenagrid span { display: block; margin-top: 5px; line-height: 1.4; font: 7px "Press Start 2P", monospace; color: #fff; text-shadow: 1px 1px 0 #000; }
   .arenagrid button.sel { background: #3fbf55; } .arenagrid button:hover span, .arenagrid button:focus-visible span { color: #1a1030; text-shadow: none; }
@@ -420,6 +433,7 @@
   body.playing #mute { display: block; } body.playing.touch #mute { top: max(10px, env(safe-area-inset-top)); right: calc(max(10px, env(safe-area-inset-right)) + 156px); bottom: auto; }
   @media (max-width: 700px) { #score .tn { font-size: 16px; } #score .num { font-size: 24px; min-width: 50px; } #score .clockp { font-size: 18px; } #score .crest { width: 26px; height: 30px; } #score .plate, #score .clockp { height: 38px; } }
 </style>
+<script src="./lang.js?v=1"></script>
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
 <script>
   // music volume for every track (match, locker room, penalties, keepy-uppy): 100 / 60 / 30 / off, remembered
@@ -449,6 +463,8 @@
 </script>
 </head>
 <body>
+<div id="langpick" hidden><div class="lpbox"><h2>WYBIERZ JĘZYK<br><small>CHOOSE LANGUAGE</small></h2><button data-l="pl">POLSKI</button><button data-l="en">ENGLISH</button></div></div>
+<div id="toast"></div>
 <div id="stage"></div>
 <div id="rot"><div class="ph">📱</div><b>OBRÓĆ TELEFON POZIOMO</b><span>Gra działa tylko w poziomie</span></div>
 <div id="intro"><div class="f169"><video id="v1" src="intro1.mp4" playsinline preload="auto" poster="intro1_first.jpg"></video><video id="v2" src="intro2.mp4" playsinline preload="auto" poster="intro2_last.jpg"></video>
@@ -465,6 +481,7 @@
   <div class="row"><span>Efekty dźwiękowe (SFX)</span><button class="v" data-k="sfx"></button></div>
   <div class="row"><span>Czas połowy meczu</span><button class="v" data-k="half"></button></div>
   <div class="row"><span>Poziom rywala</span><button class="v" data-k="lvl"></button></div>
+  <div class="row"><span>Język</span><button class="v" id="langbtn">POLSKI</button></div>
   <div class="row"><span>Wibracje (telefon)</span><button class="v" data-k="vib"></button></div>
   <div class="row"><span>Pad dotykowy</span><button class="v" data-k="pad"></button></div>
   <div class="note" id="setnote"></div>
@@ -484,7 +501,7 @@
   <div class="flipgrid arenagrid tourgrid" id="tourgrid"></div>
   <div class="flipgrid arenagrid" id="arenagrid" hidden></div>
   <p class="arenahint" id="tourhint">Turniej: wygraj mecz, żeby odblokować następne boisko. Na końcu czeka MROCZNY ZAMEK.</p>
-  <p class="arenahint" id="freehint" hidden>Na Księżycu, w oceanie, w niebie i na stacji niższa grawitacja: piłka i skoki lecą wyżej.</p></div></div>
+  <p class="arenahint" id="freehint" hidden>Na start masz 3 boiska. Każda wygrana w turnieju odkrywa kolejne. Na Księżycu, w oceanie, w niebie i na stacji niższa grawitacja: piłka i skoki lecą wyżej.</p></div></div>
 <div class="setov" id="shop" hidden><div class="setp" role="dialog" aria-label="Sklep"><h2>SKLEP <span class="coin" id="coinS">0</span><button class="x" id="shopx" aria-label="Zamknij">X</button></h2>
   <div class="shopgrid" id="shopgrid"></div>
   <p class="arenahint">Monety zdobywasz za gole, wygrane, czyste konto, gole z mocy, etapy turnieju i kapki. Na trudniejszym poziomie dostajesz więcej.</p></div></div>
@@ -497,8 +514,8 @@
 
 <div class="ov" id="menu" hidden>
   <div class="panel">
-    <h1>CUIAVIA<span>SOCCER</span></h1>
-    <div class="vs"><div><div class="squad" id="sqA"></div><div class="tname" style="color:var(--g)">CUIAVIA</div></div><b>VS</b><div><div class="squad" id="sqB"></div><div class="tname" style="color:var(--p)">FIOLETOWI</div></div></div>
+    <h1>PIXELS<span>SOCCER</span></h1>
+    <div class="vs"><div><div class="squad" id="sqA"></div><div class="tname" style="color:var(--g)">PIXELS</div></div><b>VS</b><div><div class="squad" id="sqB"></div><div class="tname" style="color:var(--p)">FIOLETOWI</div></div></div>
     <p id="turn">Obróć telefon poziomo, będzie wygodniej.</p>
     <dl class="how keys">
       <dt><span class="kc">←</span><span class="kc">↑</span><span class="kc">↓</span><span class="kc">→</span></dt><dd>ruch (albo <span class="kc alt">W</span><span class="kc alt">A</span><span class="kc alt">S</span><span class="kc alt">D</span>) · <span class="kc w">SHIFT</span> albo dwa razy w tę samą stronę = sprint</dd>
@@ -524,10 +541,10 @@
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <button class="hot" id="sset" aria-label="Ustawienia"></button>
-  <div class="stitle">WYBIERZ KAPITANA</div></div></div>
+  <div class="stitle">WYBIERZ KAPITANA</div><div class="scoin" id="coinL">0</div></div></div>
 <div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt=""><button class="hbottle" id="hbottle" aria-label="Butelka"><img src="flip_woda.png" alt=""></button>
   <small id="mq">CO ROBIMY?</small>
-  <div class="mrow"><button class="mb" data-m="match"><b><img class="pxi" src="ico_match.png" alt=""></b>MECZ<em>Cuiavia kontra Fioletowi</em></button><button class="mb" data-m="karne"><b><img class="pxi" src="ico_karne.png" alt=""></b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b><img class="pxi" src="ico_kapki.png" alt=""></b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b><img class="pxi" src="ico_but.png" alt=""></b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b><img class="pxi" src="ico_kapsle.png" alt=""></b>KAPSLE<em>wyścig kapsli po torze</em></button><button class="mb" data-m="bieg"><b><img class="pxi" src="ico_bieg.png" alt=""></b>BIEG<em>wyścig dookoła boiska</em></button></div>
+  <div class="mrow"><button class="mb" data-m="match"><b><img class="pxi" src="ico_match.png" alt=""></b>MECZ<em>Pixels kontra Fioletowi</em></button><button class="mb" data-m="karne"><b><img class="pxi" src="ico_karne.png" alt=""></b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b><img class="pxi" src="ico_kapki.png" alt=""></b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b><img class="pxi" src="ico_but.png" alt=""></b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b><img class="pxi" src="ico_kapsle.png" alt=""></b>KAPSLE<em>wyścig kapsli po torze</em></button><button class="mb" data-m="bieg"><b><img class="pxi" src="ico_bieg.png" alt=""></b>BIEG<em>wyścig dookoła boiska</em></button></div>
   <button class="ibtn mback" data-m="back">◀ SZATNIA</button></div></div></div>
 <div id="kapki" hidden><div class="f169"><img src="kapki_bg.jpg" alt=""></div><div id="jug"></div><div id="kdots"></div>
   <div class="khud"><div><small>KAPKI</small><b id="kscore">0</b></div><div><small>REKORD</small><b id="kbest">0</b></div></div>
@@ -601,7 +618,7 @@
       el.innerHTML = kind === 'super' ? `<small>SUPER STRZAŁ · ${p.num}</small>${text}` : text;
       void el.offsetWidth; el.classList.add('on'); clearTimeout(bannerT); bannerT = setTimeout(() => el.classList.remove('on'), kind === 'goal' ? 2600 : kind === 'big' ? 1600 : 1300);
     },
-    end(G) { document.body.classList.remove('playing'); const [a, b] = G.score; $('final').textContent = `${a} : ${b}`; $('endT').textContent = a > b ? 'CUIAVIA WYGRYWA!' : a < b ? 'WYGRALI FIOLETOWI' : 'REMIS'; try { window.REWARD?.(G); } catch (e) { console.error(e); } $('end').hidden = false; },
+    end(G) { document.body.classList.remove('playing'); const [a, b] = G.score; $('final').textContent = `${a} : ${b}`; $('endT').textContent = a > b ? 'PIXELS WYGRYWA!' : a < b ? 'WYGRALI FIOLETOWI' : 'REMIS'; try { window.REWARD?.(G); } catch (e) { console.error(e); } $('end').hidden = false; },
     minimap(players, ball) {
       const cv = $('mini'), g = cv.getContext('2d'), W = cv.width, H = cv.height, M = 9, T = 5, X = (x) => M + (x + 30) / 60 * (W - 2 * M), Z = (z) => T + (z + 18) / 36 * (H - 2 * T);
       // mowed grass to the frame's edge, the lines a few pixels in, the goals in the margin
@@ -688,10 +705,11 @@
   window.CAPTAIN = 27;
   const pickMode = (m) => { TMUS.pause(); $('modes').hidden = true; if (m === 'back') { SZ.show(); return; } if (m === 'kapsle') window.CAPS.start(showModes); else if (m === 'bieg') window.BIEG.start(showModes); else if (m === 'but') window.LACE.start(showModes); else if (m === 'karne') window.PEN.start(showModes, window.CAPTAIN); else if (m === 'kapki') K.start(); else arenaPick(); };
   // ---- progress: coins, the shop, the tournament ladder (saved on the device) ----
-  const PROG = (() => { const d = { coins: 0, owned: [], boots: null, ball: null, ladder: 0, champ: 0 };
+  const PROG = (() => { const d = { coins: 0, owned: [], boots: null, ball: null, ladder: 0, champ: 0, lv: {}, xp: {}, pen_best: 0 };
     let P = d; try { P = { ...d, ...JSON.parse(localStorage.getItem('cs_prog') || '{}') }; } catch (e) {}
-    const save = () => { try { localStorage.setItem('cs_prog', JSON.stringify(P)); } catch (e) {} for (const id of ['coinA', 'coinS']) { const e = $(id); if (e) e.textContent = P.coins; } };
+    const save = () => { try { localStorage.setItem('cs_prog', JSON.stringify(P)); } catch (e) {} for (const id of ['coinA', 'coinS', 'coinL']) { const e = $(id); if (e) e.textContent = P.coins; } };
     return { get: () => P, save, add(n) { P.coins += n; save(); } }; })();
+  setTimeout(() => PROG.save(), 0);
   const ITEMS = [
     { id: 'b1', slot: 'boots', name: 'SZYBKIE BUTY', price: 150, desc: 'Drużyna biega 6% szybciej', col: ['#3a8ae8', '#fff'], perk: { speed: 1.06 } },
     { id: 'b2', slot: 'boots', name: 'TURBO BUTY', price: 400, desc: 'Biegasz 10% szybciej', col: ['#e8402a', '#ffe14a'], perk: { speed: 1.1 } },
@@ -705,6 +723,22 @@
   ];
   window.PERKS = () => { const P = PROG.get(), out = {}; for (const it of ITEMS) { if (!P.owned.includes(it.id)) continue; if (it.slot && P[it.slot] !== it.id) continue;
       for (const k in it.perk) out[k] = k === 'speed' || k === 'shot' ? (out[k] || 1) * it.perk[k] : it.perk[k]; } return out; };
+  // skills: every player starts at 0 in all five (shot, pass, dribble, defence, speed) and goes up to 5.
+  // Training raises them: the race trains speed, keepy-uppy dribbling, penalties shooting, matches passing and defence.
+  // Beating your own record gives much more. They can also be bought in the shop.
+  const SK = window.LANG === 'en' ? ['SHOOTING', 'PASSING', 'DRIBBLING', 'DEFENCE', 'SPEED'] : ['STRZAŁ', 'PODANIE', 'DRYBLING', 'OBRONA', 'PRĘDKOŚĆ'], XPL = 100;
+  window.LEVELS = (num) => { const P = PROG.get(); return (P.lv[num] || [0, 0, 0, 0, 0]).slice(); };
+  const toast = (t) => { const e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 2600); };
+  const addXP = (num, k, n) => { const P = PROG.get(), lv = P.lv[num] || (P.lv[num] = [0, 0, 0, 0, 0]), xp = P.xp[num] || (P.xp[num] = [0, 0, 0, 0, 0]); if (lv[k] >= 5) return null;
+    xp[k] += n; let up = 0; while (xp[k] >= XPL && lv[k] < 5) { xp[k] -= XPL; lv[k]++; up++; } if (lv[k] >= 5) xp[k] = 0; PROG.save(); return up; };
+  window.TRAIN = (game, r = {}) => { const num = window.CAPTAIN || 27, L = window.L || ((x) => x), out = [], P = PROG.get(); let coins = 0;
+    const give = (k, n) => { const up = addXP(num, k, n); if (up == null) return; out.push(`+${n} XP ${L(SK[k])}${up ? '  ▲ ' + L('POZIOM') + ' ' + P.lv[num][k] : ''}`); };
+    if (game === 'bieg') { give(4, 15 + (r.place === 1 ? 20 : 0) + (r.record ? 50 : 0)); coins = r.place === 1 ? 10 : 3; }
+    if (game === 'kapki') { give(2, Math.min(40, r.score) + (r.record ? 50 : 0)); }
+    if (game === 'karne') { give(0, 8 * (r.goals || 0) + (r.win ? 15 : 0) + (r.record ? 50 : 0)); coins = r.win ? 10 : 3; }
+    if (game === 'mecz') { give(1, 10 + (r.goals || 0) * 5 + (r.win ? 15 : 0)); give(3, 10 + (r.clean ? 20 : 0) + (r.win ? 10 : 0)); }
+    if (r.record) coins += 20; if (coins) { PROG.add(coins); out.push(`+${coins} ${L('MONET')}`); }
+    if (out.length) toast((r.record ? L('NOWY REKORD!') + '\n' : '') + out.join('\n')); return out; };
   const itemIcon = (it) => { const c = document.createElement('canvas'); c.width = c.height = 16; const g = c.getContext('2d'), r = (col, x, y, w, h) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
     if (it.slot === 'boots') { const [a, b] = it.col; r('#000', 2, 6, 7, 6); r('#000', 2, 10, 13, 4); r(a, 3, 7, 5, 5); r(a, 3, 11, 11, 2); r(b, 5, 8, 2, 1); r(b, 9, 11, 3, 1); r('#222', 3, 13, 11, 1); }
     else if (it.slot === 'ball') { r('#000', 4, 2, 8, 12); r('#000', 2, 4, 12, 8); r(it.ball, 5, 3, 6, 10); r(it.ball, 3, 5, 10, 6); r('#000', 7, 7, 2, 2); r('#000', 4, 5, 2, 1); r('#000', 10, 10, 2, 1); r('#fff', 5, 4, 2, 1); }
@@ -719,7 +753,16 @@
       if (!own && P.coins < it.price) b.className = 'no'; else if (on) b.className = 'eq';
       b.onclick = () => { if (!own) { if (P.coins < it.price) { b.textContent = 'ZA MAŁO MONET'; return; } P.coins -= it.price; P.owned.push(it.id); if (it.slot) P[it.slot] = it.id; }
         else if (it.slot) P[it.slot] = on ? null : it.id; PROG.save(); drawShop(); };
-      d.appendChild(b); gr.appendChild(d); } };
+      d.appendChild(b); gr.appendChild(d); }
+    // training: buy a skill level for the captain
+    const num = window.CAPTAIN || 27, lv = window.LEVELS(num), xp = (P.xp[num] || [0, 0, 0, 0, 0]);
+    const h = document.createElement('h3'); h.textContent = `TRENING: ${num} ${NAMES[num] || ''}`; gr.appendChild(h);
+    SK.forEach((n, k) => { const d = document.createElement('div'); d.className = 'it'; const price = 80 * (lv[k] + 1);
+      d.innerHTML = `<h4>${n}</h4><div class="lvl">${[0, 1, 2, 3, 4].map((i) => `<u class="${i < lv[k] ? 'on' : ''}"></u>`).join('')}</div><div class="xp"><i style="width:${xp[k]}%"></i></div>`;
+      const b = document.createElement('button');
+      if (lv[k] >= 5) { b.textContent = 'MAKS'; b.className = 'eq'; } else { b.textContent = `KUP ${price}`; if (P.coins < price) b.className = 'no';
+        b.onclick = () => { if (P.coins < price) { b.textContent = 'ZA MAŁO MONET'; return; } P.coins -= price; P.lv[num] = lv; lv[k]++; if (P.xp[num]) P.xp[num][k] = 0; PROG.save(); drawShop(); }; }
+      d.appendChild(b); gr.appendChild(d); }); };
   const openShop = () => { drawShop(); $('shop').hidden = false; };
   $('shopbtn').onclick = openShop; $('shopx').onclick = () => { $('shop').hidden = true; };
   // difficulty buttons
@@ -736,27 +779,32 @@
       b.onclick = () => { const L = PROG.get().ladder; if (i > L) { b.animate([{ transform: 'translateX(-4px)' }, { transform: 'translateX(4px)' }, { transform: 'none' }], { duration: 200 }); return; }
         window.TOUR = { i, id: a.id, n: tourList().length }; $('arenapick').hidden = true; window.GAME?.arena(a.id); if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
       g.appendChild(b); }); markTour(); };
+  const markFree = () => { const L = PROG.get().ladder, ids = tourList().map((a) => a.id);
+    $('arenagrid').querySelectorAll('button').forEach((b) => b.classList.toggle('lock', ids.indexOf(b.dataset.a) >= Math.max(3, L + 1))); };
   const markTour = () => { const L = PROG.get().ladder; $('tourgrid').querySelectorAll('button').forEach((b) => { const i = +b.dataset.i; b.classList.toggle('done', i < L); b.classList.toggle('next', i === L); b.classList.toggle('lock', i > L); });
     $('tourgrid').querySelector('.next')?.scrollIntoView({ block: 'nearest' }); };
   // coins at the final whistle
   window.REWARD = (G) => { const [a, b] = G.score, lv = CFG.lvl, mul = [0.7, 1, 1.6][lv], T = window.TOUR, P = PROG.get(), lines = []; let sum = 0;
-    const add = (txt, n) => { n = Math.round(n * mul); if (n <= 0) return; sum += n; lines.push(`${txt}: +${n}`); };
+    const add = (txt, n) => { n = Math.round(n * mul); if (n <= 0) return; sum += n; lines.push((window.L || String)(`${txt}: +${n}`)); };
     add(`Gole (${a})`, a * 10); if (G.supGoals) add(`Gole z mocy (${G.supGoals})`, G.supGoals * 5); add(a > b ? 'Wygrana' : a === b ? 'Remis' : 'Za udział', a > b ? 40 : a === b ? 15 : 5); if (b === 0) add('Czyste konto', 15);
     let stage = ''; $('tnext').hidden = true;
     if (T) { if (a > b) { if (T.i === T.n - 1) { add('MISTRZ TURNIEJU', 300); stage = 'POKONAŁEŚ MROCZNY ZAMEK! JESTEŚ MISTRZEM!'; if (P.ladder <= T.i) { P.ladder = T.i + 1; P.champ++; } }
         else { if (P.ladder <= T.i) { add('Nowy etap', 50); P.ladder = T.i + 1; } stage = `ETAP ${T.i + 1} ZALICZONY!`; $('tnext').hidden = false; } }
       else stage = a === b ? 'REMIS: trzeba wygrać, żeby przejść dalej' : 'Przegrana: spróbuj jeszcze raz'; }
-    P.coins += sum; PROG.save(); markTour();
+    P.coins += sum; PROG.save(); markTour(); window.TRAIN('mecz', { goals: a, win: a > b, clean: b === 0 }); if (stage) stage = (window.L || String)(stage);
     $('reward').innerHTML = (stage ? `<span class="stage">${stage}</span>` : '') + lines.join(' · ') + `<span class="tot">+${sum} MONET · MASZ ${P.coins}</span>`; };
   $('tnext').onclick = () => { $('end').hidden = true; const T = window.TOUR, A = tourList(), n = T ? T.i + 1 : 0; if (A[n]) { window.TOUR = { i: n, id: A[n].id, n: A.length }; window.GAME?.arena(A[n].id); go(); } };
   $('tmenu').onclick = () => { $('end').hidden = true; document.body.classList.remove('playing'); arenaPick(); };
+  { let l = null; try { l = localStorage.getItem('lang'); } catch (e) {} if (!l) $('langpick').hidden = false;
+    $('langpick').querySelectorAll('button').forEach((b) => (b.onclick = () => window.setLang(b.dataset.l)));
+    $('langbtn').textContent = window.LANG === 'en' ? 'ENGLISH' : 'POLSKI'; $('langbtn').onclick = () => window.setLang(window.LANG === 'en' ? 'pl' : 'en'); }
   window.KAPKI_COINS = (n) => { const c = Math.floor(n / 5); if (c > 0) PROG.add(c); return c; };
   // the arena cards are built and their pictures loaded once, right at start, so the list never shows names without pictures
   const AIMG = []; const buildArenas = () => { const grid = $('arenagrid'); if (grid.children.length || !window.GAME?.arenas) return; for (const a of (window.GAME?.arenas || [])) { const b = document.createElement('button'); b.dataset.a = a.id; b.innerHTML = `<img src="arena_${a.id}.png" alt="" width="120" height="84" decoding="sync"><span>${a.name}</span>`; AIMG.push(b.querySelector('img'));
-      b.addEventListener('click', () => { window.TOUR = null; $('arenapick').hidden = true; window.GAME?.arena(a.id); if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } }); grid.appendChild(b); } buildTour(); };
+      b.addEventListener('click', () => { if (b.classList.contains('lock')) { b.animate([{ transform: 'translateX(-4px)' }, { transform: 'translateX(4px)' }, { transform: 'none' }], { duration: 200 }); return; } window.TOUR = null; $('arenapick').hidden = true; window.GAME?.arena(a.id); if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } }); grid.appendChild(b); } buildTour(); };
   (function waitArenas() { if (window.GAME?.arenas) buildArenas(); else setTimeout(waitArenas, 200); })();
   const arenaPick = () => { const cur = window.GAME?.arenaId || 'stadion', grid = $('arenagrid'); buildArenas();
-    const show = () => { PROG.save(); markLv(); setTab(tab); markTour(); grid.querySelectorAll('button').forEach((b) => b.classList.toggle('sel', b.dataset.a === cur)); $('arenapick').hidden = false; grid.querySelector('.sel')?.scrollIntoView({ block: 'nearest' }); };
+    const show = () => { PROG.save(); markLv(); setTab(tab); markTour(); markFree(); grid.querySelectorAll('button').forEach((b) => b.classList.toggle('sel', b.dataset.a === cur)); $('arenapick').hidden = false; grid.querySelector('.sel')?.scrollIntoView({ block: 'nearest' }); };
     Promise.race([Promise.all(AIMG.map((i) => i.decode().catch(() => {}))), new Promise((r) => setTimeout(r, 600))]).then(show); };
   $('arenax').onclick = () => { $('arenapick').hidden = true; showModes(); };
   // ---- the locker room: pick the captain, who plays in the middle and kicks off ----
@@ -772,7 +820,7 @@
       $('spick').style.left = (parseFloat(kids[sel].style.left) + parseFloat(kids[sel].style.width) / 2) + '%';
       $('sname').textContent = `${q.num} ${q.name}`; $('spos').textContent = q.pos; $('ssup').textContent = '★ ' + q.sup;
       const [fx, fy] = FACE[q.face]; $('sface').style.backgroundPosition = `${(fx - 5.6) / (100 - 11.1) * 100}% ${(fy - 9.9) / (100 - 19.8) * 100}%`;
-      $('sbars').innerHTML = ['STRZAŁ', 'PODANIE', 'DRYBLING', 'OBRONA', 'PRĘDKOŚĆ'].map((n, i) => `<span>${n}</span><i class="${q.st[i] >= 5 ? 'max' : ''}">${[1, 2, 3, 4, 5].map((k) => `<u class="${k <= q.st[i] ? 'on' : ''}"></u>`).join('')}</i>`).join(''); };
+      const lvq = window.LEVELS ? window.LEVELS(q.num) : q.st; $('sbars').innerHTML = (window.LANG === 'en' ? ['SHOOTING', 'PASSING', 'DRIBBLING', 'OBRONA'.replace('OBRONA', 'DEFENCE'), 'SPEED'] : ['STRZAŁ', 'PODANIE', 'DRYBLING', 'OBRONA', 'PRĘDKOŚĆ']).map((n, i) => `<span>${n}</span><i class="${lvq[i] >= 5 ? 'max' : ''}">${[1, 2, 3, 4, 5].map((k) => `<u class="${k <= lvq[i] ? 'on' : ''}"></u>`).join('')}</i>`).join(''); };
     const choose = (i) => { if (i === sel) return; sel = i; mark(); try { tone && tone(880, 0.05); } catch (e) {} };
     kids.forEach((k, i) => k.addEventListener('click', () => choose(i)));
     // the team dog: sits by the ball, scratches, yawns, lies down for a nap; a tap makes it hop with its tongue out
@@ -843,7 +891,7 @@
       setTimeout(() => alive && spawn(), 120); };
     const miss = () => { if (!alive) return; alive = false; dots.innerHTML = ''; if (J) { clearInterval(seqT); cur = 0; frame(0); } else { frame(1); setTimeout(() => frame(0), 450); } tone(220, 0.35, 'sawtooth', 0.06); setTimeout(() => tone(140, 0.4, 'sawtooth', 0.06), 160);
       const rec = score > best; if (rec) { best = score; try { localStorage.setItem('kapki_best', best); } catch (e) {} }
-      $('kbest').textContent = best; $('kres').textContent = score; { const kc = window.KAPKI_COINS?.(score) || 0; $('knew').textContent = (rec && score ? 'NOWY REKORD!' : best ? `Rekord: ${best}` : '') + (kc ? ` +${kc} monet` : ''); }
+      $('kbest').textContent = best; $('kres').textContent = score; { window.TRAIN?.('kapki', { score, record: rec && score > 0 }); const kc = window.KAPKI_COINS?.(score) || 0; $('knew').textContent = (rec && score ? 'NOWY REKORD!' : best ? `Rekord: ${best}` : '') + (kc ? ` +${kc} monet` : ''); }
       setTimeout(() => { $('kend').hidden = false; }, 700); };
     const start = () => { const cap = window.CAPTAIN || 27; J = HDJ[cap] || null; FW = J ? J.n : 16; cur = 0; clearInterval(seqT);
       jug.style.backgroundImage = J ? `url(juggle_hd_${cap}.png)` : `url(juggle_${cap}.png)`; jug.style.backgroundSize = `${FW * 100}% 100%`; jug.style.aspectRatio = J ? J.ar : ''; MUS.start(actx()); $('kapki').hidden = false; $('kend').hidden = true; $('kmsg').hidden = false; score = 0; pairI = (Math.random() * 8) | 0; $('kscore').textContent = 0; $('kbest').textContent = best; frame(0); alive = true; setTimeout(() => alive && spawn(), 900); };
