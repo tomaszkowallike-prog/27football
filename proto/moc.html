@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Super moc · test</title>
+<style>
+@font-face { font-family: 'Press Start 2P'; src: url(../fonts/press-start-2p-latin-400-normal.woff2) format('woff2'); unicode-range: U+0000-00FF,U+2000-206F; }
+@font-face { font-family: 'Press Start 2P'; src: url(../fonts/press-start-2p-latin-ext-400-normal.woff2) format('woff2'); unicode-range: U+0100-02BA,U+1E00-1E9F; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0c1036; font-family: 'Press Start 2P', monospace; color: #fff; touch-action: none; user-select: none; -webkit-user-select: none; }
+canvas { display: block; width: 100vw; height: 100vh; height: 100dvh; }
+.bar { position: fixed; left: 0; right: 0; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; padding: 0 10px; }
+#top { top: max(10px, env(safe-area-inset-top)); }
+#mid { top: 50%; transform: translateY(-50%); flex-direction: column; align-items: center; gap: 12px; }
+#mid[hidden], #again[hidden] { display: none; }
+#mid h2 { margin: 0; font-size: 14px; color: #ffe14a; text-shadow: 3px 3px 0 #000; animation: pulse .5s steps(2) infinite; } @keyframes pulse { 50% { color: #fff; } }
+#mid .row { display: flex; gap: 14px; }
+button { font: 10px 'Press Start 2P', monospace; color: #fff; background: #2a2a7a; border: 3px solid #000; box-shadow: inset -3px -3px 0 #15154a, inset 3px 3px 0 #5a5ad0; padding: 10px 12px; cursor: pointer; }
+button.on { background: #1a9a3a; box-shadow: inset -3px -3px 0 #0a5a1a, inset 3px 3px 0 #5ae07a; }
+.pw { font-size: 13px; padding: 14px 18px; }
+.pw.smok { background: #c8401a; box-shadow: inset -3px -3px 0 #7a2008, inset 3px 3px 0 #ff9a5a; }
+.pw.robot { background: #1a6ac8; box-shadow: inset -3px -3px 0 #0a3a7a, inset 3px 3px 0 #6ac8ff; }
+#again { bottom: max(14px, env(safe-area-inset-bottom)); }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="bar" id="top"><button data-p="7">NR 7</button><button data-p="10">NR 10</button><button data-p="14" class="on">NR 14</button></div>
+<div class="bar" id="mid" hidden><h2>WYBIERZ MOC!</h2><div class="row"><button class="pw smok" data-m="smok">🔥 SMOK</button><button class="pw robot" data-m="robot">⚡ ROBOT</button></div></div>
+<div class="bar" id="again" hidden><button id="againB">JESZCZE RAZ</button></div>
+<script>
+(() => {
+'use strict';
+const cv = document.getElementById('cv'), g = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+const resize = () => { DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; g.setTransform(DPR, 0, 0, DPR, 0, 0); };
+addEventListener('resize', resize); resize();
+const img = (src) => { const i = new Image(); i.src = src; return i; };
+// players: run-sideways and turn-around sheets cut from the GIFs
+const PL = { 7: { run: img('../sprites3d/clip_7_bieg_bok.png'), rn: 8, turn: img('../sprites3d/clip_7_obrot.png'), tn: 29 },
+             10: { run: img('../sprites3d/clip_10_bieg_bok.png'), rn: 7, turn: img('../sprites3d/clip_10_obrot.png'), tn: 29 },
+             14: { run: img('../sprites3d/clip_14_bieg_bok.png'), rn: 8, turn: img('../sprites3d/clip_14_obrot.png'), tn: 16 } };
+// powers: frames 400x225; where the figure stands (ax, feet at fy); when the beam/fire reaches the right edge and where; which frames loop while firing
+const PW = { robot: { sheet: img('moc_robot.png'), n: 28, ax: 95, fy: 214, hit: 15, ey: 88, loop: [18, 27], col: ['#5af0ff', '#bff8ff', '#2a8aff'], fps: 11 },
+             smok: { sheet: img('moc_smok.png'), n: 15, ax: 190, fy: 212, hit: 9, ey: 104, loop: [10, 14], col: ['#ff8a1a', '#ffe14a', '#ff3a10'], fps: 9 } };
+let who = 14, power = null, st = 'run', t0 = 0, now = 0, parts = [], shake = 0, flash = 0, ball = null, beam = 0, net = 0, msg = '', msgT = 0;
+const L = () => ({ ground: H * 0.8, px: W * 0.24, goal: W * 0.92, ph: Math.min(H * 0.34, W * 0.2), big: Math.min(H * 0.5, W * 0.36) });
+const setState = (s) => { st = s; t0 = now; document.getElementById('mid').hidden = s !== 'choose'; document.getElementById('again').hidden = s !== 'done'; };
+const restart = () => { power = null; ball = { x: -40, y: 0, z: 0, vx: 0, vy: 0, spin: 0, att: true }; parts = []; beam = 0; net = 0; msg = ''; setState('run'); };
+document.querySelectorAll('[data-p]').forEach((b) => b.onclick = () => { who = +b.dataset.p; document.querySelectorAll('[data-p]').forEach((x) => x.classList.toggle('on', x === b)); restart(); });
+document.querySelectorAll('[data-m]').forEach((b) => b.onclick = () => { power = b.dataset.m; setState('charge'); });
+document.getElementById('againB').onclick = restart;
+
+// ---- sound: tiny synth blips ----
+let AC = null; const tone = (f0, f1, d, type = 'square', v = 0.05) => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); const o = AC.createOscillator(), gn = AC.createGain(), t = AC.currentTime; o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(30, f1), t + d); gn.gain.setValueAtTime(v, t); gn.gain.exponentialRampToValueAtTime(0.0008, t + d); o.connect(gn).connect(AC.destination); o.start(t); o.stop(t + d + 0.02); } catch (e) {} };
+const noise = (d, v = 0.08, lp = 1200) => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); const n = AC.sampleRate * d | 0, b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0); for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * (1 - i / n); const s = AC.createBufferSource(), f = AC.createBiquadFilter(), gn = AC.createGain(); f.type = 'lowpass'; f.frequency.value = lp; gn.gain.value = v; s.buffer = b; s.connect(f).connect(gn).connect(AC.destination); s.start(); } catch (e) {} };
+
+// ---- scenery: a side-on pitch with stands, a goal on the right ----
+function scene(l) {
+  const sky = g.createLinearGradient(0, 0, 0, l.ground); sky.addColorStop(0, '#1a2a5a'); sky.addColorStop(1, '#5a8ac8'); g.fillStyle = sky; g.fillRect(0, 0, W, l.ground);
+  const sy = l.ground - H * 0.34; g.fillStyle = '#2a2e48'; g.fillRect(0, sy, W, H * 0.26);
+  for (let r = 0; r < 8; r++) for (let x = (r % 2) * 5; x < W; x += 10) { const c = ['#e8361f', '#ffd21a', '#2a6ae8', '#f4f4f4', '#3fbf55', '#ff8a1a'][(x * 7 + r * 13) % 6]; const b = st === 'goal' ? Math.abs(Math.sin(now * 14 + x)) * 4 : Math.abs(Math.sin(now * 3 + x * 0.3)) * 1.2; g.fillStyle = c; g.fillRect(x, sy + 8 + r * H * 0.028 - b, 6, 6); }
+  g.fillStyle = '#e8361f'; g.fillRect(0, l.ground - H * 0.08, W, H * 0.05); g.fillStyle = '#fff'; g.font = `${Math.max(8, H * 0.022) | 0}px "Press Start 2P"`; g.textAlign = 'center'; for (let x = W * 0.12; x < W; x += W * 0.3) g.fillText('CUIAVIA', x, l.ground - H * 0.045);
+  for (let i = 0; i * 60 < W; i++) { g.fillStyle = i % 2 ? '#3f9a4e' : '#46a656'; g.fillRect(i * 60, l.ground - H * 0.03, 60, H); }
+  g.fillStyle = 'rgba(255,255,255,.85)'; g.fillRect(0, l.ground - H * 0.03, W, 3);
+}
+function goalBack(l) { const gx = l.goal, gh = l.ph * 0.95, gd = W * 0.06, bulge = net * W * 0.03;
+  g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 1;
+  for (let i = 0; i <= 10; i++) { const y = l.ground - gh + i * gh / 10, b = Math.sin(i / 10 * Math.PI) * bulge; g.beginPath(); g.moveTo(gx, y); g.lineTo(gx + gd + b, y + 6); g.stroke(); }
+  for (let i = 0; i <= 6; i++) { const x = gx + i * gd / 6; g.beginPath(); g.moveTo(x, l.ground - gh); g.quadraticCurveTo(x + bulge * Math.sin(i / 6 * Math.PI), l.ground - gh / 2, x, l.ground); g.stroke(); } }
+function goalFront(l) { const gx = l.goal, gh = l.ph * 0.95; g.fillStyle = '#000'; g.fillRect(gx - 4, l.ground - gh - 4, 10, gh + 4); g.fillRect(gx - 4, l.ground - gh - 4, W * 0.07, 9); g.fillStyle = '#fff'; g.fillRect(gx - 2, l.ground - gh - 2, 6, gh); g.fillRect(gx - 2, l.ground - gh - 2, W * 0.07 - 4, 5); }
+function drawBall(x, y, r, spin) { g.save(); g.translate(x, y); g.rotate(spin); g.fillStyle = '#fff'; g.beginPath(); g.arc(0, 0, r, 0, 7); g.fill(); g.fillStyle = '#141414'; for (let k = 0; k < 5; k++) { const a = k * 1.257; g.beginPath(); g.arc(Math.cos(a) * r * 0.62, Math.sin(a) * r * 0.62, r * 0.24, 0, 7); g.fill(); } g.beginPath(); g.arc(0, 0, r * 0.26, 0, 7); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, r, 0, 7); g.stroke(); g.restore(); }
+function sheetFrame(im, n, i, x, y, h) { if (!im.complete || !im.naturalWidth) return; const fw = im.naturalWidth / n, k = h / im.naturalHeight; g.drawImage(im, (i | 0) * fw, 0, fw, im.naturalHeight, x - fw * k / 2, y - h, fw * k, h); }
+function powerFrame(p, i, l) { const im = p.sheet; if (!im.complete || !im.naturalWidth) return null; const fw = im.naturalWidth / p.n, fh = im.naturalHeight, k = l.big / (p.fy), x = l.px - p.ax * k, y = l.ground - p.fy * k;
+  g.drawImage(im, (i | 0) * fw, 0, fw, fh, x, y, fw * k, fh * k); return { ex: x + fw * k - 2, ey: y + p.ey * k, k }; }
+// ---- particles ----
+const spark = (x, y, n, cols, sp = 200, life = 0.8, sz = 4, grav = 0) => { for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, v = sp * (0.3 + Math.random()); parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, l: life * (0.5 + Math.random() * 0.5), L: life, c: cols[i % cols.length], s: sz * (0.5 + Math.random()), grav }); } };
+function drawParts(dt) { for (const p of parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.grav * dt; p.vx *= 0.98; p.l -= dt; } parts = parts.filter((p) => p.l > 0);
+  g.globalCompositeOperation = 'lighter'; for (const p of parts) { g.globalAlpha = Math.max(0, p.l / p.L); g.fillStyle = p.c; g.fillRect(p.x - p.s / 2, p.y - p.s / 2, p.s, p.s); } g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; }
+// an aura of rising energy round the player, ring pulses on the ground, crackles
+function aura(l, k, cols) { const cx = l.px, cy = l.ground - l.ph * 0.5, r = l.ph * (0.45 + k * 0.4);
+  g.globalCompositeOperation = 'lighter'; const gr = g.createRadialGradient(cx, cy, 0, cx, cy, r * 1.4); gr.addColorStop(0, cols[1] + 'aa'); gr.addColorStop(0.4, cols[0] + '66'); gr.addColorStop(1, cols[0] + '00'); g.fillStyle = gr; g.globalAlpha = 0.4 + k * 0.6; g.beginPath(); g.ellipse(cx, cy, r * 1.4 * 0.7, r * 1.4, 0, 0, 7); g.fill();
+  for (let i = 0; i < 3; i++) { const rr = ((now * 1.6 + i / 3) % 1); g.strokeStyle = cols[0]; g.globalAlpha = (1 - rr) * (0.5 + k * 0.5); g.lineWidth = 3; g.beginPath(); g.ellipse(cx, l.ground - 4, l.ph * (0.2 + rr * 0.9), l.ph * (0.05 + rr * 0.2), 0, 0, 7); g.stroke(); }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  if (Math.random() < 0.5 + k) parts.push({ x: cx + (Math.random() - 0.5) * l.ph * 0.7, y: l.ground - Math.random() * l.ph * 0.3, vx: 0, vy: -l.ph * (1 + Math.random() * 2), l: 0.6, L: 0.6, c: cols[Math.random() * 3 | 0], s: 3 + Math.random() * 4, grav: 0 });
+  if (power === 'robot' && Math.random() < 0.15 + k * 0.4) { g.strokeStyle = '#ffffff'; g.lineWidth = 2; g.beginPath(); let x = cx + (Math.random() - 0.5) * r, y = cy - r; g.moveTo(x, y); for (let s = 0; s < 6; s++) { x += (Math.random() - 0.5) * r * 0.5; y += r * 0.33; g.lineTo(x, y); } g.stroke(); }
+}
+// the beam or the fire carried on past the edge of the animation, out to the goal
+function stream(from, l, k, cols) { if (k <= 0) return; const x0 = from.ex - from.k * (power === 'robot' ? 30 : 70), y0 = from.ey, x1 = x0 + (l.goal + W * 0.04 - x0) * Math.min(1, k), th = from.k * (power === 'robot' ? 34 : 52);
+  g.globalCompositeOperation = 'lighter';
+  if (power === 'robot') { const h = th * (1.1 + Math.sin(now * 30) * 0.12), gr = g.createLinearGradient(0, y0 - h, 0, y0 + h); gr.addColorStop(0, cols[2] + '00'); gr.addColorStop(0.3, cols[2] + '88'); gr.addColorStop(0.45, cols[0] + 'dd'); gr.addColorStop(0.5, '#e8ffffff'); gr.addColorStop(0.55, cols[0] + 'dd'); gr.addColorStop(0.7, cols[2] + '88'); gr.addColorStop(1, cols[2] + '00');
+    g.fillStyle = gr; g.beginPath(); g.moveTo(x0, y0 - h * 0.6); for (let x = x0; x <= x1; x += 16) g.lineTo(x, y0 - h * (0.75 + Math.sin(x * 0.05 - now * 30) * 0.18)); g.lineTo(x1 + h * 0.4, y0); for (let x = x1; x >= x0; x -= 16) g.lineTo(x, y0 + h * (0.75 + Math.sin(x * 0.05 + now * 27) * 0.18)); g.closePath(); g.fill();
+    for (let i = 0; i < 8; i++) { const u = (now * 3 + i / 8) % 1; g.strokeStyle = cols[1] + 'aa'; g.lineWidth = 2; g.beginPath(); g.ellipse(x0 + (x1 - x0) * u, y0, h * 0.25, h * 0.9, 0, 0, 7); g.stroke(); }
+    g.strokeStyle = '#ffffffcc'; g.lineWidth = 1.5; for (let j = 0; j < 2; j++) { g.beginPath(); g.moveTo(x0, y0); for (let x = x0; x < x1; x += 22) g.lineTo(x, y0 + (Math.random() - 0.5) * th * 1.4); g.stroke(); } }
+  else { for (let i = 0; i < 26; i++) { const u = ((now * 2.2 + i / 26) % 1), x = x0 + (x1 - x0) * u, r = th * (0.35 + u * 0.55) * (0.8 + Math.sin(i * 7 + now * 9) * 0.2), y = y0 + Math.sin(i * 3.1 + now * 6) * th * 0.25 * u;
+      const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, '#fff6c8'); gr.addColorStop(0.35, cols[1]); gr.addColorStop(0.7, cols[0] + 'cc'); gr.addColorStop(1, cols[2] + '00'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); } }
+  g.globalCompositeOperation = 'source-over'; return { x1, y0 }; }
+
+let last = performance.now();
+function frame(t) { requestAnimationFrame(frame); const dt = Math.min(0.05, (t - last) / 1000); last = t; now = t / 1000; const l = L(), e = now - t0, P = PL[who];
+  g.save(); if (shake > 0) { shake -= dt; g.translate((Math.random() - 0.5) * 14 * shake * 4, (Math.random() - 0.5) * 10 * shake * 4); }
+  scene(l); goalBack(l);
+  const pw = power && PW[power];
+  if (st === 'run') { const x = -W * 0.1 + Math.min(1, e / 2.2) * (l.px + W * 0.1); sheetFrame(P.run, P.rn, (now * 12) % P.rn, x, l.ground, l.ph);
+    ball.x = x + l.ph * 0.32; ball.y = l.ground - l.ph * 0.07 - Math.abs(Math.sin(now * 6)) * l.ph * 0.05; ball.spin += dt * 10; drawBall(ball.x, ball.y, l.ph * 0.07, ball.spin);
+    if (e > 2.2) { setState('choose'); tone(600, 900, 0.12); } }
+  else if (st === 'choose') { sheetFrame(P.turn, P.tn, 0, l.px, l.ground, l.ph); drawBall(l.px + l.ph * 0.32, l.ground - l.ph * 0.07, l.ph * 0.07, 0); aura(l, 0.1 + Math.sin(now * 4) * 0.05, ['#ffffff', '#ffffff', '#c8d8ff']); }
+  else if (st === 'charge') { const k = Math.min(1, e / 1.6); const jit = k * 4; sheetFrame(P.turn, P.tn, 0, l.px + (Math.random() - 0.5) * jit, l.ground, l.ph * (1 + k * 0.08)); drawBall(l.px + l.ph * 0.32, l.ground - l.ph * 0.07, l.ph * 0.07, 0); aura(l, k, pw.col);
+    if (Math.random() < 0.3) tone(200 + k * 600, 300 + k * 900, 0.08, 'sawtooth', 0.02);
+    if (e > 1.6) { flash = 1; shake = 0.3; spark(l.px, l.ground - l.ph * 0.5, 80, pw.col.concat('#ffffff'), W * 0.5, 0.9, 6); noise(0.6, 0.12, 2000); tone(120, 40, 0.6, 'sawtooth', 0.08); setState('transform'); } }
+  else if (st === 'transform' || st === 'fire') { let fi = e * pw.fps; if (fi >= pw.hit && st === 'transform') { setState('fire'); ball = { x: 0, y: 0, u: 0, spin: 0 }; noise(1.6, 0.1, power === 'robot' ? 3000 : 900); tone(power === 'robot' ? 900 : 200, power === 'robot' ? 300 : 80, 1.2, 'sawtooth', 0.05); }
+    if (st === 'fire') { const fe = now - t0, span = pw.loop[1] - pw.loop[0] + 1, base = pw.hit + fe * pw.fps; fi = base < pw.loop[0] ? base : pw.loop[0] + ((base - pw.loop[0]) % span); }
+    if (st === 'transform' && e < 0.5) aura(l, 1 - e * 2, pw.col);
+    const f = powerFrame(pw, Math.min(fi, pw.n - 1), l);
+    if (st === 'fire' && f) { const fe = now - t0; beam = Math.min(1, fe / 0.35); const s = stream(f, l, beam, pw.col);
+      ball.u = Math.min(1, Math.max(0, (fe - 0.2) / 0.7)); const bx = f.ex + (l.goal + W * 0.035 - f.ex) * ball.u, by = f.ey + (l.ground - l.ph * 0.5 - f.ey) * ball.u; ball.spin += dt * 30;
+      if (fe > 0.2) { drawBall(bx, by, l.ph * 0.09, ball.spin); spark(bx - 10, by, 2, pw.col, 80, 0.4, 5); }
+      if (ball.u >= 1 && !ball.hit) { ball.hit = true; net = 1; shake = 0.5; flash = 0.6; spark(l.goal + W * 0.03, l.ground - l.ph * 0.5, 140, pw.col.concat(['#ffffff', '#ffe14a']), W * 0.6, 1.4, 7, 300); noise(1, 0.16, 1500); [523, 659, 784, 1046].forEach((fq, i) => setTimeout(() => tone(fq, fq, 0.2, 'square', 0.05), i * 110)); msg = 'GOOOL!'; msgT = 2.4; }
+      if (fe > 2.4) { setState('back'); noise(0.8, 0.1, 2500); tone(300, 1200, 0.5, 'triangle', 0.06); } } }
+  else if (st === 'back') { const k = Math.min(1, e / 1.2); const pwc = pw.col;
+    // the creature shrinks into a spinning ball of light that bursts back into the player
+    if (k < 0.55) { g.save(); g.globalAlpha = 1 - k / 0.55; powerFrame(pw, pw.loop[0], l); g.restore(); }
+    const cx = l.px, cy = l.ground - l.ph * 0.6, rr = l.big * 0.5 * (1 - Math.min(1, k / 0.6));
+    g.globalCompositeOperation = 'lighter'; for (let i = 0; i < 24; i++) { const a = now * 8 + i * 0.26, r = rr + 6; g.fillStyle = pwc[i % 3]; g.fillRect(cx + Math.cos(a) * r, cy + Math.sin(a) * r * 0.8, 6, 6); } g.globalCompositeOperation = 'source-over';
+    if (k > 0.6 && !ball.back) { ball.back = true; flash = 0.8; spark(cx, cy, 90, ['#ffffff', '#ffe14a'].concat(pwc), W * 0.4, 1, 5); for (let i = 0; i < 16; i++) parts.push({ x: cx, y: cy, vx: Math.cos(i * 0.39) * W * 0.25, vy: Math.sin(i * 0.39) * W * 0.25, l: 0.6, L: 0.6, c: '#ffffff', s: 8, grav: 0 }); tone(800, 1600, 0.3, 'square', 0.05); }
+    if (k > 0.6) sheetFrame(P.turn, P.tn, ((e - 0.72) * 14) % P.tn, l.px, l.ground, l.ph);
+    if (e > 3.2) setState('done'); }
+  else if (st === 'done') sheetFrame(P.turn, P.tn, 0, l.px, l.ground, l.ph);
+  goalFront(l); net = Math.max(0, net - dt * 0.8);
+  drawParts(dt);
+  if (msgT > 0) { msgT -= dt; const s = Math.max(16, Math.min(W, H) * 0.1) * (1 + Math.max(0, msgT - 2.1) * 2); g.font = `${s | 0}px "Press Start 2P"`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#000'; g.fillText(msg, W / 2 + 5, H * 0.3 + 5); g.fillStyle = Math.floor(now * 8) % 2 ? '#ffe14a' : '#ffffff'; g.fillText(msg, W / 2, H * 0.3); }
+  g.restore();
+  if (flash > 0) { g.fillStyle = `rgba(255,255,255,${flash})`; g.fillRect(0, 0, W, H); flash -= dt * 2.2; }
+}
+restart(); requestAnimationFrame(frame);
+window.MOC = { pick: (m) => { power = m; setState('charge'); }, get st() { return st; } };
+})();
+</script>
+</body>
+</html>
