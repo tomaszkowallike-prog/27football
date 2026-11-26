@@ -77,27 +77,38 @@ const post = new THREE.ShaderMaterial({
     }`,
   depthTest: true, depthWrite: true, depthFunc: THREE.AlwaysDepth,
 });
+const blit = new THREE.ShaderMaterial({ glslVersion: THREE.GLSL3, uniforms: { tex: { value: null }, dep: { value: null } },
+  vertexShader: 'out vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+  fragmentShader: 'uniform sampler2D tex; uniform sampler2D dep; in vec2 vUv; layout(location = 0) out highp vec4 outColor; void main(){ outColor = texture(tex, vUv); gl_FragDepth = texture(dep, vUv).r; }',
+  depthTest: true, depthWrite: true, depthFunc: THREE.AlwaysDepth });
+const blitScene = new THREE.Scene(); blitScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), blit));
+let wld = null;
 const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), post));
 // the final pass: chromatic aberration on hard moments (a shot, a sprint, a big hit), grade, vignette, flash
 const fin = new THREE.ShaderMaterial({
-  uniforms: { tex: { value: null }, res: { value: new THREE.Vector2(1280, 720) }, ca: { value: 0 }, flash: { value: 0 }, wet: { value: 0 }, px: { value: 3 } },
+  uniforms: { tex: { value: null }, wtex: { value: null }, res: { value: new THREE.Vector2(1280, 720) }, ca: { value: 0 }, flash: { value: 0 }, wet: { value: 0 }, px: { value: 3 } },
   vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
   fragmentShader: `
-    uniform sampler2D tex; uniform vec2 res; uniform float ca, flash, wet, px; varying vec2 vUv;
+    uniform sampler2D tex; uniform sampler2D wtex; uniform vec2 res; uniform float ca, flash, wet, px; varying vec2 vUv;
     float b2(vec2 p){ p = mod(p, 2.0); return mod(p.x * 3.0 + p.y * 2.0, 4.0); }
     float bayer(vec2 p){ return (4.0 * b2(p) + b2(floor(p / 2.0))) / 16.0; }
     void main(){
       // 8-bit look: the picture is sampled on a coarse grid of big square pixels
       vec2 cell = floor(vUv * res / px); vec2 uv = (cell + 0.5) * px / res;
       vec2 d = (uv - 0.5); vec2 o = d * ca * 0.018 + vec2(ca * 2.0 * px / res.x, 0.0);
-      vec3 c = vec3(texture2D(tex, uv + o).r, texture2D(tex, uv).g, texture2D(tex, uv - o).b);
+      // the world is pixelated; the players (drawn on top of it in the play pass) stay in their own crisp pixel art
+      vec3 cw = vec3(texture2D(wtex, uv + o).r, texture2D(wtex, uv).g, texture2D(wtex, uv - o).b);
+      vec2 o2 = (vUv - 0.5) * ca * 0.018 + vec2(ca * 2.0 / res.x, 0.0);
+      vec3 cp = vec3(texture2D(tex, vUv + o2).r, texture2D(tex, vUv).g, texture2D(tex, vUv - o2).b);
+      float pl = step(0.003, length(texture2D(tex, vUv).rgb - texture2D(wtex, vUv).rgb));
+      vec3 c = mix(cw, cp, pl);
       c = pow(c, vec3(1.0 / 2.2));
       c = mix(vec3(dot(c, vec3(0.299, 0.587, 0.114))), c, 1.1 - wet * 0.25);
       c = mix(c, c * vec3(0.82, 0.88, 0.98), wet);
       float v = smoothstep(1.05, 0.4, length(d * vec2(1.0, 0.85)));
       c *= mix(0.84 - wet * 0.1, 1.0, v);
-      float L = 12.0; c = floor(c * L + 0.25 + bayer(cell) * 0.5) / L; gl_FragColor = vec4(mix(c, vec3(1.0), flash), 1.0);
+      float L = 12.0; c = mix(floor(c * L + 0.25 + bayer(cell) * 0.5) / L, c, pl); gl_FragColor = vec4(mix(c, vec3(1.0), flash), 1.0);
     }`,
   depthTest: false, depthWrite: false,
 });
@@ -111,6 +122,8 @@ function resize() {
   low.depthTexture = new THREE.DepthTexture(w, h); low.depthTexture.type = THREE.UnsignedIntType;
   post.uniforms.tex.value = low.texture; post.uniforms.dep.value = low.depthTexture; post.uniforms.res.value.set(w, h);
   mid?.dispose(); mid = new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: true, type: THREE.HalfFloatType });
+  wld?.dispose(); wld = new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthBuffer: true, type: THREE.HalfFloatType });
+  blit.uniforms.tex.value = wld.texture; blit.uniforms.dep.value = low.depthTexture; fin.uniforms.wtex.value = wld.texture;
   fin.uniforms.tex.value = mid.texture; fin.uniforms.res.value.set(w, h); fin.uniforms.px.value = Math.max(2, Math.round(2.6 * pr));
   const portrait = H > W; camera.aspect = W / H; camera.fov = portrait ? 60 : 46; camera.updateProjectionMatrix();
   post.uniforms.focus.value = portrait ? 0.45 : 0.42; post.uniforms.band.value = portrait ? 0.14 : 0.12;
@@ -120,7 +133,8 @@ const toPlay = (o) => o.traverse((m) => m.layers.set(PLAY));
 function render() {
   camera.layers.set(0);
   renderer.setRenderTarget(low); renderer.render(scene, camera);
-  renderer.setRenderTarget(mid); renderer.autoClear = true; renderer.render(postScene, postCam);
+  renderer.setRenderTarget(wld); renderer.autoClear = true; renderer.render(postScene, postCam);
+  renderer.setRenderTarget(mid); renderer.render(blitScene, postCam);
   const bg = scene.background; scene.background = null;   // the play pass must not paint the sky over the world
   renderer.autoClear = false; camera.layers.set(PLAY); renderer.render(scene, camera); renderer.autoClear = true; scene.background = bg;
   camera.layers.set(0);
