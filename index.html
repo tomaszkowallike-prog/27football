@@ -384,7 +384,7 @@
   .side90 { display: none; position: absolute; top: 0; bottom: 0; width: calc((100vw - 177.78vh) / 2 + 4px); z-index: 0; pointer-events: none; overflow: hidden;
     background: url(side_a.png) 0 0 / 192px 192px repeat, #ffd21a; image-rendering: pixelated; animation: side90up 8s linear infinite; }
   .side90::after { content: ""; position: absolute; inset: 0; background: url(side_b.png) 0 0 / 192px 192px repeat; image-rendering: pixelated; animation: side90up 8s linear infinite, side90blink .9s steps(1) infinite; }
-  .side90.blue { background-image: url(side_a_blue.png); background-color: #2a8cff; } .side90.blue::after { background-image: url(side_b_blue.png); }
+  .side90.blue { background-image: url(side_a_red.png); background-color: #e8302a; } .side90.blue::after { background-image: url(side_b_blue.png); }
   @media (min-aspect-ratio: 17/9) { #trofea { background: #0a0614; } #trofea .sbg { display: none; } }
   .side90.l { left: 0; border-right: 4px solid #111; } .side90.r { right: 0; border-left: 4px solid #111; background-position: 96px 0; }
   .side90.r::after { animation-delay: 0s, -.45s; }
@@ -447,11 +447,14 @@
   #wpanel .wpal i, #wpanel .wcust { width: 14px; height: 14px; border: 2px solid #000; box-shadow: 0 0 0 1px #5a52a8; cursor: pointer; display: block; } #wpanel .wpal i.on { box-shadow: 0 0 0 2px #ffe14a; }
   #wpanel .wcust { position: relative; overflow: hidden; background-image: linear-gradient(45deg, transparent 40%, rgba(255,255,255,.7) 40% 60%, transparent 60%); } #wpanel .wcust input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
   #wpanel .wstat { display: grid; grid-template-columns: 1fr auto; gap: 2px 6px; } #wpanel .wstat b { color: #6ee05a; font-weight: 400; } #wpanel .whint { margin: 5px 0; font: 400 10px "Pixelify Sans", monospace; color: #b8b4e8; }
+  #trofea .texit { position: absolute; left: 90.6%; top: 38%; width: 8.6%; padding: 0; background: none; border: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; animation: tarr 0.9s steps(2) infinite; --dx: 4px; }
+  #trofea .texit[hidden] { display: none; } #trofea .texit b { font: 400 clamp(7px, 1.2vw, 13px) "Press Start 2P", monospace; color: #fff; background: #c81e1e; border: 3px solid #fff; padding: 4px 6px; box-shadow: 0 3px 0 #000; }
+  #trofea .texit i { display: block; width: 80%; aspect-ratio: 133 / 122; background: url(arrow_r.png?v=1) center / 100% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 4px 0 rgba(0,0,0,.5)); }
   #trofea .tback { position: absolute; left: 1.5%; top: 2.5%; padding: 8px 12px; font: 10px "Press Start 2P", monospace; color: #fff; background: #1a1540; border: 3px solid #7a6ad8; cursor: pointer; }
   #trofea .tcount { position: absolute; right: 2%; top: 3%; padding: 8px 12px; font: 10px "Press Start 2P", monospace; color: #ffe14a; background: rgba(0,0,0,.7); }
   #trofea .tinfo { position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%); min-width: 40%; padding: 8px 14px; text-align: center; font: 9px "Press Start 2P", monospace; line-height: 1.7; color: #fff; background: rgba(10,8,24,.9); border: 3px solid #ffe14a; }
   #trofea .tinfo[hidden] { display: none; } #trofea .tinfo b { color: #ffe14a; font-weight: 400; }
-  #sworks { left: 1.8%; top: 3%; width: auto; height: auto; padding: 6px 10px; font: clamp(7px,1.1vw,12px) "Press Start 2P", monospace; color: #1a1030 !important; background: #ffe14a !important; border: 3px solid #fff6c0 !important; box-shadow: 0 4px 0 #b08a00; }
+  #sworks { left: 9.4%; top: 2.6%; width: 17.6%; height: 5.8%; font-size: 0; color: transparent; }
   #strophy { left: 86.5%; top: 14%; width: 9%; height: 15%; }
   #szatnia .hot { position: absolute; background: transparent; border: 0; cursor: pointer; }
   #szatnia .hot:hover, #szatnia .hot:focus-visible { outline: 3px solid #ffe14a; border-radius: 10px; }
@@ -549,7 +552,7 @@
 <div id="trofea" hidden><div class="side90 l blue"></div><div class="side90 r blue"></div><div class="sbg"></div><div class="tbox"><img src="trofea_bg.jpg?v=3" alt=""><div id="tslots"></div>
   <div class="lamp a" style="left:19.6%;width:13%"></div><div class="lamp b" style="left:43%;width:13.5%"></div><div class="lamp c" style="left:67.5%;width:13%"></div>
   <button class="tarrow l" id="tleft" aria-label="W lewo">◀</button><button class="tarrow r" id="tright" aria-label="W prawo" hidden>▶</button>
-  <button class="tback" id="tback">◀ WRÓĆ</button><div class="tcount" id="tcount"></div><div class="tinfo" id="tinfo" hidden></div></div></div>
+  <button class="texit" id="texit" aria-label="Exit"><b>EXIT</b><i></i></button><button class="tback" id="tback" hidden>◀ WRÓĆ</button><div class="tcount" id="tcount"></div><div class="tinfo" id="tinfo" hidden></div></div></div>
 <div id="warsztat" hidden><div class="wbox">
   <div id="wroom"><img src="warsztat_room.jpg?v=1" alt=""><div class="lamp" style="left:48%;top:3%;width:20%;height:11%"></div><button id="wtable" aria-label="But"></button><button class="wbtn" id="wgo">▶ EDYTUJ BUTA</button></div>
   <div id="wedit" hidden><img id="wbg" src="warsztat_side.jpg?v=1" alt=""><div class="lamp" style="left:30%;top:0;width:39%;height:12%"></div><canvas id="wcv" class="side"></canvas>
@@ -585,7 +588,7 @@
 <div class="ov" id="end" hidden><div class="panel"><h1 id="endT">KONIEC</h1><div id="final">0 : 0</div><div id="reward"></div><div class="row"><button class="btn" id="again">REWANŻ</button><button class="btn" id="tnext" hidden>DALEJ</button><button class="btn" id="tmenu">BOISKA</button></div></div></div>
 <div id="penHint"></div>
 <div id="bag" class="hud"></div>
-<div id="szatnia" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg"></div><div class="sbox"><img src="szatnia_base.jpg" alt="">
+<div id="szatnia" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg"></div><div class="sbox"><img src="szatnia_base.jpg?v=2" alt="">
   <div class="sanim" aria-hidden="true"><div class="lamp a" style="left:18.541%;top:12.965%;width:12.739%;height:2.657%"><i></i></div><div class="lamp b" style="left:43.182%;top:12.965%;width:12.799%;height:2.657%"><i></i></div><div class="lamp c" style="left:68.600%;top:13.177%;width:12.380%;height:2.550%"><i></i></div><div class="lev" style="left:74.522%;top:42.402%;width:9.988%;height:21.679%"><div class="aura"></div><div class="orb back"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div><img src="kid27.png" alt=""><div class="orb front"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div></div><img class="tie" src="kid10.png" alt="" style="left:36.244%;top:41.445%;width:8.134%;height:23.061%"><img class="sip" src="kid7h.png" alt="" style="left:56.998%;top:40.701%;width:6.220%;height:13.603%"><div class="phone" style="left:19.258%;top:53.879%;width:2.093%;height:1.913%"></div></div>
   <div class="kid" data-i="0" style="left:14.5%;width:12.5%"></div><div class="kid" data-i="1" style="left:34.5%;width:12.5%"></div>
   <div class="kid" data-i="2" style="left:54.5%;width:12.5%"></div><div class="kid" data-i="3" style="left:73.5%;width:12.5%"></div>
@@ -594,7 +597,7 @@
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <button class="hot" id="sset" aria-label="Ustawienia"></button>
-  <div class="stitle">WYBIERZ KAPITANA</div><div class="scoin" id="coinL">0</div><button class="hot" id="sworks" aria-label="Warsztat">WARSZTAT</button><button class="hot" id="strophy" aria-label="Trofea"></button></div></div>
+  <div class="stitle">WYBIERZ KAPITANA</div><div class="scoin" id="coinL">0</div><button class="hot" id="sworks" aria-label="Warsztat"></button><button class="hot" id="strophy" aria-label="Trofea"></button></div></div>
 <div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt=""><button class="hbottle" id="hbottle" aria-label="Butelka"><img src="flip_woda.png" alt=""></button>
   <small id="mq">CO ROBIMY?</small>
   <div class="mrow"><button class="mb" data-m="match"><b><img class="pxi" src="ico_match.png" alt=""></b>MECZ<em>Pixels kontra Fioletowi</em></button><button class="mb" data-m="karne"><b><img class="pxi" src="ico_karne.png" alt=""></b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b><img class="pxi" src="ico_kapki.png" alt=""></b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b><img class="pxi" src="ico_but.png" alt=""></b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b><img class="pxi" src="ico_kapsle.png" alt=""></b>KAPSLE<em>wyścig kapsli po torze</em></button><button class="mb" data-m="bieg"><b><img class="pxi" src="ico_bieg.png" alt=""></b>BIEG<em>wyścig dookoła boiska</em></button></div>
@@ -903,7 +906,7 @@
     C2.forEach(([i, pl, en, hp, he, ok], k) => T.push({ i, n: L(pl, en), how: L(hp, he), ok, s: k, room: 1 }));
     let room = 0;
     const draw = (fresh = []) => { const P = PROG.get(), box = $('tslots'); box.innerHTML = ''; let n = 0;
-      $('tleft').hidden = room !== 0; $('tright').hidden = room !== 1; const bi = document.querySelector('#trofea .tbox > img'); const en = window.LANG === 'en' ? '_en' : ''; bi.src = room ? `trofea_bg2${en}.jpg?v=1` : `trofea_bg${en}.jpg?v=3`;
+      $('tleft').hidden = room !== 0; $('tright').hidden = room !== 1; $('texit').hidden = room !== 0; const bi = document.querySelector('#trofea .tbox > img'); const en = window.LANG === 'en' ? '_en' : ''; bi.src = room ? `trofea_bg2${en}.jpg?v=1` : `trofea_bg${en}.jpg?v=3`;
       for (const t of T) { if (t.room !== room) { n += !!t.ok(P); continue; } const [x, y, w, h] = TSLOT[t.s], got = !!t.ok(P); n += got; const d = document.createElement('div'); d.className = 'tro' + (got ? '' : ' off') + (fresh.includes(t.i) ? ' new' : '');
         d.style.cssText = `left:${x}%;top:${y}%;width:${w}%;height:${h}%`; d.innerHTML = `<i style="background-position:${t.i / 49 * 100}% 0"></i>`;
         d.onclick = () => { const e = $('tinfo'); e.innerHTML = `<b>${got ? t.n : '???'}</b><br>${t.how}${got ? '<br>✔ ' + L('ZDOBYTE', 'WON') : ''}`; e.hidden = false; }; box.appendChild(d); }
@@ -913,7 +916,7 @@
       for (const t of fresh) P.tro.push(t.i); PROG.save(); setTimeout(() => toast(L('NOWE TROFEUM!', 'NEW TROPHY!') + '\n' + fresh.map((t) => t.n).join('\n')), 2800); return fresh.map((t) => t.i); };
     $('tleft').onclick = () => { room = 1; draw(); $('tinfo').hidden = true; }; $('tright').onclick = () => { room = 0; draw(); $('tinfo').hidden = true; };
     const open = () => { room = 0; const fresh = check(); draw(fresh); $('tinfo').hidden = true; $('trofea').hidden = false; };
-    $('tback').onclick = () => { $('trofea').hidden = true; }; $('tslots').addEventListener('click', (e) => e.stopPropagation());
+    $('tback').onclick = $('texit').onclick = () => { $('trofea').hidden = true; }; $('tslots').addEventListener('click', (e) => e.stopPropagation());
     return { open, check }; })();
   $('strophy').onclick = () => TRO.open(); $('wsbtn').onclick = () => window.WARSZTAT?.open(); $('sworks').onclick = () => window.WARSZTAT?.open(); $('trobtn').onclick = () => TRO.open();
   window.KAPKI_COINS = (n) => { const c = Math.floor(n / 5); if (c > 0) PROG.add(c); return c; };
