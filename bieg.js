@@ -24,7 +24,7 @@
   fetch('bieg_fg.json').then((r) => r.json()).then((j) => { FGJ = j.fg; buildLanes(j.path); });
   // the line round the pitch and the lamp heads, in picture units
   const PL = 252, PR = 1418, PT = 188, PB = 742;
-  const LANES = [-13, -4.5, 4.5, 13];
+  const LANES = [-9, -3, 3, 9];
   const LAMPS = [[172, 148], [1497, 148], [157, 636], [1512, 640]];
   const NAMES = { 14: 'SOWA', 10: 'ARTUR', 7: 'SZYMON', 27: 'DOMINIK' };
   const SPR_H = 72;
