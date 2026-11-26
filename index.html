@@ -336,7 +336,7 @@
   .flipgrid button:hover, .flipgrid button:focus-visible { background: #ffe14a; }
   .flipgrid img { height: min(26vh, 120px); display: block; image-rendering: pixelated; }
   #arenapick .setp { width: min(96vw, 820px); max-height: 92vh; display: flex; flex-direction: column; } .arenagrid { overflow-y: auto; max-height: 70vh; display: grid !important; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; align-items: start; padding: 2px; }
-  .arenagrid button { padding: 6px 6px 5px; } .arenagrid img { height: auto; width: 100%; max-width: 96px; margin: 0 auto; }
+  .arenagrid button { padding: 6px 6px 5px; } .arenagrid img { height: auto; width: 100%; max-width: 96px; aspect-ratio: 120 / 84; margin: 0 auto; }
   .arenagrid span { display: block; margin-top: 5px; line-height: 1.4; font: 7px "Press Start 2P", monospace; color: #fff; text-shadow: 1px 1px 0 #000; }
   .arenagrid button.sel { background: #3fbf55; } .arenagrid button:hover span, .arenagrid button:focus-visible span { color: #1a1030; text-shadow: none; }
   .arenahint { margin: 6px 0 0; font: 7px "Press Start 2P", monospace; color: #9ab0ff; text-align: center; line-height: 1.6; }
@@ -654,10 +654,13 @@
   const markMode = () => document.querySelectorAll('#modes .mb').forEach((b, i) => b.classList.toggle('sel', i === modeSel));
   window.CAPTAIN = 27;
   const pickMode = (m) => { TMUS.pause(); $('modes').hidden = true; if (m === 'back') { SZ.show(); return; } if (m === 'kapsle') window.CAPS.start(showModes); else if (m === 'bieg') window.BIEG.start(showModes); else if (m === 'but') window.LACE.start(showModes); else if (m === 'karne') window.PEN.start(showModes, window.CAPTAIN); else if (m === 'kapki') K.start(); else arenaPick(); };
-  const arenaPick = () => { const cur = window.GAME?.arenaId || 'stadion', grid = $('arenagrid');
-    if (!grid.children.length) for (const a of (window.GAME?.arenas || [])) { const b = document.createElement('button'); b.dataset.a = a.id; b.innerHTML = `<img src="arena_${a.id}.png" alt=""><span>${a.name}</span>`;
-      b.addEventListener('click', () => { $('arenapick').hidden = true; window.GAME?.arena(a.id); if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } }); grid.appendChild(b); }
-    grid.querySelectorAll('button').forEach((b) => b.classList.toggle('sel', b.dataset.a === cur)); $('arenapick').hidden = false; grid.querySelector('.sel')?.scrollIntoView({ block: 'nearest' }); };
+  // the arena cards are built and their pictures loaded once, right at start, so the list never shows names without pictures
+  const AIMG = []; const buildArenas = () => { const grid = $('arenagrid'); if (grid.children.length || !window.GAME?.arenas) return; for (const a of (window.GAME?.arenas || [])) { const b = document.createElement('button'); b.dataset.a = a.id; b.innerHTML = `<img src="arena_${a.id}.png" alt="" width="120" height="84" decoding="sync"><span>${a.name}</span>`; AIMG.push(b.querySelector('img'));
+      b.addEventListener('click', () => { $('arenapick').hidden = true; window.GAME?.arena(a.id); if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } }); grid.appendChild(b); } };
+  (function waitArenas() { if (window.GAME?.arenas) buildArenas(); else setTimeout(waitArenas, 200); })();
+  const arenaPick = () => { const cur = window.GAME?.arenaId || 'stadion', grid = $('arenagrid'); buildArenas();
+    const show = () => { grid.querySelectorAll('button').forEach((b) => b.classList.toggle('sel', b.dataset.a === cur)); $('arenapick').hidden = false; grid.querySelector('.sel')?.scrollIntoView({ block: 'nearest' }); };
+    Promise.race([Promise.all(AIMG.map((i) => i.decode().catch(() => {}))), new Promise((r) => setTimeout(r, 600))]).then(show); };
   $('arenax').onclick = () => { $('arenapick').hidden = true; showModes(); };
   // ---- the locker room: pick the captain, who plays in the middle and kicks off ----
   const SZ = (() => {
