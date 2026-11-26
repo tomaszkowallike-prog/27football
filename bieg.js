@@ -13,6 +13,10 @@
   const cv = $('biegCv'), g = cv.getContext('2d');
   const BW = 1672, BH = 941;
   const BG = new Image(); BG.src = 'bieg_bg.jpg';
+  const SA = new Image(); SA.src = 'side_a.png'; const SB = new Image(); SB.src = 'side_b.png';
+  let TILE = null;
+  const nightTile = () => { if (!SA.complete || !SA.naturalWidth) return null; const c = document.createElement('canvas'); c.width = 192; c.height = 192; const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+    x.fillStyle = '#0c1036'; x.fillRect(0, 0, 192, 192); x.globalAlpha = 0.55; x.drawImage(SA, 0, 0, 192, 192); x.globalAlpha = 1; return c; };
   const AT = new Image(); AT.src = 'bieg_runners.png'; let ATJ = null;
   fetch('bieg_runners.json').then((r) => r.json()).then((j) => { ATJ = j; });
   // trees, bushes and lamp posts cut out in bands by where they stand, so a runner passing behind them is hidden
@@ -63,11 +67,11 @@
 
   // ---- state ----
   const S = { on: false, phase: 'intro', t: 0, cnt: 0, runners: [], best: 0, parts: [], leaves: [], flick: [1, 1, 1, 1], res: null, lastDir: 0, acc: 0, strokes: 0 };
-  try { S.best = +localStorage.getItem('bieg_best') || 0; } catch (e) {}
-  const LAPS = 1;
+  const bestKey = () => 'bieg_best_' + LAPS; const loadBest = () => { try { S.best = +localStorage.getItem(bestKey()) || 0; } catch (e) { S.best = 0; } }; loadBest();
+  let LAPS = 3;
   const reset = () => { const cap = window.CAPTAIN || 27, order = [cap, ...[14, 10, 7, 27].filter((n) => n !== cap)];
     const lvl = [0.86, 1, 1.12][(window.CFG && window.CFG.lvl != null) ? window.CFG.lvl : 1];
-    S.runners = order.map((n, i) => ({ n, lane: i, d: 0, v: 0, me: i === 0, frame: 0, ft: 0, done: false, time: 0,
+    S.runners = order.map((n, i) => ({ n, lane: i, d: 0, v: 0, me: i === 0, frame: 0, ft: 0, done: false, time: 0, sta: 1, tired: false,
       base: (255 + Math.random() * 45 + i * 8) * lvl, wob: Math.random() * 6, kick: 0.7 + Math.random() * 0.2 }));
     // the runners stand staggered so every lane has the same distance to run
     S.runners.forEach((r) => { r.dist = perim(r.lane) * LAPS; r.d = 0; });
@@ -77,16 +81,17 @@
   let last = null;
   const P = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
   const me = () => S.runners.find((r) => r.me);
-  const stride = () => { const m = me(); if (!m || S.phase !== 'run' || m.done) return; m.v = Math.min(470, m.v + 40); S.strokes++; if (S.strokes % 2) step(); };
+  const stride = () => { const m = me(); if (!m || S.phase !== 'run' || m.done) return; m.v = Math.min(m.tired ? 150 : 470, m.v + (m.tired ? 12 : 40)); S.strokes++; S.rubT = 0; if (S.strokes % 2) step(); };
   cv.addEventListener('pointerdown', (e) => { e.preventDefault(); const [x, y] = P(e);
-    if (S.phase === 'intro') { const b = btn(); if (x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h) { reset(); tone(440, 440, 0.12); } return; }
+    if (S.phase === 'intro') { for (const l of lapBtns()) if (x > l.x && x < l.x + l.w && y > l.y && y < l.y + l.h) { LAPS = l.n; loadBest(); tone(660, 660, 0.06); }
+      const b = btn(); if (x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h) { reset(); tone(440, 440, 0.12); } return; }
     if (S.phase === 'over') { reset(); S.phase = 'intro'; return; }
     last = { y, dir: 0, acc: 0 }; try { cv.setPointerCapture(e.pointerId); } catch (_) {} });
   cv.addEventListener('pointermove', (e) => { if (!last) return; const [, y] = P(e), dy = y - last.y; last.y = y; if (Math.abs(dy) < 0.5) return;
     const dir = Math.sign(dy);
     if (dir === last.dir) last.acc += Math.abs(dy);
     else { if (last.acc > 14) stride(); last.dir = dir; last.acc = Math.abs(dy); } });
-  const up = () => { if (last && last.acc > 14) stride(); last = null; };
+  const up = () => { if (last && last.acc > 14) stride(); last = null; S.lift = 0; };
   cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
   let lastKey = '';
   addEventListener('keydown', (e) => { if (root.hidden) return; e.stopPropagation();
@@ -98,7 +103,7 @@
   $('biegBack').addEventListener('click', () => close());
 
   // ---- update ----
-  const update = (dt) => { S.t += dt;
+  const update = (dt) => { S.t += dt; S.lift = (S.lift || 0) + dt; S.rubT = (S.rubT || 0) + dt;
     for (let i = 0; i < 4; i++) { const f = S.flick[i]; let tgt = 0.85 + Math.sin(S.t * (3 + i) + i * 2) * 0.08 + Math.random() * 0.07;
       if (Math.random() < dt * (i === 2 ? 1.4 : 0.35)) tgt = 0.15 + Math.random() * 0.2; S.flick[i] = f + (tgt - f) * Math.min(1, dt * 25); }
     // midges round the lamps, fireflies over the grass, leaves drifting down
@@ -109,11 +114,17 @@
     if (S.phase === 'count') { const c = 3 - Math.floor(S.t); if (c !== S.cnt) { S.cnt = c; if (c > 0) tone(440, 440, 0.12); else { tone(880, 880, 0.3); S.phase = 'run'; S.t = 0; } } }
     if (S.phase === 'run' || S.phase === 'finish') {
       for (const r of S.runners) { if (r.done) { r.v *= Math.exp(-2.5 * dt); r.d += r.v * dt * 0.4; continue; }
-        if (!r.me) { const f = r.d / r.dist, push = f > r.kick ? 1.18 : 1; const tgt = r.base * push * (1 + Math.sin(S.t * 0.9 + r.wob) * 0.07); r.v += (tgt - r.v) * Math.min(1, dt * 1.6); }
-        else r.v *= Math.exp(-1.15 * dt);
-        r.d += r.v * dt; r.ft += dt * (2 + r.v / 22);
+        if (!r.me) { const f = r.d / r.dist, push = f > r.kick && r.sta > 0.25 ? 1.2 : 1; let tgt = r.base * push * (1 + Math.sin(S.t * 0.9 + r.wob) * 0.07);
+          if (r.tired) tgt = 150; else if (r.sta < 0.3) tgt = Math.min(tgt, 240); r.v += (tgt - r.v) * Math.min(1, dt * 1.6); }
+        else { r.v *= Math.exp(-1.15 * dt); if (r.tired) r.v = Math.min(r.v, 150); }
+        // stamina: a sprint (fast pace) drains it, an easy pace brings it back; at zero the runner must slow down and rest
+        if (r.v > 300) r.sta -= (r.v - 300) / 170 * 0.075 * dt; else r.sta += (r.v < 160 ? 0.2 : 0.09) * dt;
+        r.sta = Math.max(0, Math.min(1, r.sta));
+        if (r.sta <= 0 && !r.tired) { r.tired = true; if (r.me) { tone(220, 110, 0.4, 'sawtooth', 0.04); try { if (!window.CFG || window.CFG.vib !== false) navigator.vibrate?.([60, 60, 60]); } catch (e) {} } }
+        if (r.tired && r.sta > 0.35) r.tired = false;
+        r.d += r.v * dt; r.ft += dt * (2 + r.v / 22); r.lap = Math.min(LAPS, Math.floor(r.d / perim(r.lane)) + 1);
         if (r.d >= r.dist) { r.done = true; r.time = S.t; r.place = S.runners.filter((q) => q.done).length;
-          if (r.me) { tone(523, 1046, 0.4); S.phase = 'finish'; S.fin = S.t; if (r.place === 1 && (!S.best || r.time < S.best)) { S.best = r.time; try { localStorage.setItem('bieg_best', S.best.toFixed(2)); } catch (e) {} } } } }
+          if (r.me) { tone(523, 1046, 0.4); S.phase = 'finish'; S.fin = S.t; if (r.place === 1 && (!S.best || r.time < S.best)) { S.best = r.time; try { localStorage.setItem(bestKey(), S.best.toFixed(2)); } catch (e) {} } } } }
       if (S.phase === 'finish' && (S.runners.every((r) => r.done) || S.t - S.fin > 3)) { S.phase = 'over'; S.t = 0; } } };
 
   // ---- drawing ----
@@ -121,7 +132,8 @@
     g.fillStyle = '#000'; for (const [a, b] of [[3, 3], [-2, 2], [2, -2], [-2, -2]]) g.fillText(s, x + a, y + b); g.fillStyle = col; g.fillText(s, x, y); };
   const pbox = (x, y, w, h, fill) => { g.fillStyle = '#000'; g.fillRect(x + 3, y, w - 6, h); g.fillRect(x, y + 3, w, h - 6); g.fillStyle = fill; g.fillRect(x + 6, y + 3, w - 12, h - 6); g.fillRect(x + 3, y + 6, w - 6, h - 12);
     g.fillStyle = 'rgba(255,255,255,.4)'; g.fillRect(x + 6, y + 6, w - 12, 3); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(x + 6, y + h - 9, w - 12, 3); };
-  const btn = () => { const w = Math.min(300, W * 0.42), h = 60; return { x: W / 2 - w / 2, y: H * 0.68, w, h }; };
+  const btn = () => { const w = Math.min(300, W * 0.42), h = 56; return { x: W / 2 - w / 2, y: H * 0.74, w, h }; };
+  const lapBtns = () => { const w = Math.min(110, W * 0.15), h = 46, gap = 14, x0 = W / 2 - (w * 3 + gap * 2) / 2; return [1, 3, 5].map((n, i) => ({ n, x: x0 + i * (w + gap), y: H * 0.56, w, h })); };
   const drawRunner = (r) => { if (!ATJ || !AT.complete) return; const [x, y, dir, flip] = posAt(r.lane, Math.min(r.d, r.dist + 60)), lst = ATJ.p[r.n][dir];
     const idx = r.v > 12 ? lst[Math.floor(r.ft) % lst.length] : lst[0], [fx, fy, fw, fh] = ATJ.f[idx];
     const u = Math.max(1, Math.round(SPR_H * sc / (ATJ.h || 28) * 2) / 2), h = fh * u, w = fw * u, [sx, sy] = TS(x, y);
@@ -132,7 +144,12 @@
     const tag = String(r.n), ty = sy - h - 8; g.font = '8px "Press Start 2P", monospace'; const tw = g.measureText(tag).width + 8;
     g.fillStyle = r.me ? '#ffe14a' : '#1a1540'; g.fillRect(Math.round(sx - tw / 2), Math.round(ty - 7), Math.round(tw), 13); g.fillStyle = r.me ? '#1a1030' : '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(tag, sx, ty);
     if (r.me) { g.fillStyle = '#ffe14a'; g.fillRect(Math.round(sx - 3), Math.round(ty + 7), 6, 3); g.fillRect(Math.round(sx - 1), Math.round(ty + 10), 2, 2); } };
-  const draw = () => { g.imageSmoothingEnabled = false; g.fillStyle = '#0b1a0e'; g.fillRect(0, 0, W, H);
+  const draw = () => { g.imageSmoothingEnabled = false; g.fillStyle = '#0c1036'; g.fillRect(0, 0, W, H);
+    if (ox > 1) { if (!TILT && !TILE) TILE = nightTile(); if (!TILE) TILE = nightTile();
+      if (TILE) { const pat = g.createPattern(TILE, 'repeat'), off = (S.t * 24) % 192; g.save(); g.translate(0, -off); g.fillStyle = pat;
+        g.fillRect(0, off, ox, H); g.fillRect(ox + BW * sc, off, W - ox - BW * sc, H);
+        if (SB.complete && Math.floor(S.t * 1.8) % 2) { const p2 = g.createPattern(SB, 'repeat'); g.fillStyle = p2; g.globalAlpha = 0.8; g.fillRect(0, off, ox, H); g.fillRect(ox + BW * sc, off, W - ox - BW * sc, H); }
+        g.restore(); g.fillStyle = '#000'; g.fillRect(ox - 3, 0, 3, H); g.fillRect(ox + BW * sc, 0, 3, H); } }
     if (!TILT) TILT = bakeTilt(); if (TILT) g.drawImage(TILT, ox, oy, BW * sc, BH * sc); else if (BG.complete) g.drawImage(BG, ox, oy, BW * sc, BH * sc);
     // start / finish line across the path
     if (LP) { for (let i = 0; i < 6; i++) { const [x, y] = TS(LP[0].pts[0][0] - 2, LP[0].pts[0][1] - 17 + i * 6); const [x2] = TS(LP[0].pts[0][0] + 4, 0); g.fillStyle = i % 2 ? '#111' : '#fff'; g.fillRect(Math.round(x), Math.round(y), Math.max(3, Math.round(x2 - x)), Math.max(2, Math.round(6 * sc))); } }
@@ -153,32 +170,40 @@
     for (const p of S.parts) { const li = LAMPS.findIndex((L) => L[0] === p.cx), f = S.flick[li] || 1, [x, y] = TS(p.cx + Math.cos(p.a) * p.r, p.cy + Math.sin(p.a) * p.r * 0.6 + Math.sin(p.z) * 6);
       g.fillStyle = `rgba(255,250,${180 + Math.round(Math.sin(p.z) * 60)},${(0.55 + 0.45 * Math.sin(p.z * 2)) * f})`; g.fillRect(Math.round(x), Math.round(y), px, px); }
     for (const l of S.leaves) { const [x, y] = TS(l.x, l.y); g.fillStyle = l.c; g.fillRect(Math.round(x), Math.round(y), px * 2, px); if (Math.sin(l.a) > 0) g.fillRect(Math.round(x + px), Math.round(y - px), px, px); }
-    // HUD
-    if (S.phase === 'run' || S.phase === 'finish' || S.phase === 'count') { const m = me(), sorted = [...S.runners].sort((a, b) => (b.done ? 1e9 - b.time : b.d / b.dist) - (a.done ? 1e9 - a.time : a.d / a.dist)), place = sorted.indexOf(m) + 1;
-      pbox(10, 10, 232, 84, '#1a1540'); g.font = '10px "Press Start 2P", monospace'; g.textAlign = 'left'; g.textBaseline = 'middle';
-      g.fillStyle = '#ffe14a'; g.fillText(`MIEJSCE ${place}/4`, 22, 30); g.fillStyle = '#fff'; g.fillText(`CZAS ${(S.phase === 'count' ? 0 : m.done ? m.time : S.t).toFixed(1)}s`, 22, 50);
-      const n = 16; for (let k = 0; k < n; k++) { g.fillStyle = '#000'; g.fillRect(22 + k * 13, 64, 12, 12); g.fillStyle = k < Math.round(Math.min(1, m.d / m.dist) * n) ? '#3fe060' : '#333'; g.fillRect(23 + k * 13, 65, 10, 10); }
-      // speed: a column of blocks at the right
-      const sv = Math.min(1, m.v / 450), N = 10, bx = W - 40, by = H * 0.3; for (let k = 0; k < N; k++) { g.fillStyle = '#000'; g.fillRect(bx - 2, by + (N - 1 - k) * 14 - 2, 24, 14); g.fillStyle = k < Math.round(sv * N) ? (k > 7 ? '#ff4a3a' : k > 4 ? '#ffe14a' : '#3fe060') : '#2a2a36'; g.fillRect(bx, by + (N - 1 - k) * 14, 20, 10); }
-      g.font = '8px "Press Start 2P", monospace'; g.textAlign = 'center'; g.fillStyle = '#fff'; g.fillText('TEMPO', bx + 10, by + N * 14 + 8);
-      if (S.phase === 'run' && !m.done) { const k = Math.floor(performance.now() / 180) % 2, cx = W / 2, cy = H / 2;
-        if (S.strokes < 30 || m.v < 120) { g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(cx - 40, cy - 70, 80, 140);
-          const arrow = (yy, d) => { g.fillStyle = '#fff'; for (let i = 0; i < 5; i++) g.fillRect(cx - (4 - i) * 5 - 2, yy + d * i * 5, (4 - i) * 10 + 4, 5); };
-          arrow(cy - 55 + (k ? 0 : -6), 1); arrow(cy + 55 + (k ? 0 : 6), -1); txt('POCIERAJ', cx, cy, 14, '#ffe14a'); } } }
-    if (S.phase === 'count') txt(S.cnt > 0 ? String(S.cnt) : 'START!', W / 2, H * 0.45, Math.min(90, W / 7), S.cnt > 0 ? '#fff' : '#3fe060');
-    if (S.phase === 'run' && S.t < 0.8) txt('START!', W / 2, H * 0.45, Math.min(90, W / 7), '#3fe060');
-    if (S.phase === 'finish' && me().done) txt(me().place === 1 ? 'WYGRANA!' : `${me().place}. MIEJSCE`, W / 2, H * 0.42, Math.min(56, W / 11), me().place === 1 ? '#ffe14a' : '#fff');
-    if (S.phase === 'intro' || S.phase === 'over') { g.fillStyle = 'rgba(6,14,8,.72)'; g.fillRect(0, 0, W, H);
-      if (S.phase === 'intro') { txt('BIEG', W / 2, H * 0.17, Math.min(60, W / 10), '#ffe14a');
-        txt('Wyścig dookoła boiska, jedno okrążenie.', W / 2, H * 0.32, Math.min(16, W / 42));
-        txt('Pocieraj ekran palcem w górę i w dół,', W / 2, H * 0.42, Math.min(16, W / 42));
-        txt('jak najszybciej - im szybciej, tym szybciej biegniesz.', W / 2, H * 0.5, Math.min(16, W / 42));
-        if (S.best) txt(`REKORD (wygrana): ${S.best.toFixed(1)} s`, W / 2, H * 0.59, 14, '#9fd8ff');
+    // HUD, all of it inside the pitch, where nobody runs
+    const [px0, py0] = TS(270, 200), [px1, py1] = TS(1400, 730), pcx = (px0 + px1) / 2, pw = px1 - px0;
+    if (S.phase === 'run' || S.phase === 'finish' || S.phase === 'count') { const m = me(), key = (r) => (r.done ? 1e9 - r.time : r.d / r.dist), place = [...S.runners].sort((a, b) => key(b) - key(a)).indexOf(m) + 1;
+      const bw = Math.min(pw - 20, 430); pbox(pcx - bw / 2, py0 + 6, bw, 40, '#1a1540');
+      g.font = '10px "Press Start 2P", monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#ffe14a';
+      g.fillText(`MIEJSCE ${place}/4   OKR. ${Math.min(LAPS, m.lap || 1)}/${LAPS}   ${(S.phase === 'count' ? 0 : m.done ? m.time : S.t).toFixed(1)}s`, pcx, py0 + 27);
+      // stamina and pace, as rows of blocks
+      const row = (y, label, f, cols, blink) => { g.font = '8px "Press Start 2P", monospace'; g.textAlign = 'right'; g.fillStyle = '#fff'; g.fillText(label, pcx - 64, y + 5);
+        const n = 12; for (let k = 0; k < n; k++) { const x = pcx - 56 + k * 13; g.fillStyle = '#000'; g.fillRect(x - 1, y - 1, 13, 12); g.fillStyle = k < Math.round(f * n) ? (blink ? '#fff' : cols(k / n)) : '#2a2a36'; g.fillRect(x, y, 11, 10); } };
+      const tb = m.tired && Math.floor(performance.now() / 150) % 2;
+      row(py0 + 56, 'ZMĘCZENIE', 1 - m.sta, (t) => (t > 0.75 ? '#ff4a3a' : t > 0.45 ? '#ffb02a' : '#3fe060'), tb);
+      row(py0 + 72, 'TEMPO', Math.min(1, m.v / 450), (t) => (t > 0.6 ? '#ff6ad5' : '#9fd8ff'), false);
+      if (m.tired && !m.done) txt('ZMĘCZONY! ZWOLNIJ I ODPOCZNIJ', pcx, py0 + 102, Math.min(15, pw / 34), Math.floor(performance.now() / 200) % 2 ? '#ff4a3a' : '#fff');
+      else if (!m.done && m.sta < 0.25 && S.phase === 'run') txt('UWAGA, OPADASZ Z SIŁ', pcx, py0 + 102, Math.min(14, pw / 36), '#ffb02a');
+      // the rubbing guide: two bars to rub between; they fade while you rub and come back when you let go
+      if (S.phase !== 'finish' && !m.done) { const cy = (py0 + py1) / 2 + 58, a = S.rubT > 0.5 ? Math.min(0.9, (S.rubT - 0.5) * 1.5 + 0.15) : 0.15, bw2 = Math.min(150, pw * 0.3);
+        g.globalAlpha = a; for (const yy of [cy - 40, cy + 40]) { g.fillStyle = '#000'; g.fillRect(pcx - bw2 / 2 - 3, yy - 6, bw2 + 6, 12); g.fillStyle = '#fff'; g.fillRect(pcx - bw2 / 2, yy - 3, bw2, 6); }
+        txt('POCIERAJ PALCEM', pcx, cy - 9, 12, '#ffe14a'); txt('GÓRA - DÓŁ', pcx, cy + 10, 12, '#ffe14a'); g.globalAlpha = 1; } }
+    const midY = (py0 + py1) / 2 + 22;
+    if (S.phase === 'count') txt(S.cnt > 0 ? String(S.cnt) : 'START!', pcx, midY, Math.min(80, pw / 6), S.cnt > 0 ? '#fff' : '#3fe060');
+    if (S.phase === 'run' && S.t < 0.8) txt('START!', pcx, midY, Math.min(80, pw / 6), '#3fe060');
+    if (S.phase === 'finish' && me().done) txt(me().place === 1 ? 'WYGRANA!' : `${me().place}. MIEJSCE`, pcx, midY, Math.min(50, pw / 9), me().place === 1 ? '#ffe14a' : '#fff');
+    if (S.phase === 'intro' || S.phase === 'over') { g.fillStyle = 'rgba(6,10,30,.76)'; g.fillRect(0, 0, W, H);
+      if (S.phase === 'intro') { txt('BIEG', W / 2, H * 0.12, Math.min(56, W / 11), '#ffe14a');
+        txt('Pocieraj ekran palcem w górę i w dół: im szybciej, tym szybciej biegniesz.', W / 2, H * 0.25, Math.min(13, W / 60));
+        txt('Za długi sprint męczy. Gdy pasek ZMĘCZENIE dojdzie do końca,', W / 2, H * 0.32, Math.min(13, W / 60));
+        txt('musisz zwolnić i odpocząć. Rozłóż siły na okrążenia!', W / 2, H * 0.39, Math.min(13, W / 60));
+        txt('ILE OKRĄŻEŃ?', W / 2, H * 0.5, 13, '#9fd8ff');
+        for (const l of lapBtns()) { pbox(l.x, l.y, l.w, l.h, l.n === LAPS ? '#ffe14a' : '#2a2454'); g.font = '14px "Press Start 2P", monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = l.n === LAPS ? '#1a1030' : '#fff'; g.fillText(String(l.n), l.x + l.w / 2, l.y + l.h / 2 + 1); }
         const b = btn(); pbox(b.x, b.y, b.w, b.h, '#3fe060'); g.font = '16px "Press Start 2P", monospace'; g.textAlign = 'center'; g.fillStyle = '#10301a'; g.fillText('NA START', b.x + b.w / 2, b.y + b.h / 2 + 1);
-        txt('Komputer: strzałki góra/dół na zmianę', W / 2, H * 0.92, 12, '#c8e0c0'); }
+        if (S.best) txt(`REKORD (${LAPS} okr., wygrana): ${S.best.toFixed(1)} s`, W / 2, H * 0.92, 11, '#9fd8ff'); }
       else { const done = [...S.runners].sort((a, b) => (a.done ? a.time : 1e9 - a.d) - (b.done ? b.time : 1e9 - b.d)); txt('WYNIKI', W / 2, H * 0.16, Math.min(44, W / 14), '#ffe14a');
         done.forEach((r, i) => txt(`${i + 1}. ${r.n} ${NAMES[r.n]}  ${r.done ? r.time.toFixed(1) + ' s' : '--'}`, W / 2, H * (0.32 + i * 0.1), Math.min(18, W / 36), r.me ? '#ffe14a' : '#fff'));
-        txt('DOTKNIJ, ŻEBY POBIEC JESZCZE RAZ', W / 2, H * 0.82, 14, '#9fd8ff'); } } };
+        txt('DOTKNIJ, ŻEBY WRÓCIĆ', W / 2, H * 0.82, 14, '#9fd8ff'); } } };
   let lastT = 0, raf = 0;
   const loop = (now) => { if (!S.on) return; raf = requestAnimationFrame(loop); const dt = Math.min(0.04, (now - (lastT || now)) / 1000); lastT = now; update(dt); draw(); };
   const close = () => { S.on = false; cancelAnimationFrame(raf); root.hidden = true; if (S.onExit) S.onExit(); };
