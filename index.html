@@ -509,7 +509,7 @@
   <p class="k-keys"><span class="kc">J</span> zielony · <span class="kc">K</span> czerwony · <span class="kc">L</span> ★ · <span class="kc w">SHIFT</span> sprint</p><p class="k-touch">Wychyl gałkę do końca, żeby biec sprintem. Możesz też dotknąć kolegi na boisku.</p>
   <div class="cont">▶ DOTKNIJ ALBO WCIŚNIJ KLAWISZ, ŻEBY GRAĆ</div></div></div>
 <div class="nes" id="joy"><div class="base"></div><div class="knob"></div></div>
-<div class="nes" id="btns"><div class="nb" id="nbA"><i></i><span>PODAJ</span></div><div class="nb big" id="nbB"><em class="pw"></em><i></i><span>STRZAŁ</span></div><div class="nb" id="nbShot"><i></i><span>STRZAŁ</span></div><div class="nb" id="nbStar"><i></i><span>SUPER</span><b class="cnt"></b></div></div>
+<div class="nes" id="btns"><div class="nb" id="nbA"><i></i><span>PODAJ</span></div><div class="nb big" id="nbB"><em class="pw"></em><i></i><span>STRZAŁ</span></div><div class="nb" id="nbStar"><i></i><span>SUPER</span><b class="cnt"></b></div></div>
 
 <script>
 {
@@ -792,7 +792,7 @@
     joy.addEventListener('pointermove', (e) => { if (e.pointerId === pid) move(e); });
     const end = () => { pid = null; knob.style.transform = ''; joy.classList.remove('on'); window.GAME?.setStick(null); };
     joy.addEventListener('pointerup', end); joy.addEventListener('pointercancel', end); }
-  for (const [id, btn] of [['nbA', 'A'], ['nbStar', 'star'], ['nbShot', 'shot']]) { const el = $(id);
+  for (const [id, btn] of [['nbA', 'A'], ['nbStar', 'star']]) { const el = $(id);
     el.addEventListener('pointerdown', (e) => { el.classList.add('down'); window.GAME?.press(btn); e.preventDefault(); });
     for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, () => el.classList.remove('down')); }
   { const el = $('nbB'); let held = false;
@@ -805,7 +805,7 @@
         if (key !== last) { last = key;
           $('nbA').classList.toggle('swap', !c.has); $('nbA').querySelector('span').textContent = c.has ? 'PODAJ' : 'ZMIANA';
           $('nbB').classList.toggle('tackle', !c.has && !c.air); $('nbB').querySelector('span').textContent = c.has ? 'STRZAŁ' : c.air ? 'GŁÓWKA' : 'WŚLIZG';
-          $('nbShot').classList.toggle('off', !c.has && !c.air); $('nbStar').classList.toggle('off', !c.has); $('nbStar').classList.toggle('ready', c.has); $('nbStar').querySelector('.cnt').textContent = c.bag ? c.bag : '';
+          $('nbStar').classList.toggle('off', !c.has); $('nbStar').classList.toggle('ready', c.has); $('nbStar').querySelector('.cnt').textContent = c.bag ? c.bag : '';
           $('joy').classList.toggle('dash', c.dash); }
         $('nbB').classList.toggle('charging', c.charge > 0); $('nbB').style.setProperty('--pw', c.charge.toFixed(2)); }
       requestAnimationFrame(loop); };

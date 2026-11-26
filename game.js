@@ -13,7 +13,7 @@ if (HD) Object.assign(FR, await (await fetch('./frames_hd_g.json?v=3')).json());
 const POSE = FR.poses;
 const loadImg = (src) => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
 const [IMG_G, IMG_P, IMG_C] = await Promise.all([loadImg('./atlas_green.png'), loadImg('./atlas_purple.png'), loadImg('./creatures.png')]);
-const [IMG_SMOK, IMG_ROB] = await Promise.all([loadImg('./moc_smok.png?v=1'), loadImg('./moc_robot.png?v=1')]);
+const [IMG_SMOK, IMG_ROB, IMG_SAT, IMG_EARTH] = await Promise.all([loadImg('./moc_smok.png?v=1'), loadImg('./moc_robot.png?v=1'), loadImg('./space_sat.png?v=1'), loadImg('./space_earth.png?v=1')]);
 const [IMG_HG, IMG_HR] = HD ? await Promise.all([loadImg('./atlas_hd_g.png?v=2'), loadImg('./atlas_hd_r.png?v=2')]) : [null, null];
 const HD_MAP = { 0: { 7: 'h7', 10: 'h10', 14: 'h14', 27: 'h27' }, 1: { 21: 'h7', 17: 'h10', 14: 'h14', 11: 'h27' } };
 const CR = await (await fetch('./creatures.json')).json();   // wolf and dragon frames [x, y, w, h, anchorX, feet]
@@ -704,6 +704,8 @@ const SFX = (() => {
     unlock: ctx, get muted() { return muted; }, setSfx(on) { muted = !on; }, toggle() { muted = !muted; MUSIC.mute(muted); return muted; },
     kick() { tone(220, 90, 0.08, 'square', 0.07); noise(0.05, 0.08); }, pass() { tone(440, 330, 0.06, 'square', 0.05); },
     charge(v) { tone(300 + v * 500, 300 + v * 520, 0.04, 'square', 0.025); },
+    tick(v = 0) { tone(900 + v * 300, 900 + v * 300, 0.03, 'square', 0.05); }, portal() { tone(120, 900, 0.5, 'triangle', 0.07); tone(900, 200, 0.5, 'sine', 0.05, 0.1); },
+    zap() { tone(1800, 80, 0.6, 'sawtooth', 0.08); noise(0.6, 0.16); }, boing() { tone(260, 520, 0.08, 'square', 0.07); noise(0.05, 0.1); },
     super() { tone(180, 1400, 0.35, 'sawtooth', 0.06); noise(0.4, 0.1); }, tackle() { noise(0.12, 0.14); tone(140, 60, 0.12, 'triangle', 0.1); },
     whistle() { tone(1800, 1750, 0.18, 'sine', 0.06); tone(1800, 1760, 0.3, 'sine', 0.06, 0.22); },
     goal() { [523, 659, 784, 1047].forEach((f, i) => tone(f, f, 0.16, 'square', 0.06, i * 0.12)); noise(1.2, 0.05); },
@@ -799,7 +801,7 @@ window.MATCH_MUSIC = MUSIC;
 const ui = window.UI || {};
 const HALF = () => (window.CFG && window.CFG.half) || 120;
 const VIB = (ms) => { try { if (!window.CFG || window.CFG.vib !== false) navigator.vibrate?.(ms); } catch (e) {} };
-const G = { inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
+const G = { inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
 let GRAV = 30; const JUMP_V = 11, APEX = 3.2;                       // a jump peaks ~0.37 s after take-off, ~2 units up
 const WALK = 6.4, DASH = 11.8, AI_WALK = 5.8, AI_RUN = 7.6;
 const goalX = (team) => (team === 0 ? PX : -PX);               // the goal this team attacks
@@ -815,6 +817,9 @@ const POWERS = {
   wolf: { name: 'WILK', col: '#aab4c8', dark: '#252a36' },
   dragon: { name: 'SMOK', col: '#ff6a2a', dark: '#5a1408' },
   robot: { name: 'ROBOT', col: '#5af0ff', dark: '#0a3a6a' },
+  portal: { name: 'PORTALE', col: '#b46aff', dark: '#3a0a6a' },
+  pinball: { name: 'SZALONA PIŁKA', col: '#9aff4a', dark: '#2a5a08' },
+  laser: { name: 'LASER Z KOSMOSU', col: '#ff3a4a', dark: '#5a0a14' },
 };
 const boxTex = (k) => tex(20, 20, (g) => { const P = POWERS[k];
   g.fillStyle = '#111'; g.fillRect(0, 0, 20, 20); g.fillStyle = P.dark; g.fillRect(1, 1, 18, 18); g.fillStyle = P.col; g.fillRect(2, 2, 16, 15);
@@ -828,6 +833,10 @@ const boxTex = (k) => tex(20, 20, (g) => { const P = POWERS[k];
   const head2 = (im, i, sx, sy, sw, sh) => { g.imageSmoothingEnabled = false; g.drawImage(im, i * 400 + sx, sy, sw, sh, 2, 2, 16, 15); };
   if (k === 'dragon') head2(IMG_SMOK, 4, 120, 0, 150, 140);
   if (k === 'robot') head2(IMG_ROB, 12, 20, 30, 190, 170);
+  if (k === 'laser') { g.fillStyle = '#0a0a24'; g.fillRect(2, 2, 16, 15); g.fillStyle = '#fff'; for (const [x, y] of [[4, 4], [15, 5], [6, 14], [16, 15], [11, 3]]) g.fillRect(x, y, 1, 1);
+    g.imageSmoothingEnabled = false; g.drawImage(IMG_SAT, 2, 1, 14, 11); ink('#ff2a3a', [[11, 9, 2, 2], [12, 11, 2, 2], [13, 13, 2, 2], [14, 15, 2, 2]]); ink('#ffd0d0', [[12, 10, 1, 1], [13, 12, 1, 1], [14, 14, 1, 1]]); }
+  if (k === 'portal') for (const [cx, c1, c2] of [[6, '#ff9a2a', '#ffe0a0'], [14, '#5a2aff', '#c8b0ff']]) { ink('#111', [[cx - 3, 4, 6, 12], [cx - 4, 6, 8, 8]]); ink(c1, [[cx - 2, 5, 4, 10], [cx - 3, 7, 6, 6]]); ink(c2, [[cx - 1, 7, 2, 6]]); ink('#111', [[cx - 1, 8, 2, 4]]); }
+  if (k === 'pinball') { ink('#111', [[9, 6, 8, 8], [8, 7, 10, 6]]); ink('#fff', [[10, 7, 6, 6], [9, 8, 8, 4]]); ink('#111', [[12, 9, 2, 2]]); ink('#2a5a08', [[2, 7, 5, 1], [3, 10, 4, 1], [2, 13, 5, 1]]); ink('#fff', [[4, 4, 2, 2], [15, 15, 2, 2]]); }
   if (k === 'mega') { ink('#111', [[5, 4, 10, 12], [4, 5, 12, 10], [3, 7, 14, 6]]); ink('#fff', [[6, 5, 8, 10], [5, 6, 10, 8], [4, 8, 12, 4]]); ink('#111', [[9, 8, 3, 3], [6, 11, 2, 2], [12, 11, 2, 2], [7, 6, 2, 1], [12, 6, 2, 1]]); }
 });
 const PU = (() => {
@@ -894,6 +903,7 @@ function doPick(i = PICK.sel) {
   if (o.id === 'wolf') { wolfStart(c); return; }
   if (o.id === 'dragon') { beastStart(c, 'smok'); return; }
   if (o.id === 'robot') { beastStart(c, 'robot'); return; }
+  if (o.id === 'portal' || o.id === 'pinball' || o.id === 'laser') { MAGIC.start(c, o.id); return; }
   ball.owner = null; shoot(c, 0.9, { name: POWERS[o.id].name, kind: o.id });
 }
 // a sprinter leaves a trail of fading copies of himself
@@ -976,6 +986,103 @@ function beastDraw() {
   if (b.ph === 'show') { c.spr.holder.visible = false; const base = b.t * B.fps, span = B.loop[1] - B.loop[0] + 1, fi = base < B.loop[0] ? base : B.loop[0] + ((base - B.loop[0]) % span); showBeast(Math.min(fi, B.n - 1)); reset(s2); return; }
   if (b.ph === 'out') { const k = Math.min(1, b.t / 1.3); if (k < 0.5) { c.spr.holder.visible = false; showBeast(B.loop[0]); glitch(s2, 0.2 + k * 1.6); } else { s2.holder.visible = s2.blob.visible = false; reset(s2); c.spr.holder.visible = true; glitch(c.spr, Math.max(0, 1 - (k - 0.5) * 2)); } }
 }
+// ---- three new cards: PORTALE (a draw decides which goal the ball flies into), SZALONA PIŁKA (the ball bounces off every rival), LASER Z KOSMOSU (a satellite fires at the keeper)
+const MAGIC = (() => {
+  // a 2D overlay canvas for the draw and for the space scene
+  const cv = document.createElement('canvas'); cv.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:40;image-rendering:pixelated;display:none';
+  document.body.appendChild(cv); const g = cv.getContext('2d');
+  const fit = () => { cv.height = 270; cv.width = Math.round(270 * innerWidth / innerHeight); g.imageSmoothingEnabled = false; };
+  const stars = Array.from({ length: 90 }, () => [Math.random(), Math.random(), Math.random()]);
+  const ringTex = (a, b) => tex(48, 64, (q) => { for (let i = 0; i < 8; i++) { q.fillStyle = i % 2 ? a : b; const w = 24 - i * 2.6, h = 30 - i * 3.3; q.beginPath(); q.ellipse(24, 32, Math.max(1, w), Math.max(1, h), 0, 0, Math.PI * 2); q.fill(); }
+    q.fillStyle = '#0a0418'; q.beginPath(); q.ellipse(24, 32, 9, 13, 0, 0, Math.PI * 2); q.fill(); q.fillStyle = '#fff'; for (let i = 0; i < 6; i++) q.fillRect(14 + Math.random() * 20, 18 + Math.random() * 28, 2, 2); });
+  const pgeo = new THREE.PlaneGeometry(3.2, 4.2); pgeo.translate(0, 2.2, 0);
+  const portals = [ringTex('#ff9a2a', '#ffd27a'), ringTex('#5a2aff', '#b49aff')].map((t) => { const m = new THREE.Mesh(pgeo, new THREE.MeshBasicMaterial({ map: t, transparent: true, alphaTest: 0.3, fog: false })); m.visible = false; scene.add(m); toPlay(m); return m; });
+  const lgeo = new THREE.PlaneGeometry(3, 60); lgeo.translate(0, 30, 0);
+  const beam = new THREE.Mesh(lgeo, new THREE.MeshBasicMaterial({ map: tex(16, 8, (q) => { q.fillStyle = 'rgba(255,40,60,.55)'; q.fillRect(0, 0, 16, 8); q.fillStyle = '#ff2a3a'; q.fillRect(3, 0, 10, 8); q.fillStyle = '#ffd0d0'; q.fillRect(6, 0, 4, 8); }), transparent: true, depthTest: false, depthWrite: false, fog: false }));
+  beam.renderOrder = 7; beam.visible = false; scene.add(beam); toPlay(beam);
+  const M = { on: false, kind: '', t: 0, ph: '', c: null };
+  const txt = (s, x, y, size, col, al = 'center') => { g.font = size + "px 'Press Start 2P', monospace"; g.textAlign = al; g.fillStyle = '#000'; for (const [a, b] of [[-2, 0], [2, 0], [0, -2], [0, 2], [2, 2]]) g.fillText(s, x + a, y + b); g.fillStyle = col; g.fillText(s, x, y); };
+  const end = () => { M.on = false; cv.style.display = 'none'; portals.forEach((m) => (m.visible = false)); beam.visible = false; if (G.state === 'dragon') G.state = 'play'; };
+  function start(c, kind) {
+    Object.assign(M, { on: true, kind, t: 0, ph: 'a', c, dir: Math.sign(goalX(c.team)), hit: [], spin: 0 });
+    c.vx = c.vz = 0; c.vy = 0; c.y = 0; ball.owner = c; G.state = 'dragon'; fit();
+    for (const q of players) if (q.team !== c.team) { q.vx *= 0.2; q.vz *= 0.2; }
+    if (kind === 'portal') { ui.banner?.('PORTALE!', c.T, 'super', c); shout(c, 'Losujemy!'); SFX.portal(); ball.owner = null;
+      M.px = [goalX(c.team) - M.dir * 7, goalX(1 - c.team) + M.dir * 7]; M.good = Math.random() < 0.6; M.sel = 0; M.nextTick = 0; M.tick = 0.07; }
+    if (kind === 'pinball') { ui.banner?.('SZALONA PIŁKA!', c.T, 'super', c); shout(c, 'Leć!'); SFX.super(); ball.owner = null; ball.hidden = false;
+      // the ball's route: nearest rival each time, then back to the boy
+      const left = players.filter((q) => q.team !== c.team); let at = c; M.route = [];
+      while (left.length) { left.sort((a, b) => dist(a, at) - dist(b, at)); at = left.shift(); M.route.push(at); }
+      M.route.push(c); M.i = 0; ball.x = c.x; ball.z = c.z; ball.y = 1; }
+    if (kind === 'laser') { ui.banner?.('LASER Z KOSMOSU!', c.T, 'super', c); shout(c, 'Satelita, ognia!'); SFX.charge(1); M.gk = players.find((q) => q.team !== c.team && q.keeper); cv.style.display = 'block'; }
+  }
+  function update(dt) {
+    if (!M.on) return; const c = M.c; M.t += dt;
+    if (M.kind === 'portal') {
+      if (M.ph === 'a') { // the portals open, the ball is pulled in and vanishes
+        portals.forEach((m, i) => { m.visible = true; m.position.set(M.px[i], 0, 0); m.scale.setScalar(Math.min(1, M.t / 0.5)); });
+        const k = Math.min(1, M.t / 0.7); ball.y = 1 + k * 2; ball.x = c.x + c.face * 0.6; ball.z = c.z; FX.emit('curve', ball.x, ball.y, ball.z, 2, 1, 0.3);
+        if (M.t > 0.7) { ball.hidden = true; FX.emit('curve', ball.x, ball.y, ball.z, 20, 4, 0.4, 6); M.ph = 'draw'; M.t = 0; cv.style.display = 'block'; } }
+      else if (M.ph === 'draw') { // the draw: the highlight jumps between the two goals, slows down and stops
+        if (M.t >= M.nextTick && M.t < 2.6) { M.sel ^= 1; M.nextTick = M.t + M.tick; M.tick *= 1.13; SFX.tick(M.sel); }
+        if (M.t >= 2.6 && !M.done) { M.done = true; M.sel = M.good ? 0 : 1; SFX[M.good ? 'pickup' : 'tackle'](); }
+        portals.forEach((m, i) => { m.material.color.set(i === M.sel ? '#ffffff' : '#555566'); m.scale.setScalar(i === M.sel ? 1.15 : 0.9); });
+        if (M.t > 3.4) { // out of the chosen portal and into that goal
+          cv.style.display = 'none'; const i = M.good ? 0 : 1, gx = goalX(i === 0 ? c.team : 1 - c.team), s = Math.sign(gx);
+          ball.hidden = false; ball.owner = null; ball.x = M.px[i]; ball.y = 2.2; ball.z = 0;
+          const tz = (Math.random() - 0.5) * 3, dx = gx + s * 0.8 - ball.x, dy = 1.2 - ball.y, dz = tz, d = Math.hypot(dx, dy, dz), v = 24;
+          ball.vx = dx / d * v; ball.vy = dy / d * v; ball.vz = dz / d * v; ball.last = c; ball.hot = 1;
+          ball.sup = { name: 'PORTAL', kind: 'portal', team: M.good ? c.team : 1 - c.team, t: 0, ox: s, oz: 0, by: c };
+          SFX.portal(); SFX.super(); G.flash = 0.8; G.shake = 0.6; FX.emit('curve', ball.x, 2.2, 0, 30, 6, 0.5, 8); M.ph = 'b'; M.t = 0; G.state = 'play'; } }
+      else if (M.ph === 'b') { portals.forEach((m) => m.scale.setScalar(Math.max(0.01, 1 - M.t / 0.8))); if (M.t > 0.8) end(); }
+    }
+    if (M.kind === 'pinball') {
+      const tgt = M.route[M.i]; if (!tgt) { end(); return; }
+      const dx = tgt.x - ball.x, dz = tgt.z - ball.z, d = Math.hypot(dx, dz), v = 30 * dt;
+      ball.spin += dt * 40; ball.hot = 1; ball.y = 1 + Math.abs(Math.sin(M.t * 9)) * 0.8; FX.emit('zigzag', ball.x, ball.y + 0.3, ball.z, 2, 0.8, 0.28);
+      if (d <= v + 0.3) {
+        if (tgt === c) { ball.owner = c; c.hold = 0; ball.hot = 0; SFX.pickup(); ui.banner?.('STRZELAJ!', c.T, 'small'); shout(c, 'Teraz!'); end(); return; }
+        knock(tgt, 7, { lie: Math.random() < 0.5 ? 'lieBack' : 'lieFront', dizzy: true, foul: false, push: [dx / (d || 1) * 6, dz / (d || 1) * 6] });
+        SFX.boing(); G.shake = Math.max(G.shake, 0.35); FX.emit('zigzag', ball.x, 1.2, ball.z, 16, 4, 0.35, 6); M.i++;
+      } else { ball.x += dx / d * v; ball.z += dz / d * v; }
+    }
+    if (M.kind === 'laser') {
+      if (M.ph === 'a' && M.t > 3.0) { M.ph = 'b'; M.t = 0; cv.style.display = 'none'; SFX.zap(); G.flash = 1.4; G.shake = 1.2; G.ca = 2.6; }
+      if (M.ph === 'b') { const k = M.gk; beam.visible = Math.random() < 0.85; beam.position.set(k.x, 0, k.z); beam.quaternion.copy(camera.quaternion); beam.scale.x = 1 + Math.sin(M.t * 40) * 0.2;
+        FX.emit('fire', k.x + (Math.random() - 0.5) * 2, 0.3 + Math.random(), k.z + (Math.random() - 0.5) * 2, 3, 3, 0.4);
+        if (!M.zapped) { M.zapped = true; knock(k, 8, { lie: 'lieBack', dizzy: true, foul: false }); for (const q of players) if (q.team !== c.team && q !== k && dist(q, k) < 4) knock(q, 4, { lie: 'lieBack', dizzy: true, foul: false, push: [(q.x - k.x) * 3, (q.z - k.z) * 3] }); }
+        if (M.t > 0.9) { ball.owner = c; ui.banner?.('BRAMKARZ LEŻY!', c.T, 'small'); shout(c, 'Pusta bramka!'); end(); } }
+    }
+  }
+  function draw() {
+    if (!M.on || cv.style.display === 'none') return; const W = cv.width, H = cv.height, t = M.t; g.clearRect(0, 0, W, H);
+    if (M.kind === 'portal') {
+      g.fillStyle = 'rgba(10,4,24,.55)'; g.fillRect(0, H / 2 - 46, W, 92);
+      const opts = [['BRAMKA RYWALA', '#7aff5a'], ['TWOJA BRAMKA', '#ff4a5a']];
+      opts.forEach(([s, col], i) => { const x = W / 2 + (i ? 1 : -1) * W * 0.22, on = M.sel === i;
+        g.fillStyle = on ? col : '#333344'; g.fillRect(x - 92, H / 2 - 22, 184, 44); g.fillStyle = '#000'; g.fillRect(x - 88, H / 2 - 18, 176, 36);
+        txt(s, x, H / 2 + 5, 10, on ? col : '#777788'); });
+      txt(M.done ? (M.good ? 'GOL DLA CIEBIE!' : 'OJ... SAMOBÓJ!') : 'LOSOWANIE...', W / 2, H / 2 - 30, 12, '#ffe14a');
+      return;
+    }
+    // the laser from space: stars, the Earth, the satellite charges up and fires a red beam
+    g.fillStyle = '#05040f'; g.fillRect(0, 0, W, H);
+    for (const [x, y, b] of stars) { g.fillStyle = (Math.sin(t * 6 + b * 20) > 0.6) ? '#ffffff' : '#8a8ab0'; g.fillRect((x * W) | 0, (y * H) | 0, b > 0.8 ? 2 : 1, b > 0.8 ? 2 : 1); }
+    const ex = W - IMG_EARTH.width, ey = H - IMG_EARTH.height + 20; g.drawImage(IMG_EARTH, ex, ey);
+    const sc = 0.62, sx = 34 + t * 6, sy = 26 + Math.sin(t * 2) * 3, sw = IMG_SAT.width * sc, sh = IMG_SAT.height * sc; g.drawImage(IMG_SAT, sx, sy, sw, sh);
+    const mx = sx + 228 * sc, my = sy + 110 * sc, tx = ex + 150, ty = ey + 120;
+    if (t > 0.6 && t < 1.6) { const r = 2 + (t - 0.6) * 9; g.fillStyle = '#ff2a3a'; g.fillRect(mx - r, my - r, r * 2, r * 2); g.fillStyle = '#ffd0d0'; g.fillRect(mx - r / 2, my - r / 2, r, r);
+      for (let i = 0; i < 6; i++) { const a = Math.random() * 6.3, d = 10 + Math.random() * 20; g.fillStyle = '#ff6a7a'; g.fillRect(mx + Math.cos(a) * d, my + Math.sin(a) * d, 2, 2); }
+      txt('ŁADOWANIE', W / 2, 24, 10, Math.floor(t * 8) % 2 ? '#ff3a4a' : '#ffffff'); }
+    if (t >= 1.6 && t < 2.7) { const f = Math.random() < 0.85; if (f) { const len = Math.min(1, (t - 1.6) / 0.15), bx = mx + (tx - mx) * len, by = my + (ty - my) * len;
+        for (const [w, col] of [[12, 'rgba(255,40,60,.35)'], [7, '#ff2a3a'], [3, '#ffe0e0']]) { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.moveTo(mx, my); g.lineTo(bx, by); g.stroke(); }
+        g.fillStyle = '#ff2a3a'; g.fillRect(mx - 7, my - 7, 14, 14); g.fillStyle = '#fff'; g.fillRect(mx - 3, my - 3, 6, 6);
+        if (len >= 1) { const r = 8 + Math.random() * 10; g.fillStyle = '#ff6a2a'; g.fillRect(tx - r, ty - r, r * 2, r * 2); g.fillStyle = '#ffe14a'; g.fillRect(tx - r / 2, ty - r / 2, r, r); } }
+      txt('OGNIA!', W / 2, 24, 14, '#ff3a4a'); }
+    if (t > 2.6) { g.fillStyle = `rgba(255,255,255,${Math.min(1, (t - 2.6) / 0.4)})`; g.fillRect(0, 0, W, H); }
+  }
+  return { start, update, draw, get on() { return M.on; } };
+})();
 const DRAGON = { on: false, t: 0, c: null, x: 0, z: 0, y: 0, dir: 1, spr: null, launched: false };
 const DF = CR.dragon, DR_FLY = [0, 1, 2, 3, 4, 5, 6, 7], DR_S = 1.45;
 function dragonStart(c) {
@@ -1280,6 +1387,7 @@ function stepBall(dt) {
       for (let i = 0; i < 3; i++) { const a = S.t * 16 + i * 2.1; FX.emit('tornado', ball.x + Math.cos(a) * 0.9, ball.y - 0.4 + i * 0.3, ball.z + Math.sin(a) * 0.9, 1, 0.5, 0.25); } }
     else if (k === 'curve') { const u = Math.min(1, S.t * 1.3), side = Math.sin(u * Math.PI) * 6, along = S.t * S.speed;
       ball.x = S.base[0] + S.ox * along - S.oz * side; ball.z = S.base[1] + S.oz * along + S.ox * side; ball.y = 1 + Math.sin(u * Math.PI) * 1.8; FX.emit('curve', ball.x, ball.y + 0.3, ball.z, 2, 1, 0.26); }
+    else if (k === 'portal') { ball.x += ball.vx * dt; ball.y = Math.max(0.6, ball.y + ball.vy * dt); ball.z += ball.vz * dt; FX.emit('curve', ball.x, ball.y + 0.3, ball.z, 4, 1.6, 0.35); }
     else if (k === 'dragon') { ball.x += ball.vx * dt; ball.y = Math.max(0.6, ball.y + ball.vy * dt); ball.z += ball.vz * dt;
       FX.emit('fire', ball.x, ball.y + 0.3, ball.z, 6, 2.2, 0.4); if (Math.random() < 0.4) FX.emit('dust', ball.x, ball.y + 0.4, ball.z, 1, 1, 0.6, 4);
       if (Math.abs(ball.x) > PX - 0.6 && !G.goalFire?.t) G.goalFire = { x: Math.sign(ball.x) * PX, t: 5.5 }; }
@@ -1291,12 +1399,12 @@ function stepBall(dt) {
       if (Math.random() < 0.6) FX.emit('dust', ball.x - S.ox * 1.4, 0.3, ball.z + (Math.random() - 0.5) * 1.5, 2, 2, 0.45, 4); }
     ball.spin += dt * (k === 'mega' ? 12 : 40); ball.hot = k === 'split' ? 0 : 1;
     // a super shot flattens every opponent in its way; keepers seldom hold it and are carried into the net
-    const mega = S.kind === 'mega' || S.kind === 'dragon';
+    const mega = S.kind === 'mega' || S.kind === 'dragon' || S.kind === 'portal';
     for (const p of players) if (p.team !== S.team && p.st !== 'down' && Math.hypot(p.x - ball.x, p.z - ball.z) < (mega ? 2.6 : p.keeper ? 1.8 : 1.2) && (mega || Math.abs(ball.y - (p.y + 1.2)) < 1.8)) {
       if (p.keeper && !mega && Math.random() < 0.22) { ball.owner = p; ball.sup = null; p.hold = 0; p.st = 'run'; SFX.save(); ui.banner?.('OBRONA!', p.T, 'small'); return; }
       knock(p, p.keeper ? 1.8 : 2.0, { lie: 'lieBack', dizzy: true, push: [S.ox * (p.keeper ? 11 : 6), S.oz * 3] });
     }
-    if (S.t > (S.kind === 'mega' ? 4.5 : 3) && S.kind !== 'dragon') ball.sup = null;
+    if (S.t > (S.kind === 'mega' ? 4.5 : 3) && S.kind !== 'dragon' && S.kind !== 'portal') ball.sup = null;
   } else {
     ball.vy -= GRAV * dt; ball.y += ball.vy * dt;
     if (ball.y < 0) { ball.y = 0; ball.vy = Math.abs(ball.vy) > 2.5 ? -ball.vy * 0.5 : 0; }
@@ -1397,7 +1505,7 @@ function physics(p, dt, control) {
   if (spd > 7.2 && p.y < 0.5 && free(p) && Math.random() < 0.7) FX.streak(p.x - p.vx * 0.06, 0.5 + Math.random() * 1.3, p.z + (Math.random() - 0.5) * 0.4, Math.sign(p.vx) || p.face);
 }
 function step(dt) {
-  FX.update(dt); BOLTS.update(dt); TRAIL.update(dt); dragonUpdate(dt); beastUpdate(dt); goalFireUpdate(dt);
+  FX.update(dt); BOLTS.update(dt); TRAIL.update(dt); dragonUpdate(dt); beastUpdate(dt); MAGIC.update(dt); goalFireUpdate(dt);
   if (WOLF.on && G.state !== 'play') { WOLF.t += dt; if (WOLF.phase !== 'back') { WOLF.phase = 'back'; WOLF.t = 0; } else if (WOLF.t > 0.6) wolfEnd(); } PU.update(dt, performance.now() / 1000); updateLines(dt); updateStands(dt, performance.now() / 1000); WX.update(dt, performance.now() / 1000); ARENA.update(dt, performance.now() / 1000); G.shake = Math.max(0, G.shake - dt); G.flash = Math.max(0, G.flash - dt * 2.5);
   if (G.charge) { if (ball.owner !== captain || G.state !== 'play') G.charge = 0; else { G.charge += dt; if (G.charge > 1.1) press('Bup'); } }
   if (G.state === 'penExt') { draw(dt); return; }
@@ -1509,7 +1617,7 @@ function draw(dt) {
     else f = WF[WOLF_RUN[(performance.now() / 70 | 0) % WOLF_RUN.length]];
     w.holder.visible = w.blob.visible = w.sgrp.visible = true; w.show(f, p.face < 0); w.holder.position.set(p.x, 0, p.z); w.blob.position.set(p.x, 0.02, p.z); w.blob.scale.set(1.3, 0.7, 1);
     w.sgrp.position.set(p.x, 0.02, p.z); }
-  beastDraw();
+  beastDraw(); MAGIC.draw();
   if (DRAGON.on && DRAGON.spr) { const D = DRAGON, d = D.spr, T = D.t; let f;
     if (T < 1.4) f = DF[DR_FLY[(T * 12 | 0) % DR_FLY.length]]; else if (T < 1.75) f = DF[8]; else if (T < 1.95) f = DF[9]; else if (T < 2.1) f = DF[11]; else if (T < 2.35) f = DF[12]; else if (T < 2.6) f = DF[13]; else f = DF[(T * 12 | 0) % 2 ? 14 : 4];
     d.holder.visible = d.blob.visible = true; d.show(f, D.dir < 0); d.holder.scale.setScalar(DR_S); d.holder.position.set(D.x, D.y, D.z); d.blob.position.set(D.x, 0.02, D.z); const k = Math.max(0.3, 2.6 - D.y * 0.12); d.blob.scale.set(k, k * 0.5, 1); }
@@ -1545,7 +1653,7 @@ const covered = () => ['pen', 'kapki', 'lace', 'caps', 'flip', 'bieg'].some((id)
 renderer.setAnimationLoop((now) => { if (!auto) return; if (covered()) { last = now; return; } const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; step(frozen ? 0 : dt); });
 placeKickoff(0); G.state = 'menu'; WX.set('leaves'); try { ARENA.set(localStorage.getItem('arena') || 'stadion'); } catch (e) { ARENA.set('stadion'); }
 window.GAME = {
-  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0 }; PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = HALF(); SFX.setSfx(!window.CFG || window.CFG.sfx !== false); G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = ARENA.weather() || (Math.random() < 0.5 ? 'rain' : 'leaves'); setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
+  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0 }; PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = HALF(); SFX.setSfx(!window.CFG || window.CFG.sfx !== false); G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = ARENA.weather() || (Math.random() < 0.5 ? 'rain' : 'leaves'); setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
   press, setCaptain, pick: (i) => doPick(i), pickMove,
   // a finger on a teammate takes control of him (not while you are the one with the ball)
   ctx() { const c = captain, has = ball.owner === c, air = !has && !ball.owner && Math.hypot(ball.x - c.x, ball.z - c.z) < 4.5 && ball.y > 0.5 && ball.y < 2.6;
@@ -1558,5 +1666,5 @@ window.GAME = {
     if (!best || best === captain) return false; captain = best; switchT = 2.2; SFX.menu(); G.ca = Math.max(G.ca, 0.3); FX.emit('curve', best.x, 0.4, best.z, 10, 3, 0.25, 4); return true; }, powers: POWERS, icons: PU.icons, arena(id) { ARENA.set(id); try { localStorage.setItem('arena', ARENA.id); } catch (e) {} }, get arenaId() { return ARENA.id; }, get arenas() { return ARENA.list; }, setStick(v) { stick = v; }, setDash(v) { padDash = v; }, quit() { frozen = false; G.state = 'menu'; MUSIC.stop(); PICK.open = false; ui.picker?.(null); }, sfx(on) { SFX.setSfx(on); }, freeze(v) { frozen = !!v; if (v) { keys.clear(); keyDash = false; } }, mute: () => SFX.toggle(),
   teams: TEAMS, frames: FR, images: [IMG_G, IMG_P], players, get captain() { return captain; }, get ball() { return ball; }, G,
 };
-window.__game = { goal: (t) => goalScored(t), pen: (t) => penaltyFor(t, players.find((q) => q.team === t && q.role === 'fwd')), G, ball, players, input, beast: (k) => beastStart(captain, k), weather: (m) => { G.weather = m; setWeather(m); }, step(sec, fps = 30) { auto = false; for (let i = 0; i < Math.round(sec * fps); i++) step(1 / fps); }, resume() { last = performance.now(); auto = true; }, keys };
+window.__game = { goal: (t) => goalScored(t), pen: (t) => penaltyFor(t, players.find((q) => q.team === t && q.role === 'fwd')), G, ball, players, input, beast: (k) => beastStart(captain, k), magic: (k) => MAGIC.start(captain, k), weather: (m) => { G.weather = m; setWeather(m); }, step(sec, fps = 30) { auto = false; for (let i = 0; i < Math.round(sec * fps); i++) step(1 / fps); }, resume() { last = performance.now(); auto = true; }, keys };
 window.GAME_READY?.();
