@@ -349,5 +349,29 @@ export default function extraArenas(C) {
     far(14, (x, z) => cone(gr, R(1, 2), R(4, 10), pick(['#2a2438', '#3a3250']), x, 2.5, z, 6), 8, 16); ends(8, (x, z) => cone(gr, R(1, 1.8), R(3, 8), '#2a2438', x, 2, z, 6));
     for (let k = 0; k < 18; k++) { const m = sph(gr, R(8, 14), '#1a1626', -90 + k * 10.5, R(4, 14), -PZ - R(26, 34), 0); }
     for (const s of [-1, 1]) for (let k = 0; k < 6; k++) sph(gr, R(8, 12), '#1a1626', s * (PX + R(26, 32)), R(4, 12), -30 + k * 12, 0); };
+  // 24. school gym: parquet floor, light walls, wall bars, windows high under the ceiling, benches, mats, hoops
+  DEF.sala = { name: 'SALA GIMNASTYCZNA', sky: '#eee8dc', fog: '#f2ece2', near: 90, far: 220, hemi: ['#fffaf0', '#a07a4a', 2.1], sun: ['#fff6e4', 2.2], grav: 30, wx: 'none',
+    pal: pal('#b07a44', '#b8824a', '#aa7440', ['#9a6636', '#c48c52', '#a26c3a', '#ca9458'], ['#9a6a3a', '#8a5e32', '#a87444'], '#ffffff', { extra: (g, W, H, K, X, Z) => { planks(g, W, H, K);
+      const rect = (x0, z0, x1, z1, c) => { g.fillStyle = c; g.fillRect(X(x0), Z(z0), X(x1) - X(x0), 2); g.fillRect(X(x0), Z(z1) - 2, X(x1) - X(x0), 2); g.fillRect(X(x0), Z(z0), 2, Z(z1) - Z(z0)); g.fillRect(X(x1) - 2, Z(z0), 2, Z(z1) - Z(z0)); };
+      rect(-9, -4.5, 9, 4.5, '#ffd21a'); g.fillStyle = '#ffd21a'; g.fillRect(X(0) - 1, Z(-4.5), 2, Z(4.5) - Z(-4.5)); rect(-14, -7.5, 14, 7.5, '#e8361f'); rect(-28, -16, -20, 16, '#2a6ae8'); rect(20, -16, 28, 16, '#2a6ae8'); } }),
+    track: () => tile((g) => { fill(g, '#c08a52'); g.fillStyle = 'rgba(90,50,20,.4)'; for (let y = 0; y < 64; y += 8) { g.fillRect(0, y, 64, 1); for (let x = (y * 3) % 32; x < 64; x += 32) g.fillRect(x, y, 1, 8); } speck(g, ['#b07a44', '#d09a60'], 80); }) };
+  BUILD.sala = (gr) => { const wall = M('#f2ede2'), low = M('#c8d8e8'), wood = M('#c89a5a');
+    // the walls: far side and both ends, a pale-blue band at the bottom, windows high up
+    box(gr, 170, 26, 1, wall, 0, 13, -PZ - 12); box(gr, 170, 3, 1.1, low, 0, 1.5, -PZ - 11.9);
+    for (const sx of [-1, 1]) { box(gr, 1, 26, 70, wall, sx * (PX + 18), 13, 0); box(gr, 1.1, 3, 70, low, sx * (PX + 17.9), 1.5, 0); }
+    const glass = lam({ color: '#cfe8ff', emissive: '#bfe0ff', emissiveIntensity: 0.8 });
+    for (let x = -72; x <= 72; x += 12) { box(gr, 9, 4.5, 0.3, glass, x, 21, -PZ - 11.4); box(gr, 9.6, 0.4, 0.4, '#ffffff', x, 18.8, -PZ - 11.3); for (const dx of [-1.5, 1.5]) box(gr, 0.25, 4.5, 0.35, '#ffffff', x + dx, 21, -PZ - 11.3); }
+    for (const sx of [-1, 1]) for (let z = -28; z <= 28; z += 12) { box(gr, 0.3, 4.5, 9, glass, sx * (PX + 17.4), 21, z); for (const dz of [-1.5, 1.5]) box(gr, 0.35, 4.5, 0.25, '#ffffff', sx * (PX + 17.3), 21, z + dz); }
+    // wall bars: two posts and a ladder of rungs, a row of them along the far wall and on the ends
+    const bars = (x, z, ry) => { const g2 = new THREE.Group(); for (const dx of [-1.1, 1.1]) { const p = new THREE.Mesh(new THREE.BoxGeometry(0.3, 10, 0.3), wood); p.position.set(dx, 5, 0); g2.add(p); }
+      for (let y = 0.6; y < 10; y += 0.75) { const r = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2.2, 5), wood); r.rotation.z = Math.PI / 2; r.position.set(0, y, 0); g2.add(r); } g2.position.set(x, 0, z); g2.rotation.y = ry; gr.add(g2); };
+    for (let x = -60; x <= 60; x += 2.6) if (Math.abs(x) > 6) bars(x, -PZ - 11.2, 0);
+    for (const sx of [-1, 1]) for (let z = -24; z <= 24; z += 2.6) if (Math.abs(z) > 8) bars(sx * (PX + 17.2), z, Math.PI / 2);
+    // a basketball hoop above each goal end, benches, rolled mats, a ball cart
+    for (const sx of [-1, 1]) { box(gr, 0.3, 3, 4.4, '#ffffff', sx * (PX + 16.8), 12, 0); box(gr, 0.32, 1.2, 1.6, M('#e8361f'), sx * (PX + 16.75), 11.6, 0); const ring = add(gr, new THREE.TorusGeometry(0.75, 0.08, 6, 14), M('#ff6a1a'), sx * (PX + 15.8), 11, 0); ring.rotation.x = Math.PI / 2; }
+    const bench = (x, z, ry) => { const g2 = new THREE.Group(); const top = new THREE.Mesh(new THREE.BoxGeometry(8, 0.3, 0.9), wood); top.position.y = 1; g2.add(top); for (const dx of [-3.4, 0, 3.4]) { const l = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1, 0.8), wood); l.position.set(dx, 0.5, 0); g2.add(l); } g2.position.set(x, 0, z); g2.rotation.y = ry; gr.add(g2); };
+    bench(-22, -PZ - 6, 0); bench(22, -PZ - 6, 0); bench(-PX - 9, -12, Math.PI / 2); bench(PX + 9, 12, Math.PI / 2);
+    for (const [x, z] of [[-40, -PZ - 8.5], [40, -PZ - 8.5], [-PX - 12, 10]]) { for (let k = 0; k < 3; k++) box(gr, 4, 0.6, 2.4, M(k % 2 ? '#2a5ad0' : '#3a6ae8'), x, 0.3 + k * 0.6, z); }
+    for (const [x, z] of [[0, -PZ - 8], [PX + 12, -14]]) { box(gr, 3, 1.6, 1.6, '#8a8e94', x, 1.2, z); for (let k = 0; k < 6; k++) sph(gr, 0.45, pick(['#e8361f', '#ff8a1a', '#2a6ae8', '#ffffff']), x - 1 + (k % 3), 2.3 + Math.floor(k / 3) * 0.5, z + (k % 2 ? 0.3 : -0.3), 1); } };
   return { DEF, BUILD };
 }
