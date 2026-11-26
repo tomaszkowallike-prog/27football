@@ -996,7 +996,7 @@ function beastUpdate(dt) {
       b.launched = true; const gx = goalX(c.team), u = B.h / B.fy, mx = c.x + b.dir * (B.mx - B.ax) * u, my = (B.fy - B.ey) * u;
       ball.hidden = false; ball.owner = null; ball.x = mx; ball.y = my; ball.z = c.z;
       const tx = gx + b.dir * 0.8, ty = 1.2, tz = (Math.random() - 0.5) * 3, dx = tx - ball.x, dy = ty - ball.y, dz = tz - ball.z, d = Math.hypot(dx, dy, dz), v = 32;
-      ball.vx = dx / d * v; ball.vy = dy / d * v; ball.vz = dz / d * v; ball.sup = { name: b.kind === 'smok' ? 'SMOK' : 'ROBOT', kind: 'dragon', team: c.team, t: 0, ox: b.dir, by: c }; ball.last = c; ball.hot = 1;
+      ball.vx = dx / d * v; ball.vy = dy / d * v; ball.vz = dz / d * v; ball.sup = { name: b.kind === 'smok' ? 'SMOK' : 'ROBOT', kind: 'dragon', team: c.team, t: 0, ox: b.dir, oz: 0, by: c }; ball.last = c; ball.hot = 1;
       b.mouth = [mx, my, c.z]; G.state = 'play'; G.flash = 1; G.shake = 0.9; G.ca = 2.6; b.kind === 'smok' ? SFX.flame() : SFX.thunder(); SFX.super(); }
     // the fire or the beam: a stream of particles from the mouth / the cannon after the ball
     if (b.launched && b.t < B.hit / B.fps + 1.4) { const [mx, my, mz] = b.mouth; for (let i = 0; i < 6; i++) { const u2 = Math.random(); FX.emit(B.fx, mx + (ball.x - mx) * u2, my + (ball.y - my) * u2 + (Math.random() - 0.5) * 0.4, mz + (ball.z - mz) * u2, 1, 1.2, 0.25, b.kind === 'smok' ? 5 : 3); } }
@@ -1201,7 +1201,7 @@ function dragonUpdate(dt) {
     D.launched = true; const c = D.c, gx = goalX(c.team);
     ball.hidden = false; ball.owner = null; const f = DF[13]; ball.x = D.x + D.dir * f[2] * UNIT * DR_S * 0.3; ball.y = D.y + f[3] * UNIT * DR_S * 0.62; ball.z = D.z;
     const tx = gx + D.dir * 0.8, ty = 1.2, tz = (Math.random() - 0.5) * 3, dx = tx - ball.x, dy = ty - ball.y, dz = tz - ball.z, d = Math.hypot(dx, dy, dz), v = 30;
-    ball.vx = dx / d * v; ball.vy = dy / d * v; ball.vz = dz / d * v; ball.sup = { name: 'SMOK', kind: 'dragon', team: c.team, t: 0, ox: D.dir, by: c }; ball.last = c; ball.hot = 1;
+    ball.vx = dx / d * v; ball.vy = dy / d * v; ball.vz = dz / d * v; ball.sup = { name: 'SMOK', kind: 'dragon', team: c.team, t: 0, ox: D.dir, oz: 0, by: c }; ball.last = c; ball.hot = 1;
     G.state = 'play'; G.flash = 1; G.shake = 0.9; G.ca = 2.6; SFX.flame(); SFX.super();
   }
   if (D.t > 4.2) { D.on = false; D.spr.holder.visible = D.spr.blob.visible = false; }
@@ -1318,7 +1318,7 @@ function knock(p, dur = 1.5, { lie = 'lieBack', dizzy = false, push = [0, 0], by
   if (p.wolf) return;
   if (p.st === 'down' || p.st === 'getup') return;
   const hadBall = ball.owner === p || dist(ball, p) < 2.2;
-  p.st = 'down'; p.t = dur; p.lie = lie; p.dizzy = dizzy; p.vx = push[0]; p.vz = push[1]; p.vy = Math.max(p.vy, 4);
+  p.st = 'down'; p.t = dur; p.lie = lie; p.dizzy = dizzy; p.vx = +push[0] || 0; p.vz = +push[1] || 0; p.vy = Math.max(p.vy, 4);
   SFX.tackle(); VIB(35); FX.emit('dust', p.x, 0.4, p.z, 8, 2.5, 0.25, 6); G.ca = Math.max(G.ca, 0.9); G.shake = Math.max(G.shake, 0.18);
   if (ball.owner === p) { ball.owner = null; ball.vx = (Math.random() - 0.5) * 8; ball.vz = (Math.random() - 0.5) * 8; ball.vy = 5; ball.y = 0.6; ball.last = p; ball.lastT = 0.4; }
   if (p.team === 0 || Math.random() < 0.5) shout(p, ['Oh-!!', 'Ugh-!', 'Aa--!'][Math.random() * 3 | 0]);
@@ -1689,6 +1689,10 @@ function step(dt) {
   // keep apart a little, keep on the pitch
   for (let i = 0; i < players.length; i++) for (let j = i + 1; j < players.length; j++) { const a = players[i], b = players[j], dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz);
     if (d > 0 && d < 0.8 && a.y < 1 && b.y < 1) { const k = (0.8 - d) / 2 / d; a.x -= dx * k; a.z -= dz * k; b.x += dx * k; b.z += dz * k; } }
+  // safety net: a bad number must never freeze a runner's legs or swallow the ball
+  for (const p of players) { for (const k of ['vx', 'vz', 'vy', 'x', 'z', 'y']) if (!Number.isFinite(p[k])) p[k] = 0; if (!Number.isFinite(p.walked)) p.walked = 0; }
+  for (const k of ['vx', 'vz', 'vy', 'x', 'z', 'y']) if (!Number.isFinite(ball[k])) ball[k] = 0;
+  if (ball.hidden && G.state === 'play' && !MAGIC.on && !BEAST.on && !DRAGON.on) ball.hidden = false;
   for (const p of players) { const lim = p.keeper && p.st === 'down' ? PX + GOAL_D - 0.3 : PX - 0.4; p.x = Math.max(-lim, Math.min(lim, p.x)); p.z = Math.max(-PZ + 0.4, Math.min(PZ - 0.4, p.z));
     if (Math.abs(p.vx) > (p.hd ? 1.5 : 0.4) && free(p)) p.face = Math.sign(p.vx); if (p.y <= 0) p.walked += Math.hypot(p.vx, p.vz) * dt; }
   stepBall(dt);
