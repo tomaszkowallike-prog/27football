@@ -13,7 +13,7 @@ if (HD) Object.assign(FR, await (await fetch('./frames_hd_g.json?v=4')).json());
 const POSE = FR.poses;
 const loadImg = (src) => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
 const [IMG_G, IMG_P, IMG_C] = await Promise.all([loadImg('./atlas_green.png'), loadImg('./atlas_purple.png'), loadImg('./creatures.png')]);
-const [IMG_NINJA, IMG_SMOK, IMG_ROB, IMG_SAT, IMG_EARTH] = await Promise.all([loadImg('./ninja.png?v=1'), loadImg('./moc_smok.png?v=1'), loadImg('./moc_robot.png?v=1'), loadImg('./space_sat.png?v=1'), loadImg('./space_earth.png?v=1')]);
+const [IMG_GORYL, IMG_NINJA, IMG_SMOK, IMG_ROB, IMG_SAT, IMG_EARTH] = await Promise.all([loadImg('./goryl.png?v=1'), loadImg('./ninja.png?v=1'), loadImg('./moc_smok.png?v=1'), loadImg('./moc_robot.png?v=1'), loadImg('./space_sat.png?v=1'), loadImg('./space_earth.png?v=1')]);
 const [IMG_HG, IMG_HR] = HD ? await Promise.all([loadImg('./atlas_hd_g.png?v=3'), loadImg('./atlas_hd_p.png?v=2')]) : [null, null];
 const HD_MAP = { 0: { 7: 'h7', 10: 'h10', 14: 'h14', 27: 'h27' }, 1: { 21: 'h7', 17: 'h10', 14: 'h14', 11: 'h27' } };
 const CR = await (await fetch('./creatures.json')).json();   // wolf and dragon frames [x, y, w, h, anchorX, feet]
@@ -807,7 +807,7 @@ window.MATCH_MUSIC = MUSIC;
 const ui = window.UI || {};
 const HALF = () => (window.CFG && window.CFG.half) || 120;
 const VIB = (ms) => { try { if (!window.CFG || window.CFG.vib !== false) navigator.vibrate?.(ms); } catch (e) {} };
-const G = { inv2: {}, inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0, ninja: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
+const G = { inv2: {}, inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0, ninja: 0, goryl: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
 let GRAV = 30; const JUMP_V = 11, APEX = 3.2;                       // a jump peaks ~0.37 s after take-off, ~2 units up
 const WALK = 6.4, DASH = 11.8, AI_WALK = 5.8, AI_RUN = 7.6;
 // difficulty 0 ŁATWY, 1 NORMALNY, 2 MISTRZ; perks come from the shop (boots, balls, gloves...)
@@ -833,6 +833,7 @@ const POWERS = {
   laser: { name: 'LASER Z KOSMOSU', col: '#ff3a4a', dark: '#5a0a14' },
   twister: { name: 'TRĄBA POWIETRZNA', col: '#cfe0ee', dark: '#3a4a5a' },
   ninja: { name: 'NINJA', col: '#3a3a44', dark: '#c81e1e' },
+  goryl: { name: 'GORYL', col: '#8a8a96', dark: '#1a1a20' },
 };
 const boxTex = (k) => tex(20, 20, (g) => { const P = POWERS[k];
   g.fillStyle = '#111'; g.fillRect(0, 0, 20, 20); g.fillStyle = P.dark; g.fillRect(1, 1, 18, 18); g.fillStyle = P.col; g.fillRect(2, 2, 16, 15);
@@ -849,6 +850,7 @@ const boxTex = (k) => tex(20, 20, (g) => { const P = POWERS[k];
   if (k === 'laser') { g.fillStyle = '#0a0a24'; g.fillRect(2, 2, 16, 15); g.fillStyle = '#fff'; for (const [x, y] of [[4, 4], [15, 5], [6, 14], [16, 15], [11, 3]]) g.fillRect(x, y, 1, 1);
     g.imageSmoothingEnabled = false; g.drawImage(IMG_SAT, 2, 1, 14, 11); ink('#ff2a3a', [[11, 9, 2, 2], [12, 11, 2, 2], [13, 13, 2, 2], [14, 15, 2, 2]]); ink('#ffd0d0', [[12, 10, 1, 1], [13, 12, 1, 1], [14, 14, 1, 1]]); }
   if (k === 'portal') for (const [cx, c1, c2] of [[6, '#ff9a2a', '#ffe0a0'], [14, '#5a2aff', '#c8b0ff']]) { ink('#111', [[cx - 3, 4, 6, 12], [cx - 4, 6, 8, 8]]); ink(c1, [[cx - 2, 5, 4, 10], [cx - 3, 7, 6, 6]]); ink(c2, [[cx - 1, 7, 2, 6]]); ink('#111', [[cx - 1, 8, 2, 4]]); }
+  if (k === 'goryl') { g.imageSmoothingEnabled = false; g.drawImage(IMG_GORYL, 2 * 259 + 60, 86, 140, 125, 2, 2, 16, 15); }
   if (k === 'ninja') { g.imageSmoothingEnabled = false; g.drawImage(IMG_NINJA, 8 * 229 + 60, 20, 110, 100, 2, 2, 16, 15); }
   if (k === 'twister') { ink('#111', [[3, 3, 14, 3], [5, 6, 11, 3], [7, 9, 8, 3], [8, 12, 6, 2], [9, 14, 4, 2]]); ink('#ffffff', [[4, 4, 12, 1], [6, 7, 9, 1], [8, 10, 6, 1], [9, 12, 4, 1]]); ink('#8a9aae', [[5, 5, 10, 1], [7, 8, 7, 1], [9, 11, 5, 1], [10, 13, 3, 1]]); ink('#ffe14a', [[3, 14, 2, 2], [15, 12, 2, 2]]); }
   if (k === 'pinball') { ink('#111', [[9, 6, 8, 8], [8, 7, 10, 6]]); ink('#fff', [[10, 7, 6, 6], [9, 8, 8, 4]]); ink('#111', [[12, 9, 2, 2]]); ink('#2a5a08', [[2, 7, 5, 1], [3, 10, 4, 1], [2, 13, 5, 1]]); ink('#fff', [[4, 4, 2, 2], [15, 15, 2, 2]]); }
@@ -909,7 +911,7 @@ function rivalPower(c, k) {
   if (k === 'lightning') { lightning(c); return; }
   if (k === 'dragon') { beastStart(c, 'smok'); return; }
   if (k === 'robot') { beastStart(c, 'robot'); return; }
-  if (k === 'portal' || k === 'pinball' || k === 'laser' || k === 'twister' || k === 'ninja') { MAGIC.start(c, k); return; }
+  if (k === 'portal' || k === 'pinball' || k === 'laser' || k === 'twister' || k === 'ninja' || k === 'goryl') { MAGIC.start(c, k); return; }
   ball.owner = null; shoot(c, 0.9, { name: POWERS[k].name, kind: k === 'wolf' ? 'mega' : k });
 }
 // the super picker: in the air with the ball, STRZAŁ freezes the moment and you choose which super to fire
@@ -930,7 +932,7 @@ function doPick(i = PICK.sel) {
   if (o.id === 'wolf') { wolfStart(c); return; }
   if (o.id === 'dragon') { beastStart(c, 'smok'); return; }
   if (o.id === 'robot') { beastStart(c, 'robot'); return; }
-  if (o.id === 'portal' || o.id === 'pinball' || o.id === 'laser' || o.id === 'twister' || o.id === 'ninja') { MAGIC.start(c, o.id); return; }
+  if (o.id === 'portal' || o.id === 'pinball' || o.id === 'laser' || o.id === 'twister' || o.id === 'ninja' || o.id === 'goryl') { MAGIC.start(c, o.id); return; }
   ball.owner = null; shoot(c, 0.9, { name: POWERS[o.id].name, kind: o.id });
 }
 // a sprinter leaves a trail of fading copies of himself
@@ -1039,10 +1041,13 @@ const MAGIC = (() => {
   // ninja: the user's GIF (30 frames of 229x204, feet at y 198, body centre x 112, faces right)
   const NJ = Array.from({ length: 6 }, () => { const sp = makeSprite(IMG_NINJA, { unit: 4.2 / 198 }); sp.holder.visible = sp.blob.visible = sp.sgrp.visible = false; return sp; });
   const njShow = (sp, f, x, y, z, dir) => { sp.show([f * 229, 0, 229, 204, 112], dir < 0); sp.holder.visible = sp.blob.visible = true; sp.holder.position.set(x, y, z); sp.blob.position.set(x, 0.02, z); sp.blob.scale.set(1.6, 0.6, 1); };
+  // gorilla: the user's GIF (30 frames of 259x189, feet at y 182, body centre x 105, faces right); 0-9 crouch, 10-22 leap, 23-29 landing smash
+  const GR = makeSprite(IMG_GORYL, { unit: 5.4 / 208 }); GR.holder.visible = GR.blob.visible = GR.sgrp.visible = false;
+  const grShow = (f, x, y, z, dir) => { GR.show([f * 259, 0, 259, 215, 105], dir < 0); GR.holder.visible = GR.blob.visible = true; GR.holder.position.set(x, y, z); GR.blob.position.set(x, 0.02, z); GR.blob.scale.set(2.6, 1, 1); };
   const njHide = () => NJ.forEach((sp) => (sp.holder.visible = sp.blob.visible = false));
   const M = { on: false, kind: '', t: 0, ph: '', c: null };
   const txt = (s, x, y, size, col, al = 'center') => { g.font = size + "px 'Press Start 2P', monospace"; g.textAlign = al; g.fillStyle = '#000'; for (const [a, b] of [[-2, 0], [2, 0], [0, -2], [0, 2], [2, 2]]) g.fillText(s, x + a, y + b); g.fillStyle = col; g.fillText(s, x, y); };
-  const end = () => { njHide(); M.on = false; cv.style.display = 'none'; portals.forEach((m) => (m.visible = false)); beam.visible = false; twister.visible = false; if (G.state === 'dragon') G.state = 'play'; };
+  const end = () => { njHide(); GR.holder.visible = GR.blob.visible = false; M.on = false; cv.style.display = 'none'; portals.forEach((m) => (m.visible = false)); beam.visible = false; twister.visible = false; if (G.state === 'dragon') G.state = 'play'; };
   function start(c, kind) {
     Object.assign(M, { on: true, kind, t: 0, ph: 'a', c, dir: Math.sign(goalX(c.team)), hit: [], spin: 0 });
     c.vx = c.vz = 0; c.vy = 0; c.y = 0; c.st = 'run'; c.act = null; c.t = 0; ball.owner = c; G.state = 'dragon'; fit();
@@ -1054,6 +1059,10 @@ const MAGIC = (() => {
       const left = players.filter((q) => q.team !== c.team); let at = c; M.route = [];
       while (left.length) { left.sort((a, b) => dist(a, at) - dist(b, at)); at = left.shift(); M.route.push(at); }
       M.route.push(c); M.i = 0; ball.x = c.x; ball.z = c.z; ball.y = 1; }
+    if (kind === 'goryl') { ui.banner?.('GORYL!', c.T, 'super', c); shout(c, 'Uga buga!'); SFX.roar(); ball.owner = c;
+      const left = players.filter((q) => q.team !== c.team); let at = c; M.route = [];
+      while (left.length) { left.sort((a, b) => dist(a, at) - dist(b, at)); at = left.shift(); M.route.push(at); }
+      M.gx = c.x; M.gz = c.z; M.i = -1; M.hopT = 0; }
     if (kind === 'ninja') { ui.banner?.('NINJA!', c.T, 'super', c); shout(c, 'Cień!'); SFX.charge(1); ball.owner = null; ball.hidden = true;
       const gx = goalX(c.team), sg = Math.sign(gx); M.fin = [gx - sg * 9, 0]; M.clones = [0, 1, 2, 3, 4].map((i) => [-sg * 4 + (Math.random() - 0.5) * 36, (i - 2) * 6.5 + (Math.random() - 0.5) * 3]); M.sx = c.x; M.sz = c.z; }
     if (kind === 'twister') { ui.banner?.('TRĄBA POWIETRZNA!', c.T, 'super', c); shout(c, 'Wiej!'); SFX.super(); SFX.portal();
@@ -1091,6 +1100,20 @@ const MAGIC = (() => {
         SFX.boing(); G.shake = Math.max(G.shake, 0.35); FX.emit('zigzag', ball.x, 1.2, ball.z, 16, 4, 0.35, 6); M.i++;
       } else { ball.x += dx / d * v; ball.z += dz / d * v; }
     }
+    if (M.kind === 'goryl') { const T = M.t, HOP = 0.75;
+      c.spr.holder.visible = T < 0.4 ? Math.random() < 0.5 : false; ball.owner = c; ball.hidden = true;
+      if (T < 0.9) { grShow((T * 12 | 0) % 10, M.gx, 0, M.gz, M.dir); return; }
+      // one leap per rival: frames 10-22 in the air, 23-26 the smash where he lands
+      const k = T - 0.9, i = Math.floor(k / HOP), u = (k % HOP) / HOP, tgt = M.route[i];
+      if (!tgt) { const e = k - M.route.length * HOP; grShow(26 + Math.min(3, e * 8 | 0), M.gx, 0, M.gz, M.dir);
+        if (e > 0.7) { c.x = M.gx; c.z = M.gz; c.spr.holder.visible = true; ball.hidden = false; ball.owner = c; c.hold = 0; if (c.team === 0) ui.banner?.('STRZELAJ!', c.T, 'small'); shout(c, 'Teraz!'); end(); } return; }
+      if (i !== M.i) { M.i = i; M.fx = M.gx; M.fz = M.gz; M.hit = false; }
+      const dir = Math.sign(tgt.x - M.fx) || M.dir, air = u < 0.72, w = Math.min(1, u / 0.72), x = M.fx + (tgt.x - M.fx) * w, z = M.fz + (tgt.z - M.fz) * w;
+      if (air) grShow(10 + Math.min(12, w * 13 | 0), x, Math.sin(w * Math.PI) * 7, z, dir);
+      else { grShow(23 + Math.min(3, (u - 0.72) / 0.28 * 4 | 0), tgt.x, 0, tgt.z, dir); M.gx = tgt.x; M.gz = tgt.z;
+        if (!M.hit) { M.hit = true; knock(tgt, 7, { lie: Math.random() < 0.5 ? 'lieBack' : 'lieFront', dizzy: true, foul: false, push: [dir * 4, (Math.random() - 0.5) * 4] });
+          SFX.tackle(); G.shake = 0.7; FX.emit('dust', tgt.x, 0.4, tgt.z, 22, 5, 0.5, 6); } }
+      return; }
     if (M.kind === 'ninja') { const T = M.t, sg = M.dir, [fx, fz] = M.fin;
       // 0-0.5 the boy glitches into the kneeling ninja; 0.5-1.2 he leaps up and is gone; 1.2-2.6 five ninjas stand around the pitch;
       // 2.6-3.1 they streak into one spot before the goal; 3.1-4.3 that ninja draws his sword, leaps and kicks the ball at the goal
@@ -1768,7 +1791,7 @@ placeKickoff(0); G.state = 'menu'; WX.set('leaves'); try { ARENA.set(localStorag
 window.GAME = {
   setSide(s) { SIDE = s; TEAMS[0].dir = s; TEAMS[1].dir = -s; },
   whistle() { SFX.unlock(); SFX.whistle(1); },
-  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0, ninja: 0 }; G.inv2 = {}; G.supGoals = 0;
+  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0, ninja: 0, goryl: 0 }; G.inv2 = {}; G.supGoals = 0;
     { const pk = PERK(); for (const p of players) { if (p.spd0 == null) p.spd0 = p.spd;
         if (p.team === 0 && p.stats && window.LEVELS) { const l = window.LEVELS(p.num), bb = p === captain && window.BOOT_BONUS ? window.BOOT_BONUS() : [0, 0, 0, 0, 0], v = (i) => Math.min(5.6, 2 + (l[i] + bb[i]) * 0.6);   // level 0 plays like a 2, level 5 like a 5
           p.stats = { st: v(0), pa: v(1), dr: v(2), ob: v(3), sp: v(4) }; p.spd0 = 0.9 + p.stats.sp * 0.035; } p.spd = p.spd0 * (p.team === 0 && pk.speed ? pk.speed : 1); }

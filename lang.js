@@ -56,7 +56,7 @@
     // match
     'GOL!': 'GOAL!', 'GOL': 'GOAL', 'BŁYSKAWICA': 'LIGHTNING', 'ROZDWOJENIE': 'SPLIT', 'MEGA PIŁKA': 'MEGA BALL', 'WILK': 'WOLF', 'SMOK': 'DRAGON', 'ROBOT': 'ROBOT', 'PORTALE': 'PORTALS',
     'SZALONA PIŁKA': 'CRAZY BALL', 'LASER Z KOSMOSU': 'SPACE LASER', 'TRĄBA POWIETRZNA': 'TORNADO', 'BŁYSKAWICA!': 'LIGHTNING!', 'WILK!': 'WOLF!', 'SMOK!': 'DRAGON!', 'ROBOT!': 'ROBOT!', 'PORTALE!': 'PORTALS!',
-    'SZALONA PIŁKA!': 'CRAZY BALL!', 'TRĄBA POWIETRZNA!': 'TORNADO!', 'NINJA': 'NINJA', 'NINJA!': 'NINJA!', 'Cień!': 'Shadow!', 'LASER Z KOSMOSU!': 'SPACE LASER!', 'STRZELAJ!': 'SHOOT!', 'PUSTA BRAMKA!': 'EMPTY GOAL!', 'BRAMKARZ LEŻY!': 'KEEPER IS DOWN!',
+    'SZALONA PIŁKA!': 'CRAZY BALL!', 'TRĄBA POWIETRZNA!': 'TORNADO!', 'NINJA': 'NINJA', 'NINJA!': 'NINJA!', 'GORYL': 'GORILLA', 'GORYL!': 'GORILLA!', 'Uga buga!': 'Ooga booga!', 'Cień!': 'Shadow!', 'LASER Z KOSMOSU!': 'SPACE LASER!', 'STRZELAJ!': 'SHOOT!', 'PUSTA BRAMKA!': 'EMPTY GOAL!', 'BRAMKARZ LEŻY!': 'KEEPER IS DOWN!',
     'BRAMKA RYWALA': 'RIVAL GOAL', 'TWOJA BRAMKA': 'YOUR GOAL', 'GOL DLA CIEBIE!': 'A GOAL FOR YOU!', 'OJ... SAMOBÓJ!': 'OOPS... OWN GOAL!', 'LOSOWANIE...': 'SPINNING...', 'ŁADOWANIE': 'CHARGING', 'OGNIA!': 'FIRE!',
     'KARNY!': 'PENALTY!', 'OBRONA!': 'SAVE!', '2. POŁOWA': '2ND HALF', 'KICK OFF!': 'KICK OFF!',
     'Leć!': 'Go!', 'Losujemy!': 'Spin it!', 'Mam to!': 'Got it!', 'Piorun!': 'Thunder!', 'Pusta bramka!': 'Empty goal!', 'Satelita, ognia!': 'Satellite, fire!', 'Smoku, leć!': 'Fly, dragon!', 'Smoku!': 'Dragon!',
