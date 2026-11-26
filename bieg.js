@@ -15,9 +15,12 @@
   const BG = new Image(); BG.src = 'bieg_bg.jpg';
   const AT = new Image(); AT.src = 'bieg_runners.png'; let ATJ = null;
   fetch('bieg_runners.json').then((r) => r.json()).then((j) => { ATJ = j; });
+  // trees, bushes and lamp posts cut out in bands by where they stand, so a runner passing behind them is hidden
+  const FG = new Image(); FG.src = 'bieg_fg.png'; let FGJ = null, LP = null;
+  fetch('bieg_fg.json').then((r) => r.json()).then((j) => { FGJ = j.fg; buildLanes(j.path); });
   // the line round the pitch and the lamp heads, in picture units
   const PL = 252, PR = 1418, PT = 188, PB = 742;
-  const LANES = [22, 48, 74, 100];
+  const LANES = [-13, -4.5, 4.5, 13];
   const LAMPS = [[172, 148], [1497, 148], [157, 636], [1512, 640]];
   const NAMES = { 14: 'SOWA', 10: 'ARTUR', 7: 'SZYMON', 27: 'DOMINIK' };
   const SPR_H = 118;
@@ -45,14 +48,18 @@
   addEventListener('resize', () => { if (!root.hidden) layout(); });
   const TS = (x, y) => [x * sc + ox, y * sc + oy];
 
-  // ---- the track: a rounded-off rectangle per lane, clockwise from the top-left ----
-  const laneRect = (k) => { const o = LANES[k]; return { l: PL - o, r: PR + o, t: PT - o, b: PB + o }; };
-  const perim = (k) => { const R = laneRect(k); return 2 * (R.r - R.l) + 2 * (R.b - R.t); };
-  const posAt = (k, d) => { const R = laneRect(k), w = R.r - R.l, h = R.b - R.t, P = 2 * w + 2 * h; let s = ((d % P) + P) % P;
-    if (s < w) return [R.l + s, R.t, 'side', 1]; s -= w;
-    if (s < h) return [R.r, R.t + s, 'down', 1]; s -= h;
-    if (s < w) return [R.r - s, R.b, 'side', -1]; s -= w;
-    return [R.l, R.b - s, 'up', 1]; };
+  // ---- the track: the dirt path round the park, one lane per runner, side by side on the path ----
+  const buildLanes = (path) => { const n = path.length; LP = LANES.map((off) => { const pts = [];
+      for (let i = 0; i < n; i++) { const [ax, ay] = path[(i - 1 + n) % n], [bx, by] = path[(i + 1) % n], tx = bx - ax, ty = by - ay, l = Math.hypot(tx, ty) || 1;
+        pts.push([path[i][0] - ty / l * off, path[i][1] + tx / l * off]); }
+      pts.push(pts[0]); const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+      return { pts, cum, len: cum[cum.length - 1] }; }); };
+  const perim = (k) => (LP ? LP[k].len : 3500);
+  const posAt = (k, d) => { if (!LP) return [0, 0, 'side', 1]; const L = LP[k]; let s2 = ((d % L.len) + L.len) % L.len, lo = 0, hi = L.cum.length - 1;
+    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (L.cum[m] <= s2) lo = m; else hi = m; }
+    const [ax, ay] = L.pts[lo], [bx, by] = L.pts[hi], f = (s2 - L.cum[lo]) / Math.max(0.001, L.cum[hi] - L.cum[lo]), dx = bx - ax, dy = by - ay;
+    const dir = Math.abs(dx) >= Math.abs(dy) * 0.9 ? 'side' : dy > 0 ? 'down' : 'up';
+    return [ax + dx * f, ay + dy * f, dir, dx < 0 && dir === 'side' ? -1 : 1]; };
 
   // ---- state ----
   const S = { on: false, phase: 'intro', t: 0, cnt: 0, runners: [], best: 0, parts: [], leaves: [], flick: [1, 1, 1, 1], res: null, lastDir: 0, acc: 0, strokes: 0 };
@@ -63,7 +70,7 @@
     S.runners = order.map((n, i) => ({ n, lane: i, d: 0, v: 0, me: i === 0, frame: 0, ft: 0, done: false, time: 0,
       base: (255 + Math.random() * 45 + i * 8) * lvl, wob: Math.random() * 6, kick: 0.7 + Math.random() * 0.2 }));
     // the runners stand staggered so every lane has the same distance to run
-    const P0 = perim(0); S.runners.forEach((r) => { r.dist = perim(r.lane) * LAPS; r.d = 0; });
+    S.runners.forEach((r) => { r.dist = perim(r.lane) * LAPS; r.d = 0; });
     S.phase = 'count'; S.t = 0; S.cnt = 3; S.res = null; S.strokes = 0; };
 
   // ---- input: rub up and down; every change of direction is a step ----
@@ -127,8 +134,8 @@
     if (r.me) { g.fillStyle = '#ffe14a'; g.fillRect(Math.round(sx - 3), Math.round(ty + 7), 6, 3); g.fillRect(Math.round(sx - 1), Math.round(ty + 10), 2, 2); } };
   const draw = () => { g.imageSmoothingEnabled = false; g.fillStyle = '#0b1a0e'; g.fillRect(0, 0, W, H);
     if (!TILT) TILT = bakeTilt(); if (TILT) g.drawImage(TILT, ox, oy, BW * sc, BH * sc); else if (BG.complete) g.drawImage(BG, ox, oy, BW * sc, BH * sc);
-    // start / finish line on every lane
-    { const [a, b] = TS(PL - 4, PT - LANES[3] - 12), [c, d] = TS(PL + 4, PT - 8); for (let y = b, i = 0; y < d; y += 6 * sc + 2, i++) { g.fillStyle = i % 2 ? '#111' : '#fff'; g.fillRect(Math.round(a), Math.round(y), Math.max(4, Math.round(c - a)), Math.round(6 * sc + 2)); } }
+    // start / finish line across the path
+    if (LP) { for (let i = 0; i < 6; i++) { const [x, y] = TS(LP[0].pts[0][0] - 2, LP[0].pts[0][1] - 17 + i * 6); const [x2] = TS(LP[0].pts[0][0] + 4, 0); g.fillStyle = i % 2 ? '#111' : '#fff'; g.fillRect(Math.round(x), Math.round(y), Math.max(3, Math.round(x2 - x)), Math.max(2, Math.round(6 * sc))); } }
     // lamp light: warm glow that flickers, additive
     g.save(); g.globalCompositeOperation = 'lighter';
     LAMPS.forEach(([lx, ly], i) => { const [x, y] = TS(lx, ly), f = S.flick[i], R = 230 * sc;
@@ -137,7 +144,10 @@
       g.fillStyle = `rgba(255,255,230,${0.75 * f})`; g.fillRect(Math.round(x - 9 * sc), Math.round(y - 10 * sc), Math.round(18 * sc), Math.round(18 * sc)); });
     g.restore();
     // runners, sorted top to bottom
-    [...S.runners].sort((a, b) => posAt(a.lane, a.d)[1] - posAt(b.lane, b.d)[1]).forEach(drawRunner);
+    const items = S.runners.map((r) => ({ y: posAt(r.lane, Math.min(r.d, r.dist + 60))[1], r }));
+    if (FGJ && FG.complete) for (const f of FGJ) items.push({ y: f[0], f });
+    items.sort((a, b) => a.y - b.y);
+    for (const it of items) { if (it.r) drawRunner(it.r); else { const [, ax, ay, fx, fy, fw, fh] = it.f; const [x, y] = TS(ax, ay); g.drawImage(FG, fx, fy, fw, fh, x, y, fw * sc, fh * sc); } }
     // midges and leaves, as hard pixels
     const px = Math.max(2, Math.round(2.4 * sc * 1.6));
     for (const p of S.parts) { const li = LAMPS.findIndex((L) => L[0] === p.cx), f = S.flick[li] || 1, [x, y] = TS(p.cx + Math.cos(p.a) * p.r, p.cy + Math.sin(p.a) * p.r * 0.6 + Math.sin(p.z) * 6);
