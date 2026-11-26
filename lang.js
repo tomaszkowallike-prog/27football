@@ -47,7 +47,7 @@
     'NAPÓJ ENERGII': 'ENERGY DRINK', 'Szybciej odzyskujesz siły': 'You get your breath back faster', 'KARTA NA START': 'STARTER CARD', 'Każdy mecz zaczynasz z losową mocą': 'Start every match with a random power',
     'ZAŁOŻONE': 'EQUIPPED', 'MASZ': 'OWNED', 'ZAŁÓŻ': 'EQUIP', 'ZA MAŁO MONET': 'NOT ENOUGH COINS', 'Gole': 'Goals', 'Gole z mocy': 'Power goals', 'Wygrana': 'Win', 'Remis': 'Draw', 'Za udział': 'For playing',
     'Czyste konto': 'Clean sheet', 'Nowy etap': 'New stage', 'MISTRZ TURNIEJU': 'TOURNAMENT CHAMPION', 'POKONAŁEŚ MROCZNY ZAMEK! JESTEŚ MISTRZEM!': 'YOU BEAT THE DARK CASTLE! YOU ARE THE CHAMPION!',
-    'REMIS: trzeba wygrać, żeby przejść dalej': 'DRAW: you need a win to go on', 'Przegrana: spróbuj jeszcze raz': 'Lost: try again', 'MONET': 'COINS', 'FINAŁ: ': 'FINAL: ', 'POZIOM': 'LEVEL', 'MAKS': 'MAX', 'STRZAŁ': 'SHOOT',
+    'REMIS: trzeba wygrać, żeby przejść dalej': 'DRAW: you need a win to go on', 'Przegrana: spróbuj jeszcze raz': 'Lost: try again', 'MONET': 'COINS', 'FINAŁ: ': 'FINAL: ', 'POZIOM': 'LEVEL', 'MAKS': 'MAX', 'TROFEA': 'TROPHIES', '◀ WRÓĆ': '◀ BACK', 'STRZAŁ': 'SHOOT',
     'Na start masz 3 boiska. Każda wygrana w turnieju odkrywa kolejne. Na Księżycu, w oceanie, w niebie i na stacji niższa grawitacja: piłka i skoki lecą wyżej.': 'You start with 3 pitches. Every tournament win unlocks another. On the Moon, in the ocean, in the sky and on the station gravity is lower: the ball and jumps go higher.',
     // squad
     'POMOCNIK': 'MIDFIELDER', 'NAPASTNIK': 'STRIKER', 'OBROŃCA': 'DEFENDER', 'BRAMKARZ': 'GOALKEEPER', 'PODANIE': 'PASSING', 'DRYBLING': 'DRIBBLING', 'OBRONA': 'DEFENCE', 'PRĘDKOŚĆ': 'SPEED', 'NOWY REKORD!': 'NEW RECORD!',

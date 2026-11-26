@@ -409,6 +409,19 @@
   #dog { position: absolute; left: 0.8%; top: 60.5%; width: 8.6%; aspect-ratio: 88 / 96; background: url(dog.png) 0 0 / 800% 100% no-repeat; image-rendering: pixelated; cursor: pointer; }
   #dog.scr { animation: scr .16s steps(2) infinite; } @keyframes scr { 50% { transform: translate(1px, -2px); } }
   #dog.hop { animation: dhop .35s steps(3); } @keyframes dhop { 50% { transform: translateY(-14%); } }
+  #trofea { position: fixed; inset: 0; z-index: 21; background: #120a24; overflow: hidden; } #trofea[hidden] { display: none; }
+  #trofea .sbg { position: absolute; inset: -20px; background: url(trofea_bg.jpg) center / cover; filter: blur(12px) brightness(.45); }
+  #trofea .tbox { position: absolute; left: 50%; top: 50%; width: min(100vw, 179.1vh); aspect-ratio: 2576 / 1438; transform: translate(-50%, -50%); }
+  #trofea .tbox > img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+  #trofea .tro { position: absolute; display: flex; align-items: flex-end; justify-content: center; cursor: pointer; }
+  #trofea .tro i { display: block; height: 92%; aspect-ratio: 1; background: url(trofea.png) 0 0 / 2400% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0,0,0,.6)); }
+  #trofea .tro.off i { filter: brightness(0) drop-shadow(0 0 1px rgba(255,255,255,.35)); opacity: .55; }
+  #trofea .tro.new i { animation: tronew 0.5s steps(2) 6; } @keyframes tronew { 50% { filter: brightness(1.8) drop-shadow(0 0 6px #ffe14a); } }
+  #trofea .tback { position: absolute; left: 1.5%; top: 2.5%; padding: 8px 12px; font: 10px "Press Start 2P", monospace; color: #fff; background: #1a1540; border: 3px solid #7a6ad8; cursor: pointer; }
+  #trofea .tcount { position: absolute; right: 2%; top: 3%; padding: 8px 12px; font: 10px "Press Start 2P", monospace; color: #ffe14a; background: rgba(0,0,0,.7); }
+  #trofea .tinfo { position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%); min-width: 40%; padding: 8px 14px; text-align: center; font: 9px "Press Start 2P", monospace; line-height: 1.7; color: #fff; background: rgba(10,8,24,.9); border: 3px solid #ffe14a; }
+  #trofea .tinfo[hidden] { display: none; } #trofea .tinfo b { color: #ffe14a; font-weight: 400; }
+  #strophy { left: 86.5%; top: 14%; width: 9%; height: 15%; }
   #szatnia .hot { position: absolute; background: transparent; border: 0; cursor: pointer; }
   #szatnia .hot:hover, #szatnia .hot:focus-visible { outline: 3px solid #ffe14a; border-radius: 10px; }
   #mvol { position: fixed; z-index: 40; left: 50%; top: max(4px, env(safe-area-inset-top)); transform: translateX(-50%); font: 700 13px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.6); border: 2px solid #8a8a8a; border-radius: 6px; padding: 2px 9px; cursor: pointer; }
@@ -497,11 +510,13 @@
 <div class="setov" id="arenapick" hidden><div class="setp" role="dialog" aria-label="Wybierz boisko"><h2>WYBIERZ BOISKO <button class="x" id="arenax" aria-label="Zamknij">X</button></h2>
   <div class="abar"><button id="tabTour" class="on">TURNIEJ</button><button id="tabFree">DOWOLNY MECZ</button><span class="sp"></span>
     <span class="lv" id="lvbtns"><button data-l="0">ŁATWY</button><button data-l="1">NORMALNY</button><button data-l="2">MISTRZ</button></span>
-    <span class="coin" id="coinA">0</span><button id="shopbtn">SKLEP</button></div>
+    <span class="coin" id="coinA">0</span><button id="trobtn">TROFEA</button><button id="shopbtn">SKLEP</button></div>
   <div class="flipgrid arenagrid tourgrid" id="tourgrid"></div>
   <div class="flipgrid arenagrid" id="arenagrid" hidden></div>
   <p class="arenahint" id="tourhint">Turniej: wygraj mecz, żeby odblokować następne boisko. Na końcu czeka MROCZNY ZAMEK.</p>
   <p class="arenahint" id="freehint" hidden>Na start masz 3 boiska. Każda wygrana w turnieju odkrywa kolejne. Na Księżycu, w oceanie, w niebie i na stacji niższa grawitacja: piłka i skoki lecą wyżej.</p></div></div>
+<div id="trofea" hidden><div class="sbg"></div><div class="tbox"><img src="trofea_bg.jpg" alt=""><div id="tslots"></div>
+  <button class="tback" id="tback">◀ WRÓĆ</button><div class="tcount" id="tcount"></div><div class="tinfo" id="tinfo" hidden></div></div></div>
 <div class="setov" id="shop" hidden><div class="setp" role="dialog" aria-label="Sklep"><h2>SKLEP <span class="coin" id="coinS">0</span><button class="x" id="shopx" aria-label="Zamknij">X</button></h2>
   <div class="shopgrid" id="shopgrid"></div>
   <p class="arenahint">Monety zdobywasz za gole, wygrane, czyste konto, gole z mocy, etapy turnieju i kapki. Na trudniejszym poziomie dostajesz więcej.</p></div></div>
@@ -541,7 +556,7 @@
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <button class="hot" id="sset" aria-label="Ustawienia"></button>
-  <div class="stitle">WYBIERZ KAPITANA</div><div class="scoin" id="coinL">0</div></div></div>
+  <div class="stitle">WYBIERZ KAPITANA</div><div class="scoin" id="coinL">0</div><button class="hot" id="strophy" aria-label="Trofea"></button></div></div>
 <div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt=""><button class="hbottle" id="hbottle" aria-label="Butelka"><img src="flip_woda.png" alt=""></button>
   <small id="mq">CO ROBIMY?</small>
   <div class="mrow"><button class="mb" data-m="match"><b><img class="pxi" src="ico_match.png" alt=""></b>MECZ<em>Pixels kontra Fioletowi</em></button><button class="mb" data-m="karne"><b><img class="pxi" src="ico_karne.png" alt=""></b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b><img class="pxi" src="ico_kapki.png" alt=""></b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b><img class="pxi" src="ico_but.png" alt=""></b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b><img class="pxi" src="ico_kapsle.png" alt=""></b>KAPSLE<em>wyścig kapsli po torze</em></button><button class="mb" data-m="bieg"><b><img class="pxi" src="ico_bieg.png" alt=""></b>BIEG<em>wyścig dookoła boiska</em></button></div>
@@ -733,11 +748,13 @@
     xp[k] += n; let up = 0; while (xp[k] >= XPL && lv[k] < 5) { xp[k] -= XPL; lv[k]++; up++; } if (lv[k] >= 5) xp[k] = 0; PROG.save(); return up; };
   window.TRAIN = (game, r = {}) => { const num = window.CAPTAIN || 27, L = window.L || ((x) => x), out = [], P = PROG.get(); let coins = 0;
     const give = (k, n) => { const up = addXP(num, k, n); if (up == null) return; out.push(`+${n} XP ${L(SK[k])}${up ? '  ▲ ' + L('POZIOM') + ' ' + P.lv[num][k] : ''}`); };
+    if (game === 'bieg' && r.place === 1) P.bieg_win = 1; if (game === 'karne' && r.win) P.pen_win = 1;
     if (game === 'bieg') { give(4, 15 + (r.place === 1 ? 20 : 0) + (r.record ? 50 : 0)); coins = r.place === 1 ? 10 : 3; }
     if (game === 'kapki') { give(2, Math.min(40, r.score) + (r.record ? 50 : 0)); }
     if (game === 'karne') { give(0, 8 * (r.goals || 0) + (r.win ? 15 : 0) + (r.record ? 50 : 0)); coins = r.win ? 10 : 3; }
     if (game === 'mecz') { give(1, 10 + (r.goals || 0) * 5 + (r.win ? 15 : 0)); give(3, 10 + (r.clean ? 20 : 0) + (r.win ? 10 : 0)); }
     if (r.record) coins += 20; if (coins) { PROG.add(coins); out.push(`+${coins} ${L('MONET')}`); }
+    setTimeout(() => TRO.check(), 0);
     if (out.length) toast((r.record ? L('NOWY REKORD!') + '\n' : '') + out.join('\n')); return out; };
   const itemIcon = (it) => { const c = document.createElement('canvas'); c.width = c.height = 16; const g = c.getContext('2d'), r = (col, x, y, w, h) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
     if (it.slot === 'boots') { const [a, b] = it.col; r('#000', 2, 6, 7, 6); r('#000', 2, 10, 13, 4); r(a, 3, 7, 5, 5); r(a, 3, 11, 11, 2); r(b, 5, 8, 2, 1); r(b, 9, 11, 3, 1); r('#222', 3, 13, 11, 1); }
@@ -791,13 +808,42 @@
     if (T) { if (a > b) { if (T.i === T.n - 1) { add('MISTRZ TURNIEJU', 300); stage = 'POKONAŁEŚ MROCZNY ZAMEK! JESTEŚ MISTRZEM!'; if (P.ladder <= T.i) { P.ladder = T.i + 1; P.champ++; } }
         else { if (P.ladder <= T.i) { add('Nowy etap', 50); P.ladder = T.i + 1; } stage = `ETAP ${T.i + 1} ZALICZONY!`; $('tnext').hidden = false; } }
       else stage = a === b ? 'REMIS: trzeba wygrać, żeby przejść dalej' : 'Przegrana: spróbuj jeszcze raz'; }
-    P.coins += sum; PROG.save(); markTour(); window.TRAIN('mecz', { goals: a, win: a > b, clean: b === 0 }); if (stage) stage = (window.L || String)(stage);
+    if (lv === 2 && a > b) P.master_win = 1; P.coins += sum; PROG.save(); markTour(); window.TRAIN('mecz', { goals: a, win: a > b, clean: b === 0 }); if (stage) stage = (window.L || String)(stage);
     $('reward').innerHTML = (stage ? `<span class="stage">${stage}</span>` : '') + lines.join(' · ') + `<span class="tot">+${sum} MONET · MASZ ${P.coins}</span>`; };
   $('tnext').onclick = () => { $('end').hidden = true; const T = window.TOUR, A = tourList(), n = T ? T.i + 1 : 0; if (A[n]) { window.TOUR = { i: n, id: A[n].id, n: A.length }; window.GAME?.arena(A[n].id); go(); } };
   $('tmenu').onclick = () => { $('end').hidden = true; document.body.classList.remove('playing'); arenaPick(); };
   { let l = null; try { l = localStorage.getItem('lang'); } catch (e) {} if (!l) $('langpick').hidden = false;
     $('langpick').querySelectorAll('button').forEach((b) => (b.onclick = () => window.setLang(b.dataset.l)));
     $('langbtn').textContent = window.LANG === 'en' ? 'ENGLISH' : 'POLSKI'; $('langbtn').onclick = () => window.setLang(window.LANG === 'en' ? 'pl' : 'en'); }
+  // ---- the trophy room: 24 trophies in a glass cabinet, won in the tournament, the mini-games and on MASTER level
+  const TSLOT = [[14.52, 25.8, 5.86, 11.47], [20.81, 25.8, 6.17, 11.47], [29.5, 25.8, 6.83, 11.47], [36.76, 25.8, 6.21, 11.47], [43.48, 25.8, 5.78, 11.47], [50.74, 25.8, 5.78, 11.47], [57.03, 25.8, 6.56, 11.47], [66.96, 25.8, 5.75, 11.47], [73.18, 25.8, 6.02, 11.47], [79.66, 25.8, 6.02, 11.47], [14.52, 38.32, 5.86, 10.22], [20.81, 38.32, 6.17, 10.22], [29.5, 38.32, 6.83, 10.22], [36.76, 38.32, 6.21, 10.22], [43.48, 38.32, 5.78, 10.22], [50.74, 38.32, 5.78, 10.22], [57.03, 38.32, 6.56, 10.22], [66.96, 38.32, 5.75, 10.22], [73.18, 38.32, 6.02, 10.22], [79.66, 38.32, 6.02, 10.22], [14.52, 50.42, 5.86, 9.39], [20.81, 50.42, 6.17, 9.39], [29.5, 50.42, 6.83, 9.39], [36.76, 50.42, 6.21, 9.39], [43.48, 50.42, 5.78, 9.39], [50.74, 50.42, 5.78, 9.39], [57.03, 50.42, 6.56, 9.39], [66.96, 50.42, 5.75, 9.39], [73.18, 50.42, 6.02, 9.39], [79.66, 50.42, 6.02, 9.39], [14.52, 62.52, 5.86, 8.41], [20.81, 62.52, 6.17, 8.41], [29.5, 62.52, 6.83, 8.41], [36.76, 62.52, 6.21, 8.41], [43.48, 62.52, 5.78, 8.41], [50.74, 62.52, 5.78, 8.41], [57.03, 62.52, 6.56, 8.41], [66.96, 62.52, 5.75, 8.41], [73.18, 62.52, 6.02, 8.41], [79.66, 62.52, 6.02, 8.41]];
+  const TRO = (() => { const L = (pl, en) => (window.LANG === 'en' ? en : pl), kb = () => { try { return +localStorage.getItem('kapki_best') || 0; } catch (e) { return 0; } };
+    const T = [
+      { i: 0, s: 3, n: L('PUCHAR MISTRZA', "CHAMPION'S CUP"), how: L('Pokonaj MROCZNY ZAMEK w finale turnieju', 'Beat the DARK CASTLE in the tournament final'), ok: (P) => P.champ > 0 },
+      { i: 2, n: L('ZNICZ ZWYCIĘSTWA', 'VICTORY TORCH'), how: L('Wygraj pierwszy mecz turnieju', 'Win your first tournament match'), ok: (P) => P.ladder >= 1 },
+      { i: 1, n: L('SKRZYDLATA GWIAZDA', 'WINGED STAR'), how: L('Wygraj mecz na poziomie MISTRZ', 'Win a match on MASTER level'), ok: (P) => P.master_win },
+      { i: 6, n: L('SREBRNY PUCHAR', 'SILVER CUP'), how: L('Zrób 25 kapek', 'Do 25 keepy-uppies'), ok: () => kb() >= 25 },
+      { i: 7, n: L('ZŁOTY PUCHAR', 'GOLDEN CUP'), how: L('Wygraj bieg', 'Win a race'), ok: (P) => P.bieg_win },
+      { i: 8, n: L('BRĄZOWY PUCHAR', 'BRONZE CUP'), how: L('Wygraj serię karnych', 'Win a penalty shootout'), ok: (P) => P.pen_win },
+    ];
+    const names = [[9, 'KRYSZTAŁOWY OBELISK', 'CRYSTAL OBELISK'], [10, 'NIEBIESKI PŁOMIEŃ', 'BLUE FLAME'], [11, 'SZKLANY PUCHAR', 'GLASS CUP'], [12, 'SZMARAGDOWY OBELISK', 'EMERALD OBELISK'],
+      [13, 'NEFRYTOWA WSTĘGA', 'JADE RIBBON'], [14, 'PATYNOWY PUCHAR', 'VERDIGRIS CUP'], [15, 'LODOWA GÓRA', 'ICEBERG'], [16, 'ZŁOTA FALA', 'GOLDEN WAVE'], [17, 'PUCHAR KOWALI', "SMITHS' CUP"],
+      [18, 'NOCNE NIEBO', 'NIGHT SKY'], [19, 'FENIKS', 'PHOENIX'], [20, 'MIEDZIANY PUCHAR', 'COPPER CUP'], [21, 'AMETYSTOWY OBELISK', 'AMETHYST OBELISK'], [22, 'FIOLETOWA WSTĘGA', 'VIOLET RIBBON'],
+      [23, 'FIOLETOWY PUCHAR', 'PURPLE CUP'], [3, 'ZŁOTA OŚMIORNICA', 'GOLDEN OCTOPUS'], [4, 'CESARSKI ORZEŁ', 'IMPERIAL EAGLE'], [5, 'SKRZYDLATY LEW', 'WINGED LION']];
+    names.forEach(([i, pl, en], k) => { const n = 3 * (k + 1); T.push({ i, n: L(pl, en), how: L(`Przejdź ${n} etapów turnieju`, `Clear ${n} tournament stages`), ok: (P) => P.ladder >= n }); });
+    let free = TSLOT.map((_, k) => k).filter((k) => k !== 3); for (const t of T) if (t.s == null) t.s = free.shift();
+    const draw = (fresh = []) => { const P = PROG.get(), box = $('tslots'); box.innerHTML = ''; let n = 0;
+      for (const t of T) { const [x, y, w, h] = TSLOT[t.s], got = !!t.ok(P); n += got; const d = document.createElement('div'); d.className = 'tro' + (got ? '' : ' off') + (fresh.includes(t.i) ? ' new' : '');
+        d.style.cssText = `left:${x}%;top:${y}%;width:${w}%;height:${h}%`; d.innerHTML = `<i style="background-position:${t.i / 23 * 100}% 0"></i>`;
+        d.onclick = () => { const e = $('tinfo'); e.innerHTML = `<b>${got ? t.n : '???'}</b><br>${t.how}${got ? '<br>✔ ' + L('ZDOBYTE', 'WON') : ''}`; e.hidden = false; }; box.appendChild(d); }
+      $('tcount').textContent = `${n} / ${T.length}`; };
+    // called after every match and mini-game: new trophies get a message
+    const check = () => { const P = PROG.get(); P.tro = P.tro || []; const fresh = T.filter((t) => t.ok(P) && !P.tro.includes(t.i)); if (!fresh.length) return [];
+      for (const t of fresh) P.tro.push(t.i); PROG.save(); setTimeout(() => toast(L('NOWE TROFEUM!', 'NEW TROPHY!') + '\n' + fresh.map((t) => t.n).join('\n')), 2800); return fresh.map((t) => t.i); };
+    const open = () => { const fresh = check(); draw(fresh); $('tinfo').hidden = true; $('trofea').hidden = false; };
+    $('tback').onclick = () => { $('trofea').hidden = true; }; $('tslots').addEventListener('click', (e) => e.stopPropagation());
+    return { open, check }; })();
+  $('strophy').onclick = () => TRO.open(); $('trobtn').onclick = () => TRO.open();
   window.KAPKI_COINS = (n) => { const c = Math.floor(n / 5); if (c > 0) PROG.add(c); return c; };
   // the arena cards are built and their pictures loaded once, right at start, so the list never shows names without pictures
   const AIMG = []; const buildArenas = () => { const grid = $('arenagrid'); if (grid.children.length || !window.GAME?.arenas) return; for (const a of (window.GAME?.arenas || [])) { const b = document.createElement('button'); b.dataset.a = a.id; b.innerHTML = `<img src="arena_${a.id}.png" alt="" width="120" height="84" decoding="sync"><span>${a.name}</span>`; AIMG.push(b.querySelector('img'));
