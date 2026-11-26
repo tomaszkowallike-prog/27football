@@ -847,5 +847,32 @@ export default function extraArenas(C) {
       const m = add(gr, geo, GL(pick(['#ff3a5a', '#ffd21a', '#3ac8ff', '#c86aff', '#3ae86a']), 0.4), R(-70, 70), R(12, 26), -PZ - R(14, 40)); shapes.push([m, m.position.y, R(0, 6)]); }
     tick(gr, (t) => shapes.forEach(([m, y, p]) => { m.rotation.x = t * 0.5 + p; m.rotation.y = t * 0.7; m.position.y = y + Math.sin(t + p) * 1.5; }));
     for (let k = 0; k < 4; k++) { const fc = card(0, 0, 0, 0, 0.5); tick(gr, (t) => { const a = t * 0.3 + k * 1.57; fc.position.set(Math.cos(a) * 40, 18 + Math.sin(t + k) * 3, -PZ - 24 + Math.sin(a) * 8); fc.rotation.y = t * 1.5 + k; }); } };
+  // dark throne hall: black stone walls lit green from below, a huge green throne, white floor with green lines and a green D
+  DEF.mroczny = { name: 'MROCZNY ZAMEK', sky: '#030504', fog: '#060a07', near: 80, far: 220, hemi: ['#f2f6f3', '#101412', 1.6], sun: ['#ffffff', 2.0], grav: 30, wx: 'none',
+    pal: pal('#eef0ee', '#f4f6f4', '#e8eae8', ['#dfe2df', '#ffffff', '#d6dad6', '#f2f4f2'], ['#d8dcd8', '#cfd4cf', '#e0e4e0'], '#1fae4a', { txt: 'rgba(0,0,0,0)', wornE: 'rgba(120,140,120,.2)', extra: (g, W, H, K, X, Z) => {
+      const c = [X(0), Z(0)], s = 3.6 * K, t = Math.max(3, 0.7 * K | 0); g.fillStyle = '#1fae4a'; g.fillRect(c[0] - s * 0.55, c[1] - s, t, s * 2); g.lineWidth = t; g.strokeStyle = '#1fae4a'; g.beginPath(); g.moveTo(c[0] - s * 0.55, c[1] - s + t / 2); g.lineTo(c[0], c[1] - s + t / 2); g.arc(c[0], c[1], s - t / 2, -Math.PI / 2, Math.PI / 2); g.lineTo(c[0] - s * 0.55, c[1] + s - t / 2); g.stroke(); } }),
+    track: () => tile((g) => { fill(g, '#141614'); for (let y = 0; y < 64; y += 16) for (let x = (y / 16) % 2 * 8; x < 64; x += 16) { g.fillStyle = pick(['#1a1c1a', '#202220', '#161816']); g.fillRect(x + 1, y + 1, 14, 14); } }) };
+  BUILD.mroczny = (gr) => { const black = M('#16181a'), stone = BA('#141614'), green = '#2aff6a';
+    // the walls: black stone blocks, a strip of green light along the foot of each, light washing up the wall
+    const wallT = tex(64, 64, (g) => { g.fillStyle = '#0e100f'; g.fillRect(0, 0, 64, 64); for (let y = 0; y < 64; y += 8) for (let x = (y / 8) % 2 * 8; x < 64; x += 16) { g.fillStyle = pick(['#161816', '#1a1c1a', '#121412']); g.fillRect(x + 1, y + 1, 14, 6); } }); wallT.wrapS = wallT.wrapT = THREE.RepeatWrapping;
+    const wall = (x, z, w, h, ry) => { const t = wallT.clone(); t.needsUpdate = true; t.repeat.set(w / 8, h / 8); const m = add(gr, new THREE.BoxGeometry(w, h, 1.5), BA('#ffffff', { map: t }), x, h / 2, z); m.rotation.y = ry;
+      const strip = add(gr, new THREE.BoxGeometry(w, 0.4, 0.4), BA(green), x, 0.3, z); strip.rotation.y = ry; strip.position.x += Math.sin(ry) * 1; strip.position.z += Math.cos(ry) * 1;
+      const wash = add(gr, new THREE.PlaneGeometry(w, h * 0.7), BA(green, { transparent: true, opacity: 0.07, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }), x, h * 0.12, z); wash.scale.y = 0.35; wash.rotation.y = ry; wash.position.x += Math.sin(ry) * 0.8; wash.position.z += Math.cos(ry) * 0.8; return wash; };
+    const washes = [wall(0, -PZ - 14, 170, 30, 0), wall(-PX - 16, 0, 80, 26, Math.PI / 2), wall(PX + 16, 0, 80, 26, -Math.PI / 2)];
+    tick(gr, (t) => washes.forEach((w, k) => { w.material.opacity = 0.035 + Math.sin(t * 1.3 + k) * 0.015; }));
+    for (let x = -70; x <= 70; x += 14) { if (Math.abs(x) < 16) continue; box(gr, 3, 30, 2.4, stone, x, 15, -PZ - 13); add(gr, new THREE.PlaneGeometry(0.5, 10), BA(green, { transparent: true, opacity: 0.6 }), x, 5, -PZ - 11.75); }
+    // the throne: steps, a broad seat, high back with spikes, armrests, everything trimmed in glowing green
+    const tz = -PZ - 11, G = '#176e30', GD = '#0e4420';
+    for (let k = 0; k < 4; k++) box(gr, 22 - k * 3.4, 1, 8 - k * 1.2, k % 2 ? GD : G, 0, 0.5 + k, tz);
+    box(gr, 10, 2, 6, G, 0, 5, tz); box(gr, 10.4, 0.4, 6.4, GL(green, 1.2), 0, 6.1, tz); box(gr, 10, 22, 2, G, 0, 17, tz - 2.4); box(gr, 8, 18, 0.2, GD, 0, 16, tz - 1.35);
+    for (const dx of [-5.6, 5.6]) { box(gr, 1.6, 4, 6, G, dx, 7, tz); box(gr, 1.8, 0.4, 6.2, GL(green, 1.2), dx, 9.1, tz); box(gr, 1.4, 26, 1.4, GD, dx * 1.05, 19, tz - 2.4); cone(gr, 1.1, 4, GL(green, 1), dx * 1.05, 34, tz - 2.4, 4); }
+    cone(gr, 2.6, 8, G, 0, 32, tz - 2.4, 4); for (const dx of [-3, 3]) cone(gr, 1.2, 5, G, dx, 30, tz - 2.4, 4); const gem = sph(gr, 1.2, GL(green, 1.8), 0, 24, tz - 1.2, 0);
+    for (const dx of [-5.6, 0, 5.6]) box(gr, 0.3, 22, 0.3, GL(green, 1.1), dx === 0 ? 0 : dx * 0.9, 17, tz - 1.3).visible = dx !== 0;
+    tick(gr, (t) => { gem.scale.setScalar(1 + Math.sin(t * 2) * 0.15); gem.rotation.y = t; });
+    // braziers with green fire, green banners hanging on the back wall
+    const fires = []; const brazier = (x, z) => { cyl(gr, 0.4, 0.6, 3, '#2a2c2e', x, 1.5, z, 6); cyl(gr, 1.4, 0.8, 1, '#2a2c2e', x, 3.4, z, 8); for (let k = 0; k < 3; k++) fires.push(cone(gr, 0.6 - k * 0.12, 2 - k * 0.3, GL(green, 1.8), x + (k - 1) * 0.4, 4.6, z, 6)); };
+    far(6, (x, z) => { if (Math.abs(x) > 14) brazier(x, z); }, 5, 5.4, -60, 60); for (const sx of [-1, 1]) for (const z of [-14, 14]) brazier(sx * (PX + 9), z);
+    tick(gr, (t) => fires.forEach((f, k) => { f.scale.y = 1 + Math.sin(t * 10 + k * 1.9) * 0.35; f.rotation.y = t * 2 + k; }));
+    for (const x of [-34, -20, 20, 34]) { const bn = box(gr, 5, 12, 0.1, '#14662e', x, 18, -PZ - 13.1); box(gr, 5.6, 0.5, 0.4, '#c8a040', x, 24.2, -PZ - 13); cone(gr, 2.5, 2, '#14662e', x, 11.2, -PZ - 13.1, 4).rotation.z = Math.PI; } };
   return { DEF, BUILD };
 }
