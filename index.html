@@ -366,8 +366,8 @@
   #langpick h2 { margin: 0 0 6px; font: 16px "Press Start 2P", monospace; color: #ffe14a; line-height: 1.6; text-shadow: 3px 3px 0 #000; } #langpick h2 small { font-size: 10px; color: #b8b4e8; }
   #langpick button { all: unset; cursor: pointer; padding: 14px 40px; font: 14px "Press Start 2P", monospace; color: #1a1030; background: #6ee05a; border: 3px solid #d8ffc8; box-shadow: 0 5px 0 #2a8a1a; }
   #langpick button + button { background: #ffe14a; border-color: #fff6c0; box-shadow: 0 5px 0 #b08a00; }
-  #toast { position: fixed; left: 50%; top: 14px; transform: translate(-50%, -140%); z-index: 250; padding: 8px 14px; font: 10px "Press Start 2P", monospace; line-height: 1.6; color: #fff; background: #1a1540; border: 3px solid #6ee05a; box-shadow: 0 4px 0 #000; transition: transform .25s steps(4); pointer-events: none; text-align: center; white-space: pre-line; }
-  #toast.on { transform: translate(-50%, 0); }
+  #toast { position: fixed; left: 50%; top: 14px; transform: translate(-50%, -200%); z-index: 250; padding: 8px 14px; font: 10px "Press Start 2P", monospace; line-height: 1.6; color: #fff; background: #1a1540; border: 3px solid #6ee05a; box-shadow: 0 4px 0 #000; transition: transform .25s steps(4), visibility 0s .25s; visibility: hidden; pointer-events: none; text-align: center; white-space: pre-line; }
+  #toast.on { transform: translate(-50%, 0); visibility: visible; transition: transform .25s steps(4); }
   #szatnia .scoin { position: absolute; left: 85.6%; top: 4.9%; width: 5.6%; height: 4.6%; display: flex; align-items: center; justify-content: center; font: 700 clamp(9px, 2vw, 24px) "Pixelify Sans", monospace; color: #fff; }
   .arenagrid button.lock { position: relative; } .arenagrid button.lock img { filter: grayscale(1) brightness(.45); } .arenagrid button.lock span { color: #8a84b8; }
   .arenagrid button.lock::after { content: ''; position: absolute; left: 50%; top: 32%; width: 18px; height: 14px; margin-left: -9px; background: #ffe14a; box-shadow: 0 0 0 2px #000; border-radius: 2px; }
@@ -454,6 +454,9 @@
   #trofea .tcount { position: absolute; right: 2%; top: 3%; padding: 8px 12px; font: 10px "Press Start 2P", monospace; color: #ffe14a; background: rgba(0,0,0,.7); }
   #trofea .tinfo { position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%); min-width: 40%; padding: 8px 14px; text-align: center; font: 9px "Press Start 2P", monospace; line-height: 1.7; color: #fff; background: rgba(10,8,24,.9); border: 3px solid #ffe14a; }
   #trofea .tinfo[hidden] { display: none; } #trofea .tinfo b { color: #ffe14a; font-weight: 400; }
+  #strophy { overflow: hidden; border-radius: 8px; } #strophy::after { content: ''; position: absolute; top: -20%; bottom: -20%; width: 35%; left: -60%; background: linear-gradient(100deg, transparent, rgba(255,250,200,.85), transparent); mix-blend-mode: screen; animation: troglint 3.2s steps(12) infinite; }
+  #strophy::before { content: '✦'; position: absolute; right: 12%; top: 4%; font: 14px monospace; color: #fff6c0; text-shadow: 0 0 6px #ffe14a; animation: trospark 3.2s steps(1) infinite; }
+  @keyframes troglint { 0%, 55% { left: -60%; } 85%, 100% { left: 130%; } } @keyframes trospark { 0%, 60% { opacity: 0; } 70%, 85% { opacity: 1; } 90%, 100% { opacity: 0; } }
   #sworks { left: 9.4%; top: 2.6%; width: 17.6%; height: 5.8%; font-size: 0; color: transparent; }
   #strophy { left: 86.5%; top: 14%; width: 9%; height: 15%; }
   #szatnia .hot { position: absolute; background: transparent; border: 0; cursor: pointer; }
@@ -711,7 +714,7 @@
     sfx: () => CFG.sfx ? 'WŁĄCZONE' : 'WYŁĄCZONE', vib: () => CFG.vib ? 'WŁĄCZONE' : 'WYŁĄCZONE',
     half: () => `${CFG.half / 60}:00`, lvl: () => ['ŁATWY', 'NORMALNY', 'MISTRZ'][CFG.lvl],
     pad: () => ({ auto: 'AUTO', on: 'ZAWSZE', off: 'WYŁĄCZONY' })[CFG.pad] };
-  const setDraw = () => document.querySelectorAll('#setov .v').forEach((b) => { const k = b.dataset.k; b.textContent = SETV[k]();
+  const setDraw = () => document.querySelectorAll('#setov .v').forEach((b) => { const k = b.dataset.k; if (!SETV[k]) return; b.textContent = SETV[k]();
     b.classList.toggle('off', (k === 'sfx' && !CFG.sfx) || (k === 'vib' && !CFG.vib) || (k === 'mus' && !MV.v) || (k === 'pad' && CFG.pad === 'auto')); });
   document.querySelectorAll('#setov .v').forEach((b) => b.addEventListener('click', () => { const k = b.dataset.k; $('setnote').textContent = '';
     if (k === 'mus') MV.next();
