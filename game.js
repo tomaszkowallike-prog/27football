@@ -547,11 +547,7 @@ const ARENA = (() => {
       track: () => tile((g) => { g.fillStyle = '#7a7a82'; g.fillRect(0, 0, 64, 64); speck(g, ['#606068', '#9a9aa2', '#56565e', '#acacb4'], 260); g.fillStyle = 'rgba(40,40,50,.4)'; g.beginPath(); g.ellipse(20, 30, 9, 7, 0, 0, 7); g.fill(); g.fillStyle = 'rgba(200,200,210,.4)'; g.fillRect(14, 36, 12, 1); }) },
     snieg: { name: 'ŚNIEG', sky: '#d8e2ec', fog: '#e4ebf2', near: 70, far: 260, hemi: ['#ffffff', '#c4d0de', 2.3], sun: ['#ffffff', 2.2], grav: 30, wx: 'snow',
       pal: { base: '#e6edf4', s1: '#f2f6fa', s2: '#e4eaf1', noise: ['#d0dae6', '#ffffff', '#c6d2e0', '#f8fbff'], worn: ['#c4d0de', '#b8c6d6', '#d0dae6'], wornE: 'rgba(170,190,215,.5)', line: '#7aaee8', txt: 'rgba(120,150,190,.22)' },
-      track: () => tile((g) => { g.fillStyle = '#eef3f8'; g.fillRect(0, 0, 64, 64); speck(g, ['#d6e0ea', '#ffffff', '#c8d6e4'], 200); }) },
-    klocki: { name: 'KLOCKI', sky: '#7ab6ff', fog: '#a6ccf2', near: 90, far: 220, hemi: ['#eaf4ff', '#5a7a2a', 2.0], sun: ['#fff6d8', 2.7], grav: 30, wx: 'leaves',
-      pal: { base: '#5a9a3a', s1: '#5a9a3a', s2: '#5a9a3a', noise: [], worn: ['#7a5a34', '#6a4c2a', '#86643a'], wornE: 'rgba(110,80,44,.6)', line: '#ffffff', txt: 'rgba(255,255,255,.16)',
-        blocks: blocks(['#5aa83c', '#62b244', '#54a036', '#6aba48', '#4e9832'], 'rgba(30,60,20,.35)') },
-      track: () => tile((g) => { blocks(['#8a6440', '#7c5838', '#946c46', '#6e4e30'], 'rgba(40,24,10,.5)')(g, 64, 64, 8); }) },
+      track: () => tile((g) => { g.fillStyle = '#eef3f8'; g.fillRect(0, 0, 64, 64); speck(g, ['#d6e0ea', '#ffffff', '#c8d6e4'], 200); }) }
   };
   // ---- scenery for each arena ----
   const BUILD = {
