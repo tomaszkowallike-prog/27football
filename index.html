@@ -498,7 +498,7 @@
     const unlock = () => { if (unlocked) return; unlocked = true; if (cur) return; B.muted = true; B.src = 'tablica.mp3?v=2';
       const p = B.play(); if (p && p.then) p.then(() => { if (!cur) { B.pause(); } B.muted = false; }).catch(() => { B.muted = false; unlocked = false; }); };
     ['pointerdown', 'touchend', 'click', 'keydown'].forEach((ev) => addEventListener(ev, unlock, true));
-    return { get v() { return v; },
+    return { get v() { return v; }, get cur() { return cur; },
       reg(el, base) {
         if (!el.play) { el.volume = base * v; return el; }   // a WebAudio gain (the chiptune) keeps its own path
         const src = el.getAttribute ? el.getAttribute('src') || el.src : el.src; let m = false;
@@ -917,8 +917,9 @@
     const check = () => { const P = PROG.get(); P.tro = P.tro || []; const fresh = T.filter((t) => t.ok(P) && !P.tro.includes(t.i)); if (!fresh.length) return [];
       for (const t of fresh) P.tro.push(t.i); PROG.save(); setTimeout(() => toast(L('NOWE TROFEUM!', 'NEW TROPHY!') + '\n' + fresh.map((t) => t.n).join('\n')), 2800); return fresh.map((t) => t.i); };
     $('tleft').onclick = () => { room = 1; draw(); $('tinfo').hidden = true; }; $('tright').onclick = () => { room = 0; draw(); $('tinfo').hidden = true; };
-    const open = () => { room = 0; const fresh = check(); draw(fresh); $('tinfo').hidden = true; $('trofea').hidden = false; };
-    $('tback').onclick = $('texit').onclick = () => { $('trofea').hidden = true; }; $('tslots').addEventListener('click', (e) => e.stopPropagation());
+    const TMU = MV.reg(new Audio('trofea.mp3?v=1'), 0.5); TMU.loop = true; let prevMus = null;
+    const open = () => { prevMus = MV.cur !== TMU ? MV.cur : prevMus; TMU.play().catch(() => {}); room = 0; const fresh = check(); draw(fresh); $('tinfo').hidden = true; $('trofea').hidden = false; };
+    $('tback').onclick = $('texit').onclick = () => { $('trofea').hidden = true; TMU.pause(); if (prevMus) prevMus.play().catch(() => {}); prevMus = null; }; $('tslots').addEventListener('click', (e) => e.stopPropagation());
     return { open, check }; })();
   $('strophy').onclick = () => TRO.open(); $('wsbtn').onclick = () => window.WARSZTAT?.open(); $('sworks').onclick = () => window.WARSZTAT?.open(); $('trobtn').onclick = () => TRO.open();
   window.KAPKI_COINS = (n) => { const c = Math.floor(n / 5); if (c > 0) PROG.add(c); return c; };
