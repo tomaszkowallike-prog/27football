@@ -17,11 +17,11 @@
   let TILE = null;
   const nightTile = () => { if (!SA.complete || !SA.naturalWidth) return null; const c = document.createElement('canvas'); c.width = 192; c.height = 192; const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
     x.fillStyle = '#0c1036'; x.fillRect(0, 0, 192, 192); x.globalAlpha = 0.55; x.drawImage(SA, 0, 0, 192, 192); x.globalAlpha = 1; return c; };
-  const AT = new Image(); AT.src = 'bieg_runners.png?v=1795689435'; let ATJ = null;
-  fetch('bieg_runners.json?v=1795689435').then((r) => r.json()).then((j) => { ATJ = j; });
+  const AT = new Image(); AT.src = 'bieg_runners.png?v=1795689544'; let ATJ = null;
+  fetch('bieg_runners.json?v=1795689544').then((r) => r.json()).then((j) => { ATJ = j; });
   // trees, bushes and lamp posts cut out in bands by where they stand, so a runner passing behind them is hidden
-  const FG = new Image(); FG.src = 'bieg_fg.png?v=1795689435'; let FGJ = null, LP = null;
-  fetch('bieg_fg.json?v=1795689435').then((r) => r.json()).then((j) => { FGJ = j.fg; buildLanes(j.path); });
+  const FG = new Image(); FG.src = 'bieg_fg.png?v=1795689544'; let FGJ = null, LP = null;
+  fetch('bieg_fg.json?v=1795689544').then((r) => r.json()).then((j) => { FGJ = j.fg; buildLanes(j.path); });
   // the line round the pitch and the lamp heads, in picture units
   const PL = 252, PR = 1418, PT = 188, PB = 742;
   const LANES = [-9, -3, 3, 9];
@@ -81,7 +81,7 @@
   let last = null;
   const P = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
   const me = () => S.runners.find((r) => r.me);
-  const stride = () => { const m = me(); if (!m || S.phase !== 'run' || m.done) return; m.v = Math.min(m.tired ? 150 : 470, m.v + (m.tired ? 12 : 40)); S.strokes++; S.rubT = 0; if (S.strokes % 2) step(); };
+  const stride = () => { const m = me(); if (!m || S.phase !== 'run' || m.done) return; m.v = Math.min(m.tired ? 110 : 470, m.v + (m.tired ? 8 : 40)); S.strokes++; S.rubT = 0; if (S.strokes % 2) step(); };
   cv.addEventListener('pointerdown', (e) => { e.preventDefault(); const [x, y] = P(e);
     if (S.phase === 'intro') { for (const l of lapBtns()) if (x > l.x && x < l.x + l.w && y > l.y && y < l.y + l.h) { LAPS = l.n; loadBest(); tone(660, 660, 0.06); }
       const b = btn(); if (x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h) { reset(); tone(440, 440, 0.12); } return; }
@@ -115,13 +115,13 @@
     if (S.phase === 'run' || S.phase === 'finish') {
       for (const r of S.runners) { if (r.done) { r.v *= Math.exp(-2.5 * dt); r.d += r.v * dt * 0.4; continue; }
         if (!r.me) { const f = r.d / r.dist, push = f > r.kick && r.sta > 0.25 ? 1.2 : 1; let tgt = r.base * push * (1 + Math.sin(S.t * 0.9 + r.wob) * 0.07);
-          if (r.tired) tgt = 150; else if (r.sta < 0.3) tgt = Math.min(tgt, 240); r.v += (tgt - r.v) * Math.min(1, dt * 1.6); }
-        else { r.v *= Math.exp(-1.15 * dt); if (r.tired) r.v = Math.min(r.v, 150); }
+          if (r.tired) tgt = 110; else if (r.sta < 0.3) tgt = Math.min(tgt, 240); r.v += (tgt - r.v) * Math.min(1, dt * 1.6); }
+        else { r.v *= Math.exp(-1.15 * dt); if (r.tired) r.v = Math.min(r.v, 110); }
         // stamina: a sprint (fast pace) drains it, an easy pace brings it back; at zero the runner must slow down and rest
-        if (r.v > 300) r.sta -= (r.v - 300) / 170 * 0.075 * dt; else r.sta += (r.v < 160 ? 0.2 : 0.09) * dt;
+        if (r.v > 300) r.sta -= (r.v - 300) / 170 * 0.17 * dt; else r.sta += (r.tired ? 0.1 : r.v < 160 ? 0.2 : 0.09) * dt;
         r.sta = Math.max(0, Math.min(1, r.sta));
         if (r.sta <= 0 && !r.tired) { r.tired = true; if (r.me) { tone(220, 110, 0.4, 'sawtooth', 0.04); try { if (!window.CFG || window.CFG.vib !== false) navigator.vibrate?.([60, 60, 60]); } catch (e) {} } }
-        if (r.tired && r.sta > 0.35) r.tired = false;
+        if (r.tired && r.sta > 0.65) r.tired = false;
         r.d += r.v * dt; r.ft += dt * (2 + r.v / 22); r.lap = Math.min(LAPS, Math.floor(r.d / perim(r.lane)) + 1);
         if (r.d >= r.dist) { r.done = true; r.time = S.t; r.place = S.runners.filter((q) => q.done).length;
           if (r.me) { tone(523, 1046, 0.4); S.phase = 'finish'; S.fin = S.t; if (r.place === 1 && (!S.best || r.time < S.best)) { S.best = r.time; try { localStorage.setItem(bestKey(), S.best.toFixed(2)); } catch (e) {} } } } }
