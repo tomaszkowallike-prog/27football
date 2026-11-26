@@ -37,13 +37,13 @@ const resize = () => { DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth;
 addEventListener('resize', resize); resize();
 const img = (src) => { const i = new Image(); i.src = src; return i; };
 // players: run-sideways and turn-around sheets cut from the GIFs
-const PL = { 7: { run: img('p7_run.png?v=1795710780'), rn: 8, turn: img('p7_turn.png?v=1795710780'), tn: 29 }, 10: { run: img('p10_run.png?v=1795710780'), rn: 6, turn: img('p10_turn.png?v=1795710780'), tn: 29 }, 14: { run: img('p14_run.png?v=1795710780'), rn: 8, turn: img('p14_turn.png?v=1795710780'), tn: 16 } };
+const PL = { 7: { run: img('p7_run.png?v=1795711466'), rn: 8, turn: img('p7_turn.png?v=1795711466'), tn: 29 }, 10: { run: img('p10_run.png?v=1795711466'), rn: 6, turn: img('p10_turn.png?v=1795711466'), tn: 29 }, 14: { run: img('p14_run.png?v=1795711466'), rn: 8, turn: img('p14_turn.png?v=1795711466'), tn: 16 } };
 // the pixel entrance effects: a burst of fire the dragon steps out of, steel plates that burst open for the robot
-const FX = { smok: { sheet: img('fx_ogien.png?v=1795710780'), n: 9, dt: 0.13, appear: 3 }, robot: { sheet: img('fx_plyty.png?v=1795710780'), n: 9, dt: 0.13, appear: 6 } };
+const FX = { smok: { sheet: img('fx_ogien2.png?v=1795711466'), base: 333, sh: 342, n: 9, dt: 0.13, appear: 3 }, robot: { sheet: img('fx_plyty.png?v=1795711466'), n: 9, dt: 0.13, appear: 6 } };
 let fx = null;
 // powers: frames 400x225; where the figure stands (ax, feet at fy); when the beam/fire reaches the right edge and where; which frames loop while firing
-const PW = { robot: { sheet: img('moc_robot_o.png?v=1795710780'), n: 28, ax: 95, fy: 214, hit: 15, ey: 88, loop: [18, 27], col: ['#5af0ff', '#bff8ff', '#2a8aff'], fps: 11 },
-             smok: { sheet: img('moc_smok_o.png?v=1795710780'), n: 15, ax: 190, fy: 212, hit: 9, ey: 104, loop: [10, 14], col: ['#ff8a1a', '#ffe14a', '#ff3a10'], fps: 9 } };
+const PW = { robot: { sheet: img('moc_robot_o.png?v=1795711466'), n: 28, ax: 95, fy: 214, hit: 15, ey: 88, loop: [18, 27], col: ['#5af0ff', '#bff8ff', '#2a8aff'], fps: 11 },
+             smok: { sheet: img('moc_smok_o.png?v=1795711466'), n: 15, ax: 190, fy: 212, hit: 9, ey: 104, loop: [10, 14], col: ['#ff8a1a', '#ffe14a', '#ff3a10'], fps: 9 } };
 let who = 14, power = null, st = 'run', t0 = 0, now = 0, parts = [], shake = 0, flash = 0, ball = null, beam = 0, net = 0, msg = '', msgT = 0;
 const L = () => ({ ground: H * 0.8, px: W * 0.24, goal: W * 0.92, ph: Math.min(H * 0.34, W * 0.2), big: Math.min(H * 0.5, W * 0.36) });
 const setState = (s) => { st = s; t0 = now; document.getElementById('mid').hidden = s !== 'choose'; document.getElementById('again').hidden = s !== 'done'; };
@@ -76,7 +76,9 @@ function powerFrame(p, i, l) { const im = p.sheet; if (!im.complete || !im.natur
   if (!p.noShadow) { const sw = (power === 'smok' ? 130 : 80) * k, cx = l.px + (power === 'smok' ? -20 : 10) * k; const gr = g.createRadialGradient(cx, l.ground - 2, 0, cx, l.ground - 2, sw); gr.addColorStop(0, 'rgba(10,20,10,.55)'); gr.addColorStop(0.7, 'rgba(10,20,10,.25)'); gr.addColorStop(1, 'rgba(10,20,10,0)'); g.save(); g.translate(cx, l.ground - 2); g.scale(1, 0.18); g.translate(-cx, -(l.ground - 2)); g.fillStyle = gr; g.beginPath(); g.arc(cx, l.ground - 2, sw, 0, 7); g.fill(); g.restore(); }
   g.drawImage(im, (i | 0) * fw, 0, fw, fh, x, y, fw * k, fh * k); return { ex: x + fw * k - 2, ey: y + p.ey * k, k, x, y }; }
 function drawFx(l) { if (!fx) return; const F = FX[fx.m], im = F.sheet, i = Math.floor((now - fx.t) / F.dt); if (i >= F.n) { fx = null; return; } if (!im.complete || !im.naturalWidth) return;
-  const fw = im.naturalWidth / F.n, h = l.big * 1.05, k = h / im.naturalHeight; g.imageSmoothingEnabled = false; g.drawImage(im, i * fw, 0, fw, im.naturalHeight, l.px - fw * k / 2 + (fx.m === 'smok' ? l.big * 0.12 : 0), l.ground - h + 6, fw * k, h); g.imageSmoothingEnabled = true; }
+  const fw = im.naturalWidth / F.n, k = l.big * 1.05 / (F.sh || im.naturalHeight), h = im.naturalHeight * k, x = l.px - fw * k / 2 + (fx.m === 'smok' ? l.big * 0.12 : 0), y = F.base ? l.ground - F.base * k + 10 * k : l.ground - h + 6;
+  if (fx.m === 'smok') { const cx = x + fw * k / 2, r = fw * k * 0.42, gl = g.createRadialGradient(cx, l.ground + 4, 0, cx, l.ground + 4, r); gl.addColorStop(0, 'rgba(255,170,60,.55)'); gl.addColorStop(0.5, 'rgba(255,90,20,.25)'); gl.addColorStop(1, 'rgba(255,60,10,0)'); g.save(); g.translate(cx, l.ground + 4); g.scale(1, 0.22); g.translate(-cx, -(l.ground + 4)); g.globalCompositeOperation = 'lighter'; g.fillStyle = gl; g.beginPath(); g.arc(cx, l.ground + 4, r, 0, 7); g.fill(); g.restore(); }
+  g.imageSmoothingEnabled = false; g.drawImage(im, i * fw, 0, fw, im.naturalHeight, x, y, fw * k, h); g.imageSmoothingEnabled = true; }
 // the bolt that drops onto the robot: carried up from the top of the animation to the top of the screen
 function bolt(f, l, fi) { if (power !== 'robot' || fi > 3.5 || !f) return; const x = f.x + 188 * f.k, w = (20 + Math.sin(now * 50) * 5) * f.k * (fi > 2.5 ? 3.5 - fi : 1), y1 = f.y + 4;
   g.globalCompositeOperation = 'lighter'; const gr = g.createLinearGradient(x - w * 2, 0, x + w * 2, 0); gr.addColorStop(0, '#2a8aff00'); gr.addColorStop(0.3, '#2a8affaa'); gr.addColorStop(0.45, '#5af0ffee'); gr.addColorStop(0.5, '#ffffff'); gr.addColorStop(0.55, '#5af0ffee'); gr.addColorStop(0.7, '#2a8affaa'); gr.addColorStop(1, '#2a8aff00');
