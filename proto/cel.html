@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Cel shading · prototyp zawodnika</title>
+<style>
+@font-face { font-family: 'Press Start 2P'; src: url(../fonts/press-start-2p-latin-400-normal.woff2) format('woff2'); }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1f3a; font-family: 'Press Start 2P', monospace; color: #fff; touch-action: none; user-select: none; -webkit-user-select: none; }
+canvas { display: block; width: 100vw; height: 100vh; height: 100dvh; }
+#ui { position: fixed; left: 0; right: 0; bottom: max(12px, env(safe-area-inset-bottom)); display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 0 10px; }
+#ui button { font: 9px 'Press Start 2P', monospace; color: #fff; background: #2a2a7a; border: 3px solid #000; box-shadow: inset -3px -3px 0 #15154a, inset 3px 3px 0 #5a5ad0; padding: 10px 10px; cursor: pointer; }
+#ui button.on { background: #1a9a3a; box-shadow: inset -3px -3px 0 #0a5a1a, inset 3px 3px 0 #5ae07a; }
+#top { position: fixed; top: max(10px, env(safe-area-inset-top)); left: 0; right: 0; text-align: center; font-size: 10px; text-shadow: 2px 2px 0 #000; line-height: 1.8; }
+#top small { display: block; font-size: 7px; color: #9ab0ff; }
+</style>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
+</head>
+<body>
+<div id="top">27 · CEL SHADING<small>przeciągnij palcem, żeby obrócić</small></div>
+<div id="ui">
+  <button data-a="idle">STOI</button><button data-a="run" class="on">BIEG</button><button data-a="kick">STRZAŁ</button><button data-a="jump">GŁÓWKA</button><button data-a="cheer">GOL!</button><button id="kit">STRÓJ</button>
+</div>
+<script type="module">
+import * as THREE from 'three';
+
+const R = new THREE.WebGLRenderer({ antialias: true }); R.setPixelRatio(Math.min(2, devicePixelRatio)); document.body.prepend(R.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#7ec8f0');
+const cam = new THREE.PerspectiveCamera(32, 1, 0.1, 200);
+const resize = () => { R.setSize(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); }; addEventListener('resize', resize); resize();
+
+// ---- toon lighting: three flat bands, no smooth gradient ----
+const grad = new THREE.DataTexture(new Uint8Array([90, 90, 90, 255, 170, 170, 170, 255, 255, 255, 255, 255]), 3, 1); grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
+const toon = (c, o = {}) => new THREE.MeshToonMaterial({ color: c, gradientMap: grad, ...o });
+scene.add(new THREE.HemisphereLight('#ffffff', '#6a7a5a', 1.1));
+const sun = new THREE.DirectionalLight('#fff6e8', 2.4); sun.position.set(4, 8, 5); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4 }); scene.add(sun);
+
+// ---- the outline: a copy of each part pushed out along its normals, back faces only, flat black ----
+const inkMat = (w) => new THREE.ShaderMaterial({ side: THREE.BackSide, uniforms: { w: { value: w } },
+  vertexShader: 'uniform float w; void main(){ vec4 mv = modelViewMatrix * vec4(position + normal * w, 1.0); gl_Position = projectionMatrix * mv; }',
+  fragmentShader: 'void main(){ gl_FragColor = vec4(0.06, 0.05, 0.08, 1.0); }' });
+const INK = inkMat(0.022), INK_THIN = inkMat(0.012);
+function part(geo, mat, parent, pos = [0, 0, 0], ink = INK) { const m = new THREE.Mesh(geo, mat); m.position.set(...pos); m.castShadow = true; parent.add(m);
+  if (ink) { const o = new THREE.Mesh(geo, ink); m.add(o); } return m; }
+const rbox = (w, h, d, r = 0.06) => { const g = new THREE.BoxGeometry(w, h, d, 3, 3, 3), p = g.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i); const hx = w / 2 - r, hy = h / 2 - r, hz = d / 2 - r; const c = new THREE.Vector3(Math.max(-hx, Math.min(hx, v.x)), Math.max(-hy, Math.min(hy, v.y)), Math.max(-hz, Math.min(hz, v.z))); v.sub(c).normalize().multiplyScalar(r).add(c); p.setXYZ(i, v.x, v.y, v.z); }
+  g.computeVertexNormals(); return g; };
+
+// ---- kits: green/black home (our team), and two others to try ----
+const KITS = [{ shirt: '#2fa84a', trim: '#141414', shorts: '#141414', socks: '#2fa84a', num: '#ffffff' }, { shirt: '#f4f4f4', trim: '#2a6ae8', shorts: '#2a6ae8', socks: '#f4f4f4', num: '#2a6ae8' }, { shirt: '#e8361f', trim: '#ffd21a', shorts: '#141414', socks: '#e8361f', num: '#ffd21a' }];
+let kitI = 0;
+const M = { skin: toon('#f1c29a'), hair: toon('#f0c84a'), shirt: toon(KITS[0].shirt), trim: toon(KITS[0].trim), shorts: toon(KITS[0].shorts), socks: toon(KITS[0].socks), boots: toon('#f4f4f4'), sole: toon('#e8361f'), eye: new THREE.MeshBasicMaterial({ color: '#141018' }), white: new THREE.MeshBasicMaterial({ color: '#ffffff' }), mouth: new THREE.MeshBasicMaterial({ color: '#7a2a2a' }) };
+const numTex = (c) => { const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64; const g = cv.getContext('2d'); g.font = 'bold 44px Arial Black, Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 6; g.strokeStyle = '#141414'; g.strokeText('27', 32, 34); g.fillStyle = c; g.fillText('27', 32, 34);
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t; };
+const numMat = new THREE.MeshBasicMaterial({ map: numTex(KITS[0].num), transparent: true });
+
+// ---- the boy: big head, short body, joints as pivots so arms and legs can swing ----
+const boy = new THREE.Group(); scene.add(boy);
+const hips = new THREE.Group(); hips.position.y = 0.92; boy.add(hips);
+part(rbox(0.56, 0.3, 0.34, 0.08), M.shorts, hips, [0, -0.02, 0]);
+const chest = new THREE.Group(); chest.position.y = 0.12; hips.add(chest);
+part(rbox(0.6, 0.56, 0.36, 0.12), M.shirt, chest, [0, 0.28, 0]);
+part(rbox(0.62, 0.07, 0.37, 0.03), M.trim, chest, [0, 0.03, 0], INK_THIN);
+part(new THREE.TorusGeometry(0.12, 0.035, 6, 14), M.trim, chest, [0, 0.56, 0.02], INK_THIN).rotation.x = Math.PI / 2;
+const back = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.4), numMat); back.position.set(0, 0.3, -0.185); back.rotation.y = Math.PI; chest.add(back);
+const front = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 0.14), numMat); front.position.set(0.15, 0.4, 0.185); chest.add(front);
+// head
+const head = new THREE.Group(); head.position.y = 0.62; chest.add(head);
+part(new THREE.SphereGeometry(0.1, 10, 8), M.skin, head, [0, 0.04, 0], INK_THIN);
+const skull = part(new THREE.SphereGeometry(0.42, 24, 18), M.skin, head, [0, 0.42, 0.02]); skull.scale.set(1, 0.95, 0.95);
+for (const s of [-1, 1]) { part(new THREE.SphereGeometry(0.08, 10, 8), M.skin, head, [s * 0.41, 0.4, 0.02], INK_THIN);
+  const e = new THREE.Mesh(new THREE.CapsuleGeometry(0.045, 0.1, 4, 8), M.eye); e.position.set(s * 0.15, 0.43, 0.38); head.add(e);
+  const hl = new THREE.Mesh(new THREE.SphereGeometry(0.018, 6, 6), M.white); hl.position.set(s * 0.15 + 0.015, 0.47, 0.42); head.add(hl);
+  const br = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.03, 0.03), M.eye); br.position.set(s * 0.15, 0.58, 0.37); br.rotation.z = s * -0.18; head.add(br); }
+const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.016, 6, 12, Math.PI), M.mouth); mouth.position.set(0, 0.28, 0.385); mouth.rotation.z = Math.PI; head.add(mouth);
+part(new THREE.SphereGeometry(0.035, 8, 6), M.skin, head, [0, 0.36, 0.42], null);
+// spiky blond hair: a cap and a ring of spikes swept back
+const cap = part(new THREE.SphereGeometry(0.45, 24, 14, 0, Math.PI * 2, 0, Math.PI * 0.55), M.hair, head, [0, 0.47, -0.02]); cap.scale.set(1.02, 0.95, 1.05);
+for (let i = 0; i < 9; i++) { const a = -1.1 + i * 0.27, sp = part(new THREE.ConeGeometry(0.1, 0.32, 6), M.hair, head, [Math.sin(a) * 0.3, 0.82 - Math.abs(a) * 0.05, Math.cos(a) * 0.22], INK_THIN); sp.rotation.set(-0.5 - Math.cos(a) * 0.2, 0, -Math.sin(a) * 0.9); }
+for (let i = 0; i < 5; i++) { const sp = part(new THREE.ConeGeometry(0.1, 0.28, 6), M.hair, head, [-0.26 + i * 0.13, 0.7, 0.33], INK_THIN); sp.rotation.set(2.25, 0, (i - 2) * -0.3); }
+// arms: shoulder → upper arm (sleeve) → elbow → forearm → hand
+const arm = (s) => { const sh = new THREE.Group(); sh.position.set(s * 0.37, 0.48, 0); chest.add(sh);
+  part(rbox(0.18, 0.24, 0.18, 0.07), M.shirt, sh, [0, -0.08, 0]); part(new THREE.CylinderGeometry(0.065, 0.06, 0.18, 10), M.skin, sh, [0, -0.26, 0], INK_THIN);
+  const el = new THREE.Group(); el.position.y = -0.34; sh.add(el); part(new THREE.CylinderGeometry(0.06, 0.055, 0.2, 10), M.skin, el, [0, -0.08, 0], INK_THIN); part(new THREE.SphereGeometry(0.085, 10, 8), M.skin, el, [0, -0.22, 0.01], INK_THIN); return { sh, el }; };
+const AL = arm(-1), AR = arm(1);
+// legs: hip → thigh (skin under shorts) → knee → shin with sock → boot
+const leg = (s) => { const hp = new THREE.Group(); hp.position.set(s * 0.15, -0.1, 0); hips.add(hp);
+  part(new THREE.CylinderGeometry(0.085, 0.075, 0.26, 10), M.skin, hp, [0, -0.18, 0], INK_THIN);
+  const kn = new THREE.Group(); kn.position.y = -0.32; hp.add(kn); part(new THREE.CylinderGeometry(0.08, 0.07, 0.3, 10), M.socks, kn, [0, -0.13, 0], INK_THIN); part(new THREE.CylinderGeometry(0.083, 0.083, 0.05, 10), M.trim, kn, [0, -0.01, 0], null);
+  const ft = new THREE.Group(); ft.position.y = -0.3; kn.add(ft); part(rbox(0.16, 0.12, 0.3, 0.05), M.boots, ft, [0, -0.03, 0.06]); part(rbox(0.17, 0.04, 0.31, 0.02), M.sole, ft, [0, -0.1, 0.06], INK_THIN); return { hp, kn, ft }; };
+const LL = leg(-1), LR = leg(1);
+
+// ---- a slice of pitch, a ball, soft shadow ----
+const pitchT = (() => { const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64; const g = cv.getContext('2d'); for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? '#4ea844' : '#5ab84e'; g.fillRect(i * 8, 0, 8, 64); } const t = new THREE.CanvasTexture(cv); t.magFilter = THREE.NearestFilter; t.colorSpace = THREE.SRGBColorSpace; return t; })();
+const ground = new THREE.Mesh(new THREE.CircleGeometry(5, 48), toon('#ffffff', { map: pitchT })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+const ring = new THREE.Mesh(new THREE.RingGeometry(1.6, 1.7, 48), new THREE.MeshBasicMaterial({ color: '#f4f8ea' })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.005; scene.add(ring);
+const ballT = (() => { const cv = document.createElement('canvas'); cv.width = 64; cv.height = 32; const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, 64, 32); g.fillStyle = '#141414'; for (const [x, y] of [[8, 8], [24, 20], [40, 8], [56, 20], [16, 28], [48, 28]]) { g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); } const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+const ball = part(new THREE.SphereGeometry(0.17, 18, 12), toon('#ffffff', { map: ballT }), scene, [0.5, 0.17, 0.6]);
+
+// ---- animations: limb angles over time ----
+let anim = 'run', t0 = 0;
+const lerp = (a, b, k) => a + (b - a) * k;
+function pose(t) {
+  const P = { hipsY: 0.92, lean: 0, rot: 0, sh: [0, 0], shZ: [0.12, -0.12], el: [-0.3, -0.3], hp: [0, 0], kn: [0, 0], ft: [0, 0], head: 0, mouthOpen: 0 };
+  const k = t - t0;
+  if (anim === 'idle') { const b = Math.sin(t * 2.2); P.hipsY += b * 0.012; P.sh = [b * 0.04, -b * 0.04]; P.head = Math.sin(t * 0.7) * 0.15; }
+  if (anim === 'run') { const c = t * 9, s = Math.sin(c); P.hipsY += Math.abs(Math.cos(c)) * 0.07 - 0.03; P.lean = 0.22; P.sh = [s * 1.1, -s * 1.1]; P.el = [-1.3, -1.3]; P.hp = [-s * 0.95, s * 0.95]; P.kn = [Math.max(0, s) * 1.4 + 0.15, Math.max(0, -s) * 1.4 + 0.15]; P.ft = [0.2, 0.2]; }
+  if (anim === 'kick') { const c = (k % 1.6) / 1.6; const wind = c < 0.4 ? c / 0.4 : 1, hit = c < 0.4 ? 0 : Math.min(1, (c - 0.4) / 0.15), back = c > 0.7 ? Math.min(1, (c - 0.7) / 0.3) : 0;
+    const swing = lerp(lerp(0, 1.2, wind), -1.6, hit); P.hp = [0, lerp(swing, 0, back)]; P.kn = [0.15, lerp(lerp(0, 1.6, wind), 0.1, hit) * (1 - back)]; P.lean = lerp(-0.1 * hit, 0, back); P.sh = [lerp(0.5, -0.4, hit) * (1 - back), lerp(-0.6, 0.5, hit) * (1 - back)]; P.shZ = [0.5, -0.5]; P.rot = 0;
+    ball.position.set(c > 0.47 && c < 0.95 ? 0.5 + (c - 0.47) * 3 : 0.5, 0.17 + (c > 0.47 && c < 0.95 ? Math.sin((c - 0.47) / 0.48 * Math.PI) * 0.9 : 0), c > 0.47 && c < 0.95 ? 0.6 + (c - 0.47) * 12 : 0.6); }
+  else ball.position.set(0.5, 0.17, 0.6);
+  if (anim === 'jump') { const c = (k % 1.4) / 1.4, h = Math.sin(Math.min(1, c / 0.8) * Math.PI); P.hipsY += h * 0.9; P.hp = [-0.6 * h, -0.2 * h]; P.kn = [1.2 * h, 0.6 * h]; P.sh = [-0.6 * h, -0.6 * h]; P.shZ = [0.9 * h + 0.1, -0.9 * h - 0.1]; P.lean = c > 0.35 && c < 0.55 ? 0.4 : -0.1 * h; P.head = 0; }
+  if (anim === 'cheer') { const c = t * 6, j = Math.abs(Math.sin(c)); P.hipsY += j * 0.35; P.sh = [-2.9, -2.9]; P.shZ = [0.35 + Math.sin(c) * 0.15, -0.35 - Math.sin(c) * 0.15]; P.el = [-0.2, -0.2]; P.kn = [j * 0.6, j * 0.6]; P.hp = [-j * 0.3, -j * 0.3]; P.mouthOpen = 1; P.rot = Math.sin(t * 1.2) * 0.4; }
+  return P;
+}
+const S = pose(0);
+function apply(P, dt) { const f = Math.min(1, dt * 16), L = (o, k, v) => { o[k] = lerp(o[k], v, f); };
+  L(hips.position, 'y', P.hipsY); L(chest.rotation, 'x', P.lean); L(boy.rotation, 'y', P.rot); L(head.rotation, 'y', P.head);
+  [AL, AR].forEach((a, i) => { L(a.sh.rotation, 'x', P.sh[i]); L(a.sh.rotation, 'z', -P.shZ[i]); L(a.el.rotation, 'x', P.el[i]); });
+  [LL, LR].forEach((l, i) => { L(l.hp.rotation, 'x', P.hp[i]); L(l.kn.rotation, 'x', P.kn[i]); L(l.ft.rotation, 'x', P.ft[i]); });
+  mouth.scale.y = lerp(mouth.scale.y, P.mouthOpen ? 1.5 : 1, f); }
+
+// ---- camera orbit by dragging ----
+let yaw = 0.6, pitch = 0.22, drag = null;
+addEventListener('pointerdown', (e) => { if (e.target.closest('#ui')) return; drag = [e.clientX, e.clientY, yaw, pitch]; });
+addEventListener('pointermove', (e) => { if (!drag) return; yaw = drag[2] - (e.clientX - drag[0]) * 0.008; pitch = Math.max(-0.05, Math.min(1.1, drag[3] + (e.clientY - drag[1]) * 0.005)); });
+addEventListener('pointerup', () => { drag = null; });
+document.querySelectorAll('#ui [data-a]').forEach((b) => b.onclick = () => { anim = b.dataset.a; t0 = performance.now() / 1000; document.querySelectorAll('#ui [data-a]').forEach((x) => x.classList.toggle('on', x === b)); });
+document.getElementById('kit').onclick = () => { kitI = (kitI + 1) % KITS.length; const K = KITS[kitI]; M.shirt.color.set(K.shirt); M.trim.color.set(K.trim); M.shorts.color.set(K.shorts); M.socks.color.set(K.socks); numMat.map = numTex(K.num); numMat.needsUpdate = true; };
+
+let last = performance.now();
+R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFShadowMap;
+R.setAnimationLoop((now) => { const dt = Math.min(0.05, (now - last) / 1000); last = now; const t = now / 1000;
+  if (!drag) yaw += dt * 0.25;
+  apply(pose(t), dt);
+  const d = innerWidth < innerHeight ? 7.6 : 6, cy = 1.15; cam.position.set(Math.sin(yaw) * Math.cos(pitch) * d, cy + Math.sin(pitch) * d, Math.cos(yaw) * Math.cos(pitch) * d); cam.lookAt(0, cy, 0);
+  R.render(scene, cam); });
+window.CEL = { setAnim: (a) => { anim = a; t0 = performance.now() / 1000; }, setYaw: (v) => { yaw = v; } };
+</script>
+</body>
+</html>
