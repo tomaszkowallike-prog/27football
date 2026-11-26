@@ -17,11 +17,11 @@
   let TILE = null;
   const nightTile = () => { if (!SA.complete || !SA.naturalWidth) return null; const c = document.createElement('canvas'); c.width = 192; c.height = 192; const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
     x.fillStyle = '#0c1036'; x.fillRect(0, 0, 192, 192); x.globalAlpha = 0.55; x.drawImage(SA, 0, 0, 192, 192); x.globalAlpha = 1; return c; };
-  const AT = new Image(); AT.src = 'bieg_runners.png?v=1795689544'; let ATJ = null;
-  fetch('bieg_runners.json?v=1795689544').then((r) => r.json()).then((j) => { ATJ = j; });
+  const AT = new Image(); AT.src = 'bieg_runners.png?v=1795689645'; let ATJ = null;
+  fetch('bieg_runners.json?v=1795689645').then((r) => r.json()).then((j) => { ATJ = j; });
   // trees, bushes and lamp posts cut out in bands by where they stand, so a runner passing behind them is hidden
-  const FG = new Image(); FG.src = 'bieg_fg.png?v=1795689544'; let FGJ = null, LP = null;
-  fetch('bieg_fg.json?v=1795689544').then((r) => r.json()).then((j) => { FGJ = j.fg; buildLanes(j.path); });
+  const FG = new Image(); FG.src = 'bieg_fg.png?v=1795689645'; let FGJ = null, LP = null;
+  fetch('bieg_fg.json?v=1795689645').then((r) => r.json()).then((j) => { FGJ = j.fg; buildLanes(j.path); });
   // the line round the pitch and the lamp heads, in picture units
   const PL = 252, PR = 1418, PT = 188, PB = 742;
   const LANES = [-9, -3, 3, 9];
@@ -38,7 +38,7 @@
 
   // ---- layout and the tilt-shift background (blur baked once: sharp middle, soft top and bottom) ----
   let W = 0, H = 0, DPR = 1, sc = 1, ox = 0, oy = 0, TILT = null;
-  const layout = () => { DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; g.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const layout = () => { DPR = Math.min(1.5, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; g.setTransform(DPR, 0, 0, DPR, 0, 0);
     sc = Math.min(W / BW, H / BH); ox = (W - BW * sc) / 2; oy = (H - BH * sc) / 2; TILT = null; };
   const bakeTilt = () => { if (!BG.complete || !BG.naturalWidth) return null;
     const c = document.createElement('canvas'); c.width = BW; c.height = BH; const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
@@ -138,17 +138,17 @@
     const idx = r.v > 12 ? lst[Math.floor(r.ft) % lst.length] : lst[0], [fx, fy, fw, fh] = ATJ.f[idx];
     const u = Math.max(1, Math.round(SPR_H * sc / (ATJ.h || 28) * 2) / 2), h = fh * u, w = fw * u, [sx, sy] = TS(x, y);
     g.fillStyle = 'rgba(0,10,0,.35)'; g.beginPath(); g.ellipse(sx, sy, w * 0.42, h * 0.08, 0, 0, 7); g.fill();
-    const fy0 = sy / H, blur = fy0 < 0.16 ? (0.16 - fy0) * 18 : fy0 > 0.86 ? (fy0 - 0.86) * 18 : 0;
-    g.save(); if (blur > 0.3) g.filter = `blur(${blur.toFixed(1)}px)`; g.translate(Math.round(sx), Math.round(sy)); if (flip < 0) g.scale(-1, 1);
+    g.save(); g.translate(Math.round(sx), Math.round(sy)); if (flip < 0) g.scale(-1, 1);
     g.drawImage(AT, fx, fy, fw, fh, Math.round(-w / 2), Math.round(-h), Math.round(w), Math.round(h)); g.restore();
     const tag = String(r.n), ty = sy - h - 8; g.font = '8px "Press Start 2P", monospace'; const tw = g.measureText(tag).width + 8;
     g.fillStyle = r.me ? '#ffe14a' : '#1a1540'; g.fillRect(Math.round(sx - tw / 2), Math.round(ty - 7), Math.round(tw), 13); g.fillStyle = r.me ? '#1a1030' : '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(tag, sx, ty);
     if (r.me) { g.fillStyle = '#ffe14a'; g.fillRect(Math.round(sx - 3), Math.round(ty + 7), 6, 3); g.fillRect(Math.round(sx - 1), Math.round(ty + 10), 2, 2); } };
+  let PAT = null, PAT2 = null, GLOW = null;
   const draw = () => { g.imageSmoothingEnabled = false; g.fillStyle = '#0c1036'; g.fillRect(0, 0, W, H);
     if (ox > 1) { if (!TILT && !TILE) TILE = nightTile(); if (!TILE) TILE = nightTile();
-      if (TILE) { const pat = g.createPattern(TILE, 'repeat'), off = (S.t * 24) % 192; g.save(); g.translate(0, -off); g.fillStyle = pat;
+      if (TILE) { const pat = PAT || (PAT = g.createPattern(TILE, 'repeat')), off = (S.t * 24) % 192; g.save(); g.translate(0, -off); g.fillStyle = pat;
         g.fillRect(0, off, ox, H); g.fillRect(ox + BW * sc, off, W - ox - BW * sc, H);
-        if (SB.complete && Math.floor(S.t * 1.8) % 2) { const p2 = g.createPattern(SB, 'repeat'); g.fillStyle = p2; g.globalAlpha = 0.8; g.fillRect(0, off, ox, H); g.fillRect(ox + BW * sc, off, W - ox - BW * sc, H); }
+        if (SB.complete && Math.floor(S.t * 1.8) % 2) { const p2 = PAT2 || (PAT2 = g.createPattern(SB, 'repeat')); g.fillStyle = p2; g.globalAlpha = 0.8; g.fillRect(0, off, ox, H); g.fillRect(ox + BW * sc, off, W - ox - BW * sc, H); }
         g.restore(); g.fillStyle = '#000'; g.fillRect(ox - 3, 0, 3, H); g.fillRect(ox + BW * sc, 0, 3, H); } }
     if (!TILT) TILT = bakeTilt(); if (TILT) g.drawImage(TILT, ox, oy, BW * sc, BH * sc); else if (BG.complete) g.drawImage(BG, ox, oy, BW * sc, BH * sc);
     // start / finish line across the path
@@ -156,8 +156,8 @@
     // lamp light: warm glow that flickers, additive
     g.save(); g.globalCompositeOperation = 'lighter';
     LAMPS.forEach(([lx, ly], i) => { const [x, y] = TS(lx, ly), f = S.flick[i], R = 230 * sc;
-      const gr = g.createRadialGradient(x, y + 40 * sc, 4, x, y + 40 * sc, R); gr.addColorStop(0, `rgba(255,240,170,${0.38 * f})`); gr.addColorStop(0.4, `rgba(220,255,140,${0.14 * f})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
-      g.fillStyle = gr; g.fillRect(x - R, y - R + 40 * sc, R * 2, R * 2);
+      if (!GLOW) { GLOW = document.createElement('canvas'); GLOW.width = GLOW.height = 128; const q = GLOW.getContext('2d'), gr = q.createRadialGradient(64, 64, 1, 64, 64, 64); gr.addColorStop(0, 'rgba(255,240,170,.38)'); gr.addColorStop(0.4, 'rgba(220,255,140,.14)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); q.fillStyle = gr; q.fillRect(0, 0, 128, 128); }
+      g.globalAlpha = Math.max(0, Math.min(1, f)); g.imageSmoothingEnabled = true; g.drawImage(GLOW, x - R, y - R + 40 * sc, R * 2, R * 2); g.imageSmoothingEnabled = false; g.globalAlpha = 1;
       g.fillStyle = `rgba(255,255,230,${0.75 * f})`; g.fillRect(Math.round(x - 9 * sc), Math.round(y - 10 * sc), Math.round(18 * sc), Math.round(18 * sc)); });
     g.restore();
     // runners, sorted top to bottom
