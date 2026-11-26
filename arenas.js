@@ -311,7 +311,11 @@ export default function extraArenas(C) {
     const gears = []; for (const [x, z] of [[-PX - 10, -12], [PX + 10, 10]]) { const g2 = cyl(gr, 3, 3, 0.6, '#c8a040', x, 4, z, 12); g2.rotation.x = Math.PI / 2; gears.push(g2); } tick(gr, (t, dt) => gears.forEach((g2) => { g2.rotation.y += dt; })); };
   // 17. enchanted circus: striped tents, a turning carousel, a ferris wheel, strings of lights
   DEF.cyrk = { name: 'CYRK', sky: '#1a0a3a', fog: '#2a1a4a', near: 60, far: 200, hemi: ['#ffd8f0', '#3a1a3a', 1.7], sun: ['#ffe0c0', 1.9], grav: 30, wx: 'confetti',
-    pal: pal('#4f8a3a', '#5aa043', '#64ad4b', ['#3f7a2e', '#4a8a36', '#7cc25a', '#86c862'], ['#c8a06a', '#b8905a', '#d8b07a'], '#fff6e0'),
+    pal: pal('#e8202a', '#e8202a', '#e8202a', [], ['#d81a24', '#c8161f', '#e82a32'], '#ffffff', { txt: 'rgba(0,0,0,0)', wornE: 'rgba(0,0,0,0)', blocks: (g, W, H, K) => { const C = ['#ff3a4a', '#ff8a1a', '#ffd21a', '#5ae04a', '#2ad0e0', '#3a6aff', '#a84aff', '#ff4ac0'], bw = 2.2 * K, d = g.getImageData(0, 0, W, H), px = d.data, cx = W / 2, cy = H / 2;
+      const rgb = C.map((c) => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)]);
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const dx = x - cx, dy = (y - cy) * 1.0, r = Math.hypot(dx, dy), a = Math.atan2(dy, dx) / 6.2832 + 0.5, u = r / bw - a, i = Math.floor(u), f = u - i, c = rgb[((i % 8) + 8) % 8], sh = f < 0.12 ? 0.82 : f > 0.88 ? 1.12 : 1, k = (y * W + x) * 4;
+        px[k] = Math.min(255, c[0] * sh); px[k + 1] = Math.min(255, c[1] * sh); px[k + 2] = Math.min(255, c[2] * sh); px[k + 3] = 255; }
+      g.putImageData(d, 0, 0); } }),
     track: () => tile((g) => { fill(g, '#d8b078'); speck(g, ['#c8a068', '#e8c890', '#b89058'], 300); }) };
   BUILD.cyrk = (gr) => { const tent = (x, z, r, h, a, b) => { const t = stripes(a, b, 8); t.repeat.set(4, 1); cyl(gr, r, r, h, lam({ map: t }), x, h / 2, z, 16); const t2 = stripes(a, b, 8); t2.repeat.set(4, 1); cone(gr, r * 1.1, h * 0.9, lam({ map: t2 }), x, h + h * 0.45, z, 16);
       cyl(gr, 0.08, 0.08, 2, '#ffd21a', x, h * 1.9 + 1, z); box(gr, 1, 0.6, 0.05, '#ff2a3a', x + 0.5, h * 1.9 + 1.7, z); };
