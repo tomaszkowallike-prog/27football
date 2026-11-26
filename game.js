@@ -3,7 +3,7 @@
 // from high up as in the original. The frame is rendered small and blown up without smoothing (8-bit), then a
 // tilt-shift pass blurs its top and bottom. You steer the Cuiavia player nearest the ball (a yellow arrow over his head).
 import * as THREE from 'three';
-import extraArenas from './arenas.js?v=2';
+import extraArenas from './arenas.js?v=4';
 
 // ---- data ------------------------------------------------------------------------------------------------------------
 const FR = await (await fetch('./frames.json')).json();
@@ -548,7 +548,7 @@ const ARENA = (() => {
     snieg: { name: 'ŚNIEG', sky: '#d8e2ec', fog: '#e4ebf2', near: 70, far: 260, hemi: ['#ffffff', '#c4d0de', 2.3], sun: ['#ffffff', 2.2], grav: 30, wx: 'snow',
       pal: { base: '#e6edf4', s1: '#f2f6fa', s2: '#e4eaf1', noise: ['#d0dae6', '#ffffff', '#c6d2e0', '#f8fbff'], worn: ['#c4d0de', '#b8c6d6', '#d0dae6'], wornE: 'rgba(170,190,215,.5)', line: '#7aaee8', txt: 'rgba(120,150,190,.22)' },
       track: () => tile((g) => { g.fillStyle = '#eef3f8'; g.fillRect(0, 0, 64, 64); speck(g, ['#d6e0ea', '#ffffff', '#c8d6e4'], 200); }) },
-    klocki: { name: 'KLOCKI', sky: '#7ab6ff', fog: '#a6ccf2', near: 90, far: 220, hemi: ['#eaf4ff', '#5a7a2a', 2.0], sun: ['#fff6d8', 2.7], grav: 30, wx: 'leaves', stands: true,
+    klocki: { name: 'KLOCKI', sky: '#7ab6ff', fog: '#a6ccf2', near: 90, far: 220, hemi: ['#eaf4ff', '#5a7a2a', 2.0], sun: ['#fff6d8', 2.7], grav: 30, wx: 'leaves',
       pal: { base: '#5a9a3a', s1: '#5a9a3a', s2: '#5a9a3a', noise: [], worn: ['#7a5a34', '#6a4c2a', '#86643a'], wornE: 'rgba(110,80,44,.6)', line: '#ffffff', txt: 'rgba(255,255,255,.16)',
         blocks: blocks(['#5aa83c', '#62b244', '#54a036', '#6aba48', '#4e9832'], 'rgba(30,60,20,.35)') },
       track: () => tile((g) => { blocks(['#8a6440', '#7c5838', '#946c46', '#6e4e30'], 'rgba(40,24,10,.5)')(g, 64, 64, 8); }) },
@@ -620,9 +620,18 @@ const ARENA = (() => {
       const C = { grass: ['#5aa83c', '#62b244', '#54a036'], dirt: '#7c5838', wood: '#6a4a2a', leaf: ['#3a8a2a', '#4a9a32', '#2f7a24'], stone: '#8a8a8a' };
       const cube = (x, y, z, c, s = 2) => box(gr, s, s, s, c, x, y + s / 2, z);
       // blocky hills behind the far stand and beyond the goals
-      for (let x = -84; x <= 84; x += 3) { const h = Math.round(3 + 3 * Math.sin(x * 0.09) + 2 * Math.sin(x * 0.23 + 1)); for (let y = 0; y < h; y++) cube(x, y * 3, -PZ - 34 - (x % 2 ? 3 : 0), y === h - 1 ? C.grass[(x + y) % 3 < 0 ? 0 : (x + y) % 3] : (y < h - 3 ? C.stone : C.dirt), 3); }
+      for (let x = -84; x <= 84; x += 3) { const h = Math.round(3 + 3 * Math.sin(x * 0.09) + 2 * Math.sin(x * 0.23 + 1)); for (let y = 0; y < h; y++) cube(x, y * 3, -PZ - 16 - (x % 2 ? 3 : 0) - (h > 4 ? 6 : 0), y === h - 1 ? C.grass[(x + y) % 3 < 0 ? 0 : (x + y) % 3] : (y < h - 3 ? C.stone : C.dirt), 3); }
       const tree = (x, z, h) => { for (let y = 0; y < h; y++) cube(x, y * 1.5, z, C.wood, 1.5); for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) for (let dy = 0; dy < 2; dy++) if (Math.abs(dx) + Math.abs(dz) < 2 + dy) cube(x + dx * 1.5, h * 1.5 - 1.5 + dy * 1.5, z + dz * 1.5, C.leaf[(dx + dz + dy + 3) % 3], 1.5); cube(x, h * 1.5 + 1.5, z, C.leaf[0], 1.5); };
-      for (let i = 0; i < 14; i++) tree(-70 + i * 11 + rnd(-2, 2), -PZ - rnd(24, 30), 3 + (Math.random() * 3 | 0));
+      for (let i = 0; i < 14; i++) tree(-70 + i * 11 + rnd(-2, 2), -PZ - rnd(8, 12), 3 + (Math.random() * 3 | 0));
+      // blocky fans of our own standing round the pitch and cheering: cube heads, block bodies, arms that go up
+      const fans = []; const fan = (x, z, ry) => { const g2 = new THREE.Group(), shirt = ['#e8361f', '#ffd21a', '#3a8ae8', '#e83ac8', '#ff8a1a', '#3fbf55', '#ffffff'][Math.random() * 7 | 0], skin = ['#f1c9a0', '#c98f62', '#8a5a3a', '#e3b088'][Math.random() * 4 | 0];
+        const add2 = (w, h, d, c, px, py) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), M(c)); m.position.set(px, py, 0); g2.add(m); return m; };
+        add2(0.5, 1, 0.5, '#3a3a4a', -0.27, 0.5); add2(0.5, 1, 0.5, '#3a3a4a', 0.27, 0.5); add2(1.1, 1.2, 0.6, shirt, 0, 1.6); add2(0.9, 0.9, 0.9, skin, 0, 2.65); add2(0.95, 0.3, 0.95, ['#2a1a10', '#d8b040', '#8a3a1a', '#1a1a1a'][Math.random() * 4 | 0], 0, 3.15);
+        const a1 = new THREE.Group(), a2 = new THREE.Group(); for (const [a, dx] of [[a1, -0.75], [a2, 0.75]]) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.1, 0.35), M(skin)); m.position.y = -0.5; a.add(m); a.position.set(dx, 2.15, 0); g2.add(a); }
+        g2.position.set(x, 0, z); g2.rotation.y = ry; g2.scale.setScalar(1.6); gr.add(g2); fans.push([a1, a2, Math.random() * 6, g2]); };
+      for (let x = -64; x <= 64; x += 3.2) if (Math.random() < 0.8) fan(x + rnd(-0.6, 0.6), -PZ - 5.5 - rnd(0, 1.5), 0);
+      for (const sx of [-1, 1]) for (let z = -22; z <= 22; z += 3.4) if (Math.random() < 0.7) fan(sx * (PX + 7 + rnd(0, 2)), z, -sx * Math.PI / 2);
+      BUILD.fans = fans;
       for (const [x, z] of [[-PX - 14, -10], [-PX - 16, 8], [PX + 14, -6], [PX + 16, 12]]) tree(x, z, 4);
       // block clouds and a square sun
       BUILD.clouds = []; for (let i = 0; i < 9; i++) { const g2 = new THREE.Group(); const w = 3 + (Math.random() * 4 | 0); for (let k = 0; k < w; k++) for (let j = 0; j < 2; j++) if (j === 0 || (k > 0 && k < w - 1)) { const m = new THREE.Mesh(new THREE.BoxGeometry(4, 1.6, 4), new THREE.MeshBasicMaterial({ color: '#ffffff', fog: false, transparent: true, opacity: 0.92 })); m.position.set(k * 4, j * 1.6, (j ? 0 : (k % 2) * 4)); g2.add(m); }
@@ -646,7 +655,7 @@ const ARENA = (() => {
       const [h, s] = lights(); if (h) { h.color.set(D.hemi[0]); h.groundColor.set(D.hemi[1]); h.intensity = D.hemi[2]; } if (s) { s.color.set(D.sun[0]); s.intensity = D.sun[1]; } },
     weather() { return DEF[cur].wx; },
     update(dt, t) { const D = DEF[cur]; if (D.flow && PITCH.track.material.map) PITCH.track.material.map.offset.x += dt * D.flow; groups[cur]?.userData.tick?.forEach((f) => f(t, dt)); if (cur === 'kosmos') { BUILD.ast?.forEach((m, i) => { m.rotation.x += dt * (0.2 + i * 0.03); m.rotation.y += dt * 0.15; m.position.x += Math.sin(t * 0.1 + i) * dt * 0.6; }); if (BUILD.beacon) BUILD.beacon.visible = Math.floor(t * 1.5) % 2 === 0; }
-      if (cur === 'klocki') BUILD.clouds?.forEach((c) => { c.position.x += dt * 1.2; if (c.position.x > 140) c.position.x = -140; }); },
+      if (cur === 'klocki') { BUILD.clouds?.forEach((c) => { c.position.x += dt * 1.2; if (c.position.x > 140) c.position.x = -140; }); BUILD.fans?.forEach(([a1, a2, p, g2]) => { const up = Math.max(0, Math.sin(t * 3 + p)); a1.rotation.z = -up * 2.6; a2.rotation.z = up * 2.6; g2.position.y = Math.max(0, Math.sin(t * 6 + p)) * 0.25; }); } },
   };
 })();
 
