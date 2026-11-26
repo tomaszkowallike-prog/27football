@@ -586,7 +586,7 @@ export default function extraArenas(C) {
     far(6, (x, z) => { const h = cyl(gr, 1.4, 1.4, 1.8, '#e8c868', x, 1.4, z, 12); h.rotation.x = Math.PI / 2; }, 13, 15); fence(gr, '#8a5a2e', -PZ - 5.5, -70, 70, 1.4); };
   // shopping-mall roof
   DEF.galeria = { name: 'DACH GALERII', sky: '#a8d0f0', fog: '#c8dcec', near: 90, far: 280, hemi: ['#f4faff', '#6a7a8a', 2.0], sun: ['#fff4dc', 2.6], grav: 30, wx: 'none',
-    pal: pal('#3f9a5a', '#46a460', '#3a9054', ['#358a4e', '#52b06a', '#2e7c44', '#5abc72'], ['#3a8a50', '#348048', '#42985a'], '#ffffff'), track: () => tile((g) => { fill(g, '#b0b2b6'); speck(g, ['#9a9ca0', '#c4c6ca'], 300); }) };
+    pal: pal('#eef0f2', '#f6f7f8', '#e8eaec', ['#dcdfe2', '#ffffff', '#d4d8dc', '#f2f4f6'], ['#d8dce0', '#ccd0d4', '#e0e4e8'], '#2a5ad0', { wornE: 'rgba(150,160,170,.3)', txt: 'rgba(42,90,208,.12)' }), track: () => tile((g) => { fill(g, '#b0b2b6'); speck(g, ['#9a9ca0', '#c4c6ca'], 300); }) };
   BUILD.galeria = (gr) => { const fans = []; const ac = (x, z) => { box(gr, 3.4, 2.4, 3.4, '#c8ccd2', x, 1.2, z); const f = cyl(gr, 1.2, 1.2, 0.2, '#5a5e64', x, 2.5, z, 10); const bl = box(gr, 2.2, 0.1, 0.4, '#3a3c40', x, 2.65, z); fans.push(bl); };
     far(9, (x, z) => ac(x, z), 6, 9); ends(6, (x, z) => ac(x, z), 7, 12); tick(gr, (t, dt) => fans.forEach((b) => { b.rotation.y += dt * 8; }));
     const ads = [['GALERIA', '#e8202a', '#ffffff'], ['-50%', '#ffd21a', '#e8202a'], ['KINO', '#141414', '#ffd21a'], ['MODA', '#e83a8a', '#ffffff'], ['SPORT', '#2a6ae8', '#ffffff']];
