@@ -336,6 +336,31 @@
   .flipgrid button:hover, .flipgrid button:focus-visible { background: #ffe14a; }
   .flipgrid img { height: min(26vh, 120px); display: block; image-rendering: pixelated; }
   #arenapick .setp { width: min(96vw, 820px); max-height: 92vh; display: flex; flex-direction: column; } .arenagrid { overflow-y: auto; max-height: 70vh; display: grid !important; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; align-items: start; padding: 2px; }
+  .abar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 8px; font: 8px "Press Start 2P", monospace; }
+  .abar button { all: unset; cursor: pointer; padding: 6px 8px; font: 8px "Press Start 2P", monospace; color: #d8d4ff; background: #2c2660; border: 2px solid #5a52a8; box-shadow: 0 3px 0 #0b0820; }
+  .abar button.on { color: #1a1030; background: #ffe14a; border-color: #fff6c0; box-shadow: 0 3px 0 #b08a00; }
+  .abar .sp { flex: 1; } .abar .lv { display: flex; gap: 3px; } .abar .lv button.on { background: #6ee05a; border-color: #d8ffc8; box-shadow: 0 3px 0 #2a8a1a; }
+  .coin { display: inline-flex; align-items: center; gap: 5px; color: #ffe14a; font: 10px "Press Start 2P", monospace; text-shadow: 2px 2px 0 #000; }
+  .coin::before { content: ''; width: 12px; height: 12px; background: #ffc21a; box-shadow: inset -2px -2px 0 #b07a00, inset 2px 2px 0 #fff2a0, 0 0 0 2px #000; }
+  #shopbtn { color: #1a1030; background: #ff9a2a; border-color: #ffd8a0; box-shadow: 0 3px 0 #8a4a00; }
+  .tourgrid button { position: relative; } .tourgrid button b { position: absolute; left: 4px; top: 4px; font: 8px "Press Start 2P", monospace; color: #fff; background: #000; padding: 2px 3px; }
+  .tourgrid button.lock img { filter: grayscale(1) brightness(.45); } .tourgrid button.lock span { color: #8a84b8; }
+  .tourgrid button.lock::after { content: ''; position: absolute; left: 50%; top: 32%; width: 18px; height: 14px; margin-left: -9px; background: #ffe14a; box-shadow: 0 0 0 2px #000; border-radius: 2px; }
+  .tourgrid button.lock::before { content: ''; position: absolute; left: 50%; top: calc(32% - 9px); width: 10px; height: 10px; margin-left: -7px; border: 2px solid #ffe14a; border-bottom: 0; border-radius: 6px 6px 0 0; box-shadow: 0 0 0 1px #000; }
+  .tourgrid button.done::after { content: '✔'; position: absolute; right: 5px; top: 3px; font: 700 16px "Pixelify Sans", monospace; color: #6ee05a; text-shadow: 2px 2px 0 #000; }
+  .tourgrid button.next { background: #3fbf55; animation: tnext 0.8s steps(2) infinite; } @keyframes tnext { 50% { box-shadow: 0 0 0 3px #ffe14a; } }
+  .tourgrid button.boss span { color: #6eff6a; }
+  #shop .setp { width: min(96vw, 760px); } .shopgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; overflow-y: auto; max-height: 66vh; }
+  .shopgrid .it { background: #0b0820; border: 2px solid #3a3480; padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; }
+  .shopgrid .it canvas { width: 64px; height: 64px; image-rendering: pixelated; } .shopgrid .it h4 { margin: 0; font: 8px "Press Start 2P", monospace; color: #fff; line-height: 1.4; }
+  .shopgrid .it p { margin: 0; font: 400 12px "Pixelify Sans", monospace; color: #b8b4e8; min-height: 28px; }
+  .shopgrid .it button { all: unset; cursor: pointer; padding: 6px 10px; font: 8px "Press Start 2P", monospace; color: #1a1030; background: #ffe14a; border: 2px solid #fff6c0; box-shadow: 0 3px 0 #b08a00; }
+  .shopgrid .it button.eq { background: #6ee05a; border-color: #d8ffc8; box-shadow: 0 3px 0 #2a8a1a; } .shopgrid .it button.no { background: #4a4478; color: #a8a4d8; border-color: #6a64a8; box-shadow: 0 3px 0 #2a2450; }
+  .shopgrid .it.own { border-color: #6ee05a; }
+  #reward { margin: 10px 0 4px; font: 400 15px "Pixelify Sans", monospace; color: #e8e4ff; line-height: 1.5; } #reward .tot { display: block; margin-top: 4px; font: 12px "Press Start 2P", monospace; color: #ffe14a; }
+  #reward .stage { display: block; font: 10px "Press Start 2P", monospace; color: #6ee05a; margin-bottom: 4px; }
+  #end .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .arenagrid[hidden] { display: none !important; }
   .arenagrid button { padding: 6px 6px 5px; } .arenagrid img { height: auto; width: 100%; max-width: 96px; aspect-ratio: 120 / 84; margin: 0 auto; }
   .arenagrid span { display: block; margin-top: 5px; line-height: 1.4; font: 7px "Press Start 2P", monospace; color: #fff; text-shadow: 1px 1px 0 #000; }
   .arenagrid button.sel { background: #3fbf55; } .arenagrid button:hover span, .arenagrid button:focus-visible span { color: #1a1030; text-shadow: none; }
@@ -453,8 +478,16 @@
 <div class="setov" id="flippick" hidden><div class="setp" role="dialog" aria-label="Wybierz butelkę"><h2>WYBIERZ BUTELKĘ <button class="x" id="flipx" aria-label="Zamknij">X</button></h2>
   <div class="flipgrid"><button data-b="woda"><img src="flip_woda.png" alt="Woda"></button><button data-b="cola"><img src="flip_cola.png" alt="Cola"></button><button data-b="cytryna"><img src="flip_cytryna.png" alt="Cytryna"></button><button data-b="truskawka"><img src="flip_truskawka.png" alt="Truskawka"></button><button data-b="fiolet"><img src="flip_fiolet.png" alt="Duża woda"></button></div></div></div>
 <div class="setov" id="arenapick" hidden><div class="setp" role="dialog" aria-label="Wybierz boisko"><h2>WYBIERZ BOISKO <button class="x" id="arenax" aria-label="Zamknij">X</button></h2>
-  <div class="flipgrid arenagrid" id="arenagrid"></div>
-  <p class="arenahint">Na Księżycu, w oceanie, w niebie i na stacji niższa grawitacja: piłka i skoki lecą wyżej.</p></div></div>
+  <div class="abar"><button id="tabTour" class="on">TURNIEJ</button><button id="tabFree">DOWOLNY MECZ</button><span class="sp"></span>
+    <span class="lv" id="lvbtns"><button data-l="0">ŁATWY</button><button data-l="1">NORMALNY</button><button data-l="2">MISTRZ</button></span>
+    <span class="coin" id="coinA">0</span><button id="shopbtn">SKLEP</button></div>
+  <div class="flipgrid arenagrid tourgrid" id="tourgrid"></div>
+  <div class="flipgrid arenagrid" id="arenagrid" hidden></div>
+  <p class="arenahint" id="tourhint">Turniej: wygraj mecz, żeby odblokować następne boisko. Na końcu czeka MROCZNY ZAMEK.</p>
+  <p class="arenahint" id="freehint" hidden>Na Księżycu, w oceanie, w niebie i na stacji niższa grawitacja: piłka i skoki lecą wyżej.</p></div></div>
+<div class="setov" id="shop" hidden><div class="setp" role="dialog" aria-label="Sklep"><h2>SKLEP <span class="coin" id="coinS">0</span><button class="x" id="shopx" aria-label="Zamknij">X</button></h2>
+  <div class="shopgrid" id="shopgrid"></div>
+  <p class="arenahint">Monety zdobywasz za gole, wygrane, czyste konto, gole z mocy, etapy turnieju i kapki. Na trudniejszym poziomie dostajesz więcej.</p></div></div>
 <div class="setov" id="pmenu" hidden><div class="setp" role="dialog" aria-label="Pauza"><h2>PAUZA</h2>
   <button class="big grn" id="pres">WZNÓW</button>
   <button class="big" id="psnd">DŹWIĘK: TAK</button>
@@ -479,7 +512,7 @@
     <div class="row"><button class="btn" id="play" disabled>WCZYTUJĘ…</button><span class="go k-keys">albo <span class="kc w">ENTER</span></span></div>
   </div>
 </div>
-<div class="ov" id="end" hidden><div class="panel"><h1 id="endT">KONIEC</h1><div id="final">0 : 0</div><div class="row"><button class="btn" id="again">REWANŻ</button></div></div></div>
+<div class="ov" id="end" hidden><div class="panel"><h1 id="endT">KONIEC</h1><div id="final">0 : 0</div><div id="reward"></div><div class="row"><button class="btn" id="again">REWANŻ</button><button class="btn" id="tnext" hidden>DALEJ</button><button class="btn" id="tmenu">BOISKA</button></div></div></div>
 <div id="penHint"></div>
 <div id="bag" class="hud"></div>
 <div id="szatnia" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg"></div><div class="sbox"><img src="szatnia_base.jpg" alt="">
@@ -568,7 +601,7 @@
       el.innerHTML = kind === 'super' ? `<small>SUPER STRZAŁ · ${p.num}</small>${text}` : text;
       void el.offsetWidth; el.classList.add('on'); clearTimeout(bannerT); bannerT = setTimeout(() => el.classList.remove('on'), kind === 'goal' ? 2600 : kind === 'big' ? 1600 : 1300);
     },
-    end(G) { document.body.classList.remove('playing'); const [a, b] = G.score; $('final').textContent = `${a} : ${b}`; $('endT').textContent = a > b ? 'CUIAVIA WYGRYWA!' : a < b ? 'WYGRALI FIOLETOWI' : 'REMIS'; $('end').hidden = false; },
+    end(G) { document.body.classList.remove('playing'); const [a, b] = G.score; $('final').textContent = `${a} : ${b}`; $('endT').textContent = a > b ? 'CUIAVIA WYGRYWA!' : a < b ? 'WYGRALI FIOLETOWI' : 'REMIS'; try { window.REWARD?.(G); } catch (e) { console.error(e); } $('end').hidden = false; },
     minimap(players, ball) {
       const cv = $('mini'), g = cv.getContext('2d'), W = cv.width, H = cv.height, M = 9, T = 5, X = (x) => M + (x + 30) / 60 * (W - 2 * M), Z = (z) => T + (z + 18) / 36 * (H - 2 * T);
       // mowed grass to the frame's edge, the lines a few pixels in, the goals in the margin
@@ -603,7 +636,7 @@
   const SETV = {
     mus: () => MV.v ? Math.round(MV.v * 100) + '%' : 'WYŁĄCZONA',
     sfx: () => CFG.sfx ? 'WŁĄCZONE' : 'WYŁĄCZONE', vib: () => CFG.vib ? 'WŁĄCZONE' : 'WYŁĄCZONE',
-    half: () => `${CFG.half / 60}:00`, lvl: () => ['ŁATWY', 'NORMALNY', 'TRUDNY'][CFG.lvl],
+    half: () => `${CFG.half / 60}:00`, lvl: () => ['ŁATWY', 'NORMALNY', 'MISTRZ'][CFG.lvl],
     pad: () => ({ auto: 'AUTO', on: 'ZAWSZE', off: 'WYŁĄCZONY' })[CFG.pad] };
   const setDraw = () => document.querySelectorAll('#setov .v').forEach((b) => { const k = b.dataset.k; b.textContent = SETV[k]();
     b.classList.toggle('off', (k === 'sfx' && !CFG.sfx) || (k === 'vib' && !CFG.vib) || (k === 'mus' && !MV.v) || (k === 'pad' && CFG.pad === 'auto')); });
@@ -654,12 +687,76 @@
   const markMode = () => document.querySelectorAll('#modes .mb').forEach((b, i) => b.classList.toggle('sel', i === modeSel));
   window.CAPTAIN = 27;
   const pickMode = (m) => { TMUS.pause(); $('modes').hidden = true; if (m === 'back') { SZ.show(); return; } if (m === 'kapsle') window.CAPS.start(showModes); else if (m === 'bieg') window.BIEG.start(showModes); else if (m === 'but') window.LACE.start(showModes); else if (m === 'karne') window.PEN.start(showModes, window.CAPTAIN); else if (m === 'kapki') K.start(); else arenaPick(); };
+  // ---- progress: coins, the shop, the tournament ladder (saved on the device) ----
+  const PROG = (() => { const d = { coins: 0, owned: [], boots: null, ball: null, ladder: 0, champ: 0 };
+    let P = d; try { P = { ...d, ...JSON.parse(localStorage.getItem('cs_prog') || '{}') }; } catch (e) {}
+    const save = () => { try { localStorage.setItem('cs_prog', JSON.stringify(P)); } catch (e) {} for (const id of ['coinA', 'coinS']) { const e = $(id); if (e) e.textContent = P.coins; } };
+    return { get: () => P, save, add(n) { P.coins += n; save(); } }; })();
+  const ITEMS = [
+    { id: 'b1', slot: 'boots', name: 'SZYBKIE BUTY', price: 150, desc: 'Drużyna biega 6% szybciej', col: ['#3a8ae8', '#fff'], perk: { speed: 1.06 } },
+    { id: 'b2', slot: 'boots', name: 'TURBO BUTY', price: 400, desc: 'Biegasz 10% szybciej', col: ['#e8402a', '#ffe14a'], perk: { speed: 1.1 } },
+    { id: 'b3', slot: 'boots', name: 'ZŁOTE BUTY', price: 900, desc: '+12% szybkości i mocniejsze strzały', col: ['#ffc21a', '#fff6c0'], perk: { speed: 1.12, shot: 1.15 } },
+    { id: 'p1', slot: 'ball', name: 'OGNISTA PIŁKA', price: 120, desc: 'Pomarańczowa piłka', ball: '#ffb070', perk: { ball: '#ffb070' } },
+    { id: 'p2', slot: 'ball', name: 'KOSMICZNA PIŁKA', price: 250, desc: 'Fioletowa piłka z gwiazd', ball: '#c8a8ff', perk: { ball: '#c8a8ff' } },
+    { id: 'p3', slot: 'ball', name: 'ZŁOTA PIŁKA', price: 600, desc: 'Złota i 10% mocniejsze strzały', ball: '#ffe070', perk: { ball: '#ffe070', shot: 1.1 } },
+    { id: 'g1', slot: null, name: 'RĘKAWICE BRAMKARZA', price: 300, desc: 'Twój bramkarz łapie więcej super strzałów', perk: { gloves: true } },
+    { id: 'e1', slot: null, name: 'NAPÓJ ENERGII', price: 250, desc: 'Szybciej odzyskujesz siły', perk: { sta: 1.4 } },
+    { id: 'k1', slot: null, name: 'KARTA NA START', price: 500, desc: 'Każdy mecz zaczynasz z losową mocą', perk: { card: true } },
+  ];
+  window.PERKS = () => { const P = PROG.get(), out = {}; for (const it of ITEMS) { if (!P.owned.includes(it.id)) continue; if (it.slot && P[it.slot] !== it.id) continue;
+      for (const k in it.perk) out[k] = k === 'speed' || k === 'shot' ? (out[k] || 1) * it.perk[k] : it.perk[k]; } return out; };
+  const itemIcon = (it) => { const c = document.createElement('canvas'); c.width = c.height = 16; const g = c.getContext('2d'), r = (col, x, y, w, h) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+    if (it.slot === 'boots') { const [a, b] = it.col; r('#000', 2, 6, 7, 6); r('#000', 2, 10, 13, 4); r(a, 3, 7, 5, 5); r(a, 3, 11, 11, 2); r(b, 5, 8, 2, 1); r(b, 9, 11, 3, 1); r('#222', 3, 13, 11, 1); }
+    else if (it.slot === 'ball') { r('#000', 4, 2, 8, 12); r('#000', 2, 4, 12, 8); r(it.ball, 5, 3, 6, 10); r(it.ball, 3, 5, 10, 6); r('#000', 7, 7, 2, 2); r('#000', 4, 5, 2, 1); r('#000', 10, 10, 2, 1); r('#fff', 5, 4, 2, 1); }
+    else if (it.id === 'g1') { r('#000', 3, 3, 10, 11); r('#ffe14a', 4, 4, 8, 9); r('#e8402a', 4, 10, 8, 3); r('#000', 6, 4, 1, 5); r('#000', 9, 4, 1, 5); r('#000', 1, 6, 3, 4); r('#ffe14a', 2, 7, 2, 2); }
+    else if (it.id === 'e1') { r('#000', 5, 1, 6, 14); r('#6ee05a', 6, 5, 4, 9); r('#fff', 6, 2, 4, 3); r('#ffe14a', 7, 8, 2, 3); }
+    else { r('#000', 3, 1, 10, 14); r('#ff6ab8', 4, 2, 8, 12); r('#fff', 5, 3, 6, 4); r('#ffe14a', 7, 9, 2, 4); r('#ffe14a', 6, 10, 4, 2); }
+    return c; };
+  const drawShop = () => { const P = PROG.get(), gr = $('shopgrid'); gr.innerHTML = ''; PROG.save();
+    for (const it of ITEMS) { const own = P.owned.includes(it.id), on = own && (!it.slot || P[it.slot] === it.id), d = document.createElement('div'); d.className = 'it' + (own ? ' own' : '');
+      d.appendChild(itemIcon(it)); d.insertAdjacentHTML('beforeend', `<h4>${it.name}</h4><p>${it.desc}</p>`);
+      const b = document.createElement('button'); b.textContent = !own ? `KUP ${it.price}` : on ? (it.slot ? 'ZAŁOŻONE' : 'MASZ') : 'ZAŁÓŻ';
+      if (!own && P.coins < it.price) b.className = 'no'; else if (on) b.className = 'eq';
+      b.onclick = () => { if (!own) { if (P.coins < it.price) { b.textContent = 'ZA MAŁO MONET'; return; } P.coins -= it.price; P.owned.push(it.id); if (it.slot) P[it.slot] = it.id; }
+        else if (it.slot) P[it.slot] = on ? null : it.id; PROG.save(); drawShop(); };
+      d.appendChild(b); gr.appendChild(d); } };
+  const openShop = () => { drawShop(); $('shop').hidden = false; };
+  $('shopbtn').onclick = openShop; $('shopx').onclick = () => { $('shop').hidden = true; };
+  // difficulty buttons
+  const markLv = () => $('lvbtns').querySelectorAll('button').forEach((b) => b.classList.toggle('on', +b.dataset.l === CFG.lvl));
+  $('lvbtns').querySelectorAll('button').forEach((b) => (b.onclick = () => { CFG.lvl = +b.dataset.l; window.saveCFG(); markLv(); }));
+  // the tournament: every arena in order, MROCZNY ZAMEK last
+  let tab = 'tour';
+  const setTab = (t) => { tab = t; $('tabTour').classList.toggle('on', t === 'tour'); $('tabFree').classList.toggle('on', t === 'free');
+    $('tourgrid').hidden = $('tourhint').hidden = t !== 'tour'; $('arenagrid').hidden = $('freehint').hidden = t !== 'free'; };
+  $('tabTour').onclick = () => { setTab('tour'); markTour(); }; $('tabFree').onclick = () => setTab('free');
+  const tourList = () => { const A = (window.GAME?.arenas || []).slice(), i = A.findIndex((a) => a.id === 'mroczny'); if (i >= 0) A.push(A.splice(i, 1)[0]); return A; };
+  const buildTour = () => { const g = $('tourgrid'); if (g.children.length) return; tourList().forEach((a, i) => { const b = document.createElement('button'); b.dataset.i = i;
+      b.innerHTML = `<img src="arena_${a.id}.png" alt="" width="120" height="84"><b>${i + 1}</b><span>${a.id === 'mroczny' ? 'FINAŁ: ' : ''}${a.name}</span>`; if (a.id === 'mroczny') b.classList.add('boss');
+      b.onclick = () => { const L = PROG.get().ladder; if (i > L) { b.animate([{ transform: 'translateX(-4px)' }, { transform: 'translateX(4px)' }, { transform: 'none' }], { duration: 200 }); return; }
+        window.TOUR = { i, id: a.id, n: tourList().length }; $('arenapick').hidden = true; window.GAME?.arena(a.id); if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } };
+      g.appendChild(b); }); markTour(); };
+  const markTour = () => { const L = PROG.get().ladder; $('tourgrid').querySelectorAll('button').forEach((b) => { const i = +b.dataset.i; b.classList.toggle('done', i < L); b.classList.toggle('next', i === L); b.classList.toggle('lock', i > L); });
+    $('tourgrid').querySelector('.next')?.scrollIntoView({ block: 'nearest' }); };
+  // coins at the final whistle
+  window.REWARD = (G) => { const [a, b] = G.score, lv = CFG.lvl, mul = [0.7, 1, 1.6][lv], T = window.TOUR, P = PROG.get(), lines = []; let sum = 0;
+    const add = (txt, n) => { n = Math.round(n * mul); if (n <= 0) return; sum += n; lines.push(`${txt}: +${n}`); };
+    add(`Gole (${a})`, a * 10); if (G.supGoals) add(`Gole z mocy (${G.supGoals})`, G.supGoals * 5); add(a > b ? 'Wygrana' : a === b ? 'Remis' : 'Za udział', a > b ? 40 : a === b ? 15 : 5); if (b === 0) add('Czyste konto', 15);
+    let stage = ''; $('tnext').hidden = true;
+    if (T) { if (a > b) { if (T.i === T.n - 1) { add('MISTRZ TURNIEJU', 300); stage = 'POKONAŁEŚ MROCZNY ZAMEK! JESTEŚ MISTRZEM!'; if (P.ladder <= T.i) { P.ladder = T.i + 1; P.champ++; } }
+        else { if (P.ladder <= T.i) { add('Nowy etap', 50); P.ladder = T.i + 1; } stage = `ETAP ${T.i + 1} ZALICZONY!`; $('tnext').hidden = false; } }
+      else stage = a === b ? 'REMIS: trzeba wygrać, żeby przejść dalej' : 'Przegrana: spróbuj jeszcze raz'; }
+    P.coins += sum; PROG.save(); markTour();
+    $('reward').innerHTML = (stage ? `<span class="stage">${stage}</span>` : '') + lines.join(' · ') + `<span class="tot">+${sum} MONET · MASZ ${P.coins}</span>`; };
+  $('tnext').onclick = () => { $('end').hidden = true; const T = window.TOUR, A = tourList(), n = T ? T.i + 1 : 0; if (A[n]) { window.TOUR = { i: n, id: A[n].id, n: A.length }; window.GAME?.arena(A[n].id); go(); } };
+  $('tmenu').onclick = () => { $('end').hidden = true; document.body.classList.remove('playing'); arenaPick(); };
+  window.KAPKI_COINS = (n) => { const c = Math.floor(n / 5); if (c > 0) PROG.add(c); return c; };
   // the arena cards are built and their pictures loaded once, right at start, so the list never shows names without pictures
   const AIMG = []; const buildArenas = () => { const grid = $('arenagrid'); if (grid.children.length || !window.GAME?.arenas) return; for (const a of (window.GAME?.arenas || [])) { const b = document.createElement('button'); b.dataset.a = a.id; b.innerHTML = `<img src="arena_${a.id}.png" alt="" width="120" height="84" decoding="sync"><span>${a.name}</span>`; AIMG.push(b.querySelector('img'));
-      b.addEventListener('click', () => { $('arenapick').hidden = true; window.GAME?.arena(a.id); if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } }); grid.appendChild(b); } };
+      b.addEventListener('click', () => { window.TOUR = null; $('arenapick').hidden = true; window.GAME?.arena(a.id); if (touch) go(); else { $('menu').hidden = false; $('play').focus(); } }); grid.appendChild(b); } buildTour(); };
   (function waitArenas() { if (window.GAME?.arenas) buildArenas(); else setTimeout(waitArenas, 200); })();
   const arenaPick = () => { const cur = window.GAME?.arenaId || 'stadion', grid = $('arenagrid'); buildArenas();
-    const show = () => { grid.querySelectorAll('button').forEach((b) => b.classList.toggle('sel', b.dataset.a === cur)); $('arenapick').hidden = false; grid.querySelector('.sel')?.scrollIntoView({ block: 'nearest' }); };
+    const show = () => { PROG.save(); markLv(); setTab(tab); markTour(); grid.querySelectorAll('button').forEach((b) => b.classList.toggle('sel', b.dataset.a === cur)); $('arenapick').hidden = false; grid.querySelector('.sel')?.scrollIntoView({ block: 'nearest' }); };
     Promise.race([Promise.all(AIMG.map((i) => i.decode().catch(() => {}))), new Promise((r) => setTimeout(r, 600))]).then(show); };
   $('arenax').onclick = () => { $('arenapick').hidden = true; showModes(); };
   // ---- the locker room: pick the captain, who plays in the middle and kicks off ----
@@ -746,7 +843,7 @@
       setTimeout(() => alive && spawn(), 120); };
     const miss = () => { if (!alive) return; alive = false; dots.innerHTML = ''; if (J) { clearInterval(seqT); cur = 0; frame(0); } else { frame(1); setTimeout(() => frame(0), 450); } tone(220, 0.35, 'sawtooth', 0.06); setTimeout(() => tone(140, 0.4, 'sawtooth', 0.06), 160);
       const rec = score > best; if (rec) { best = score; try { localStorage.setItem('kapki_best', best); } catch (e) {} }
-      $('kbest').textContent = best; $('kres').textContent = score; $('knew').textContent = rec && score ? 'NOWY REKORD!' : best ? `Rekord: ${best}` : '';
+      $('kbest').textContent = best; $('kres').textContent = score; { const kc = window.KAPKI_COINS?.(score) || 0; $('knew').textContent = (rec && score ? 'NOWY REKORD!' : best ? `Rekord: ${best}` : '') + (kc ? ` +${kc} monet` : ''); }
       setTimeout(() => { $('kend').hidden = false; }, 700); };
     const start = () => { const cap = window.CAPTAIN || 27; J = HDJ[cap] || null; FW = J ? J.n : 16; cur = 0; clearInterval(seqT);
       jug.style.backgroundImage = J ? `url(juggle_hd_${cap}.png)` : `url(juggle_${cap}.png)`; jug.style.backgroundSize = `${FW * 100}% 100%`; jug.style.aspectRatio = J ? J.ar : ''; MUS.start(actx()); $('kapki').hidden = false; $('kend').hidden = true; $('kmsg').hidden = false; score = 0; pairI = (Math.random() * 8) | 0; $('kscore').textContent = 0; $('kbest').textContent = best; frame(0); alive = true; setTimeout(() => alive && spawn(), 900); };

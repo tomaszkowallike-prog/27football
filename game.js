@@ -801,9 +801,13 @@ window.MATCH_MUSIC = MUSIC;
 const ui = window.UI || {};
 const HALF = () => (window.CFG && window.CFG.half) || 120;
 const VIB = (ms) => { try { if (!window.CFG || window.CFG.vib !== false) navigator.vibrate?.(ms); } catch (e) {} };
-const G = { inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
+const G = { inv2: {}, inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
 let GRAV = 30; const JUMP_V = 11, APEX = 3.2;                       // a jump peaks ~0.37 s after take-off, ~2 units up
 const WALK = 6.4, DASH = 11.8, AI_WALK = 5.8, AI_RUN = 7.6;
+// difficulty 0 ŁATWY, 1 NORMALNY, 2 MISTRZ; perks come from the shop (boots, balls, gloves...)
+const LV = () => (window.CFG && window.CFG.lvl != null ? window.CFG.lvl : 1);
+const DIFF = (a) => a[LV()];
+const PERK = () => (window.PERKS ? window.PERKS() : {});
 const goalX = (team) => (team === 0 ? PX : -PX);               // the goal this team attacks
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const mates = (p) => players.filter((q) => q.team === p.team && q !== p);
@@ -867,6 +871,9 @@ const PU = (() => {
         G.inv[st.kind] = Math.min(3, G.inv[st.kind] + 1); st.on = false; st.cool = 7;
         SFX.pickup(); ui.banner?.(POWERS[st.kind].name + ' +1', TEAMS[0], 'small'); ui.inv?.(G.inv); shout(o, 'Mam to!');
         FX.emit('curve', st.x, 1, st.z, 20, 4, 0.3, 6); G.ca = Math.max(G.ca, 0.9);
+      } else if (G.state === 'play' && o && o.team === 1 && Math.hypot(o.x - st.x, o.z - st.z) < 1.6) {   // the rivals can grab one too
+        G.inv2[st.kind] = (G.inv2[st.kind] || 0) + 1; st.on = false; st.cool = 7; o.powerT = 0.6 + Math.random() * DIFF([3, 2, 1]);
+        SFX.pickup(); ui.banner?.('RYWAL MA: ' + POWERS[st.kind].name + '!', TEAMS[1], 'small'); shout(o, 'Ha! Moje!'); FX.emit('curve', st.x, 1, st.z, 20, 4, 0.3, 6);
       }
     } };
 })();
@@ -886,6 +893,15 @@ function lightning(c) {
   ball.owner = c; c.hold = 0; G.flash = 1.5; G.shake = 0.8; G.ca = 2.4; SFX.thunder(); SFX.super();
   ui.banner?.('BŁYSKAWICA!', c.T, 'super', c); shout(c, 'Piorun!'); VOICE.say(c, 'super');
   let i = 0; for (const q of players) if (q.team !== c.team) { BOLTS.hit(q.x, q.z, i++ * 0.06); knock(q, 4.2, { lie: Math.random() < 0.5 ? 'lieBack' : 'lieFront', dizzy: true, foul: false }); }
+}
+// a rival fires a card he picked up: the same powers, aimed at us
+function rivalPower(c, k) {
+  G.inv2[k]--; c.vx = c.vz = 0; ui.banner?.('RYWAL ODPALA: ' + POWERS[k].name, TEAMS[1], 'small');
+  if (k === 'lightning') { lightning(c); return; }
+  if (k === 'dragon') { beastStart(c, 'smok'); return; }
+  if (k === 'robot') { beastStart(c, 'robot'); return; }
+  if (k === 'portal' || k === 'pinball' || k === 'laser' || k === 'twister') { MAGIC.start(c, k); return; }
+  ball.owner = null; shoot(c, 0.9, { name: POWERS[k].name, kind: k === 'wolf' ? 'mega' : k });
 }
 // the super picker: in the air with the ball, STRZAŁ freezes the moment and you choose which super to fire
 const PICK = { open: false, opts: [], sel: 0, t: 0, p: null };
@@ -1053,7 +1069,7 @@ const MAGIC = (() => {
       const dx = tgt.x - ball.x, dz = tgt.z - ball.z, d = Math.hypot(dx, dz), v = 30 * dt;
       ball.spin += dt * 40; ball.hot = 1; ball.y = 1 + Math.abs(Math.sin(M.t * 9)) * 0.8; FX.emit('zigzag', ball.x, ball.y + 0.3, ball.z, 2, 0.8, 0.28);
       if (d <= v + 0.3) {
-        if (tgt === c) { ball.owner = c; c.hold = 0; ball.hot = 0; SFX.pickup(); ui.banner?.('STRZELAJ!', c.T, 'small'); shout(c, 'Teraz!'); end(); return; }
+        if (tgt === c) { ball.owner = c; c.hold = 0; ball.hot = 0; SFX.pickup(); if (c.team === 0) ui.banner?.('STRZELAJ!', c.T, 'small'); shout(c, 'Teraz!'); end(); return; }
         knock(tgt, 7, { lie: Math.random() < 0.5 ? 'lieBack' : 'lieFront', dizzy: true, foul: false, push: [dx / (d || 1) * 6, dz / (d || 1) * 6] });
         SFX.boing(); G.shake = Math.max(G.shake, 0.35); FX.emit('zigzag', ball.x, 1.2, ball.z, 16, 4, 0.35, 6); M.i++;
       } else { ball.x += dx / d * v; ball.z += dz / d * v; }
@@ -1072,14 +1088,14 @@ const MAGIC = (() => {
           q.x = v.x0 + (x + ox - v.x0) * k; q.z = v.z0 + (z + oz - v.z0) * k; q.y = v.h * k + Math.sin(T * 5 + v.a) * 0.4; q.face = Math.cos(ang) > 0 ? 1 : -1; }
         else if (!v.thrown) { v.thrown = true; const a = v.a + T * 7; q.vx = Math.cos(a) * 5; q.vz = Math.sin(a) * 4; q.vy = 6; knock(q, 6.5, { lie: Math.random() < 0.5 ? 'lieBack' : 'lieFront', dizzy: true, foul: false, push: [q.vx, q.vz] }); q.vy = 6; } }
       if (T > 3.1 && !M.thud) { M.thud = true; SFX.tackle(); G.shake = 0.7; }
-      if (T > 3.9) { ball.owner = c; ui.banner?.('PUSTA BRAMKA!', c.T, 'small'); shout(c, 'Teraz!'); end(); }
+      if (T > 3.9) { ball.owner = c; if (c.team === 0) ui.banner?.('PUSTA BRAMKA!', c.T, 'small'); shout(c, 'Teraz!'); end(); }
     }
     if (M.kind === 'laser') {
       if (M.ph === 'a' && M.t > 3.0) { M.ph = 'b'; M.t = 0; cv.style.display = 'none'; SFX.zap(); G.flash = 1.4; G.shake = 1.2; G.ca = 2.6; }
       if (M.ph === 'b') { const k = M.gk; beam.visible = Math.random() < 0.85; beam.position.set(k.x, 0, k.z); beam.quaternion.copy(camera.quaternion); beam.scale.x = 1 + Math.sin(M.t * 40) * 0.2;
         FX.emit('fire', k.x + (Math.random() - 0.5) * 2, 0.3 + Math.random(), k.z + (Math.random() - 0.5) * 2, 3, 3, 0.4);
         if (!M.zapped) { M.zapped = true; knock(k, 8, { lie: 'lieBack', dizzy: true, foul: false }); for (const q of players) if (q.team !== c.team && q !== k && dist(q, k) < 4) knock(q, 4, { lie: 'lieBack', dizzy: true, foul: false, push: [(q.x - k.x) * 3, (q.z - k.z) * 3] }); }
-        if (M.t > 0.9) { ball.owner = c; ui.banner?.('BRAMKARZ LEŻY!', c.T, 'small'); shout(c, 'Pusta bramka!'); end(); } }
+        if (M.t > 0.9) { ball.owner = c; if (c.team === 0) ui.banner?.('BRAMKARZ LEŻY!', c.T, 'small'); shout(c, 'Pusta bramka!'); end(); } }
     }
   }
   function draw() {
@@ -1198,6 +1214,7 @@ function kick(p, tx, tz, speed, vy = 0, sup = null) {
 }
 // a shot at goal: aim with the stick (up/down = the far or near post), harder when dashing
 function shoot(p, power, sup = null, { header = false } = {}) {
+  if (p.team === 0 && PERK().shot) power *= PERK().shot;
   const gx = goalX(p.team);
   const aimZ = p === captain && input.z ? input.z * 4 : p === captain ? Math.max(-4, Math.min(4, -p.z * 0.25)) : (Math.random() - 0.5) * 7.5;
   if (sup && sup.kind === 'split') { const lanes = [-3.3, 0, 3.3].sort(() => Math.random() - 0.5); kick(p, gx, lanes[0], 23, 0, sup); const S = ball.sup;
@@ -1330,7 +1347,7 @@ function press(btn) {
 // ---- the AI ----------------------------------------------------------------------------------------------------------
 function steer(p, tx, tz, dt, speed) {
   speed *= p.spd || 1;
-  if (p.team === 1) speed *= [0.84, 1, 1.13][(window.CFG && window.CFG.lvl != null) ? window.CFG.lvl : 1];
+  if (p.team === 1) speed *= DIFF([0.82, 1, 1.14]);
   const dx = tx - p.x, dz = tz - p.z, d = Math.hypot(dx, dz), s = d < 0.25 ? 0 : Math.min(speed, d * 5);
   const wx = d ? dx / d * s : 0, wz = d ? dz / d * s : 0, a = Math.min(1, dt * 9);
   p.vx += (wx - p.vx) * a; p.vz += (wz - p.vz) * a;
@@ -1362,9 +1379,14 @@ function ai(p, dt) {
   if (ball.owner === p) {
     p.hold += dt;
     if (p.order === 'shoot') { p.order = null; shoot(p, 0.8); return; }
+    if (p.team === 1 && G.state === 'play') {
+      const ks = Object.keys(G.inv2).filter((k) => G.inv2[k] > 0);
+      if (ks.length) { p.powerT = (p.powerT ?? 1) - dt; if (p.powerT <= 0 && p.hold > 0.3) { p.powerT = 1; rivalPower(p, ks[(Math.random() * ks.length) | 0]); return; } }
+      const pu = G.pu; if (pu && pu.on && Math.hypot(pu.x - p.x, pu.z - p.z) < DIFF([6, 10, 14])) { steer(p, pu.x, pu.z, dt, AI_WALK); return; }
+    }
     const toGoal = Math.hypot(opp - p.x, p.z), pressed = players.some((o) => o.team !== p.team && !o.keeper && free(o) && dist(o, p) < 2.6);
     if (toGoal < 15 && p.hold > 0.35) {
-      if (G.superCool[p.team] <= 0 && Math.random() < (p.team === 1 ? 0.55 : 0.35)) { G.superCool[p.team] = 11; p.autoSuper = true; jump(p); return; }
+      if (G.superCool[p.team] <= 0 && Math.random() < (p.team === 1 ? DIFF([0.3, 0.55, 0.8]) : 0.35)) { G.superCool[p.team] = p.team === 1 ? DIFF([16, 11, 7]) : 11; p.autoSuper = true; jump(p); return; }
       shoot(p, 0.5 + Math.random() * 0.5); return;
     }
     if (pressed && p.hold > 0.45 && Math.random() < dt * 2.5) { const m = bestMate(p); if (m) { pass(p, m); return; } }
@@ -1381,7 +1403,7 @@ function ai(p, dt) {
     const lead = ball.owner ? 0.1 : 0.3, far = dist(p, ball) > 6 && p.sta > 0.15;
     steer(p, ball.x + ball.vx * lead, ball.z + ball.vz * lead, dt, far ? AI_RUN : AI_WALK);
     const o = ball.owner;
-    if (o && o.team !== p.team && !o.keeper && dist(o, p) < 1.7 && G.safe <= 0 && o.hold > 0.5 && Math.random() < dt * (o === captain ? 1.0 : 1.4)) { const r = Math.random(); if (r < 0.2) dropkick(p); else tackle(p, r < 0.6 ? 'slide' : 'shoulder'); }
+    if (o && o.team !== p.team && !o.keeper && dist(o, p) < 1.7 && G.safe <= 0 && o.hold > 0.5 && Math.random() < dt * (o === captain ? 1.0 : 1.4) * (p.team === 1 ? DIFF([0.55, 1, 1.5]) : 1)) { const r = Math.random(); if (r < 0.2) dropkick(p); else tackle(p, r < 0.6 ? 'slide' : 'shoulder'); }
     return;
   }
   const shift = ball.x * 0.55, base = own + dir * p.home[0];
@@ -1429,7 +1451,7 @@ function stepBall(dt) {
     // a super shot flattens every opponent in its way; keepers seldom hold it and are carried into the net
     const mega = S.kind === 'mega' || S.kind === 'dragon' || S.kind === 'portal';
     for (const p of players) if (p.team !== S.team && p.st !== 'down' && Math.hypot(p.x - ball.x, p.z - ball.z) < (mega ? 2.6 : p.keeper ? 1.8 : 1.2) && (mega || Math.abs(ball.y - (p.y + 1.2)) < 1.8)) {
-      if (p.keeper && !mega && Math.random() < 0.22) { ball.owner = p; ball.sup = null; p.hold = 0; p.st = 'run'; SFX.save(); ui.banner?.('OBRONA!', p.T, 'small'); return; }
+      if (p.keeper && !mega && Math.random() < (p.team === 0 ? (PERK().gloves ? 0.42 : 0.22) : DIFF([0.12, 0.22, 0.34]))) { ball.owner = p; ball.sup = null; p.hold = 0; p.st = 'run'; SFX.save(); ui.banner?.('OBRONA!', p.T, 'small'); return; }
       knock(p, p.keeper ? 1.8 : 2.0, { lie: 'lieBack', dizzy: true, push: [S.ox * (p.keeper ? 11 : 6), S.oz * 3] });
     }
     if (S.t > (S.kind === 'mega' ? 4.5 : 3) && S.kind !== 'dragon' && S.kind !== 'portal') ball.sup = null;
@@ -1463,7 +1485,7 @@ function stepBall(dt) {
 }
 function goalScored(team) {
   if (WOLF.on) { WOLF.phase = 'back'; WOLF.t = 0; }
-  G.score[team]++; G.state = 'goal'; G.pause = 3.2; const shooter = ball.last; ball.sup = null; ball.vx *= 0.15; ball.vz *= 0.15; ball.x = Math.sign(ball.x) * (PX + 1.2);
+  G.score[team]++; if (team === 0 && ball.sup) G.supGoals = (G.supGoals || 0) + 1; G.state = 'goal'; G.pause = 3.2; const shooter = ball.last; ball.sup = null; ball.vx *= 0.15; ball.vz *= 0.15; ball.x = Math.sign(ball.x) * (PX + 1.2);
   SFX.goal(); VIB(team === 0 ? [60, 40, 120] : 200); G.shake = 0.5; G.cheer = team === 0 ? 2.5 : 1.2; G.flares = team === 0 ? 9 : 4; ui.score?.(G); ui.banner?.('GOAL!', TEAMS[team], 'goal');
   for (let i = 0; i < 4; i++) FX.emit(team === 0 ? 'goal' : 'goal2', ball.x, 1.5, ball.z, 14, 5, 0.3, 8);
   for (const p of players) if (p.team === team && !p.keeper && p.st !== 'down') { p.st = 'cheer'; p.t = 3; p.vx = p.vz = 0; }
@@ -1527,7 +1549,7 @@ function physics(p, dt, control) {
   p.x += p.vx * dt; p.z += p.vz * dt;
   // stamina: sprinting spends it, everything else gives it back
   const spd = Math.hypot(p.vx, p.vz), running = spd > WALK + 0.5 || (p !== captain && spd > AI_WALK + 0.4);
-  p.sta = Math.max(0, Math.min(1, p.sta + (running ? -0.32 : 0.14) * dt));
+  p.sta = Math.max(0, Math.min(1, p.sta + (running ? -0.32 : 0.14 * (p.team === 0 && PERK().sta ? PERK().sta : 1)) * dt));
   if (control) { if (input.dash && spd > 1 && !p.dash) G.ca = Math.max(G.ca, 0.6); p.dash = input.dash && spd > 1; if (p.dash) G.ca = Math.max(G.ca, 0.18); }
   // speed lines behind a sprinter
   if (spd > 7.2 && p.y < 0.5 && free(p) && Math.random() < 0.7) FX.streak(p.x - p.vx * 0.06, 0.5 + Math.random() * 1.3, p.z + (Math.random() - 0.5) * 0.4, Math.sign(p.vx) || p.face);
@@ -1655,7 +1677,7 @@ function draw(dt) {
   G.fakes = split ? split.decoys.filter((d) => d.on) : null;
   decoySpr.forEach((s, i) => { const d = split && split.decoys[i]; const on = !!(d && d.on); s.holder.visible = s.blob.visible = on; if (!on) return;
     s.holder.position.set(d.x, ball.y, d.z); s.mesh.rotation.z = -ball.spin; s.blob.position.set(d.x, 0.025, d.z); const q = Math.max(0.35, 1 - ball.y * 0.1); s.blob.scale.set(0.45 * q, 0.25 * q, 1); });
-  ballSpr.mat.color.set(big > 1 ? (Math.floor(t * 8) % 2 ? '#ffffff' : '#ffb0da') : ball.hot > 0 ? (Math.floor(t * 12) % 2 ? '#ff5a3a' : '#ffb03a') : '#ffffff');
+  ballSpr.mat.color.set(big > 1 ? (Math.floor(t * 8) % 2 ? '#ffffff' : '#ffb0da') : ball.hot > 0 ? (Math.floor(t * 12) % 2 ? '#ff5a3a' : '#ffb03a') : (PERK().ball || '#ffffff'));
   for (const s of decoySpr) s.mat.color.copy(ballSpr.mat.color);
   ballSpr.blob.position.set(ball.x, 0.025, ball.z); const bs = Math.max(0.35, 1 - ball.y * 0.1); ballSpr.blob.scale.set(0.45 * bs * big, 0.25 * bs * big, 1);
   const c = captain; capMark.visible = G.state !== 'menu';
@@ -1681,7 +1703,9 @@ const covered = () => ['pen', 'kapki', 'lace', 'caps', 'flip', 'bieg'].some((id)
 renderer.setAnimationLoop((now) => { if (!auto) return; if (covered()) { last = now; return; } const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; step(frozen ? 0 : dt); });
 placeKickoff(0); G.state = 'menu'; WX.set('leaves'); try { ARENA.set(localStorage.getItem('arena') || 'stadion'); } catch (e) { ARENA.set('stadion'); }
 window.GAME = {
-  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0 }; PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = HALF(); SFX.setSfx(!window.CFG || window.CFG.sfx !== false); G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = ARENA.weather() || (Math.random() < 0.5 ? 'rain' : 'leaves'); setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
+  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0 }; G.inv2 = {}; G.supGoals = 0;
+    { const pk = PERK(); for (const p of players) { if (p.spd0 == null) p.spd0 = p.spd; p.spd = p.spd0 * (p.team === 0 && pk.speed ? pk.speed : 1); }
+      if (pk.card) { const ks = Object.keys(G.inv); G.inv[ks[(Math.random() * ks.length) | 0]] = 1; } } PU.reset(); PICK.open = false; ui.picker?.(null); ui.inv?.(G.inv); G.score = [0, 0]; G.clock = HALF(); SFX.setSfx(!window.CFG || window.CFG.sfx !== false); G.half = 1; placeKickoff(0); G.state = 'kickoff'; G.pause = 1.6; MUSIC.start(SFX.unlock()); VOICE.prime(); G.weather = ARENA.weather() || (Math.random() < 0.5 ? 'rain' : 'leaves'); setWeather(G.weather); ui.score?.(G); ui.banner?.('KICK OFF!', TEAMS[0], 'big'); },
   press, setCaptain, pick: (i) => doPick(i), pickMove,
   // a finger on a teammate takes control of him (not while you are the one with the ball)
   ctx() { const c = captain, has = ball.owner === c, air = !has && !ball.owner && Math.hypot(ball.x - c.x, ball.z - c.z) < 4.5 && ball.y > 0.5 && ball.y < 2.6;
