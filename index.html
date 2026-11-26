@@ -414,7 +414,7 @@
   #trofea .tbox { position: absolute; left: 50%; top: 50%; width: min(100vw, 179.1vh); aspect-ratio: 2576 / 1438; transform: translate(-50%, -50%); }
   #trofea .tbox > img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
   #trofea .tro { position: absolute; display: flex; align-items: flex-end; justify-content: center; cursor: pointer; }
-  #trofea .tro i { display: block; height: 92%; aspect-ratio: 1; background: url(trofea.png?v=2) 0 0 / 2400% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0,0,0,.6)); }
+  #trofea .tro i { display: block; height: 92%; aspect-ratio: 1; background: url(trofea.png?v=3) 0 0 / 5000% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0,0,0,.6)); }
   #trofea .tro.off i { filter: brightness(0) drop-shadow(0 0 1px rgba(255,255,255,.35)); opacity: .55; }
   #trofea .tro.new i { animation: tronew 0.5s steps(2) 6; } @keyframes tronew { 50% { filter: brightness(1.8) drop-shadow(0 0 6px #ffe14a); } }
   #trofea .lamp { position: absolute; top: 1.3%; height: 3.6%; border-radius: 40%; background: radial-gradient(ellipse at center, rgba(255,230,210,.85) 0%, rgba(255,190,180,.35) 45%, rgba(255,160,200,0) 75%); mix-blend-mode: screen; pointer-events: none; animation: tlamp 4.2s steps(1) infinite; }
@@ -759,7 +759,7 @@
     xp[k] += n; let up = 0; while (xp[k] >= XPL && lv[k] < 5) { xp[k] -= XPL; lv[k]++; up++; } if (lv[k] >= 5) xp[k] = 0; PROG.save(); return up; };
   window.TRAIN = (game, r = {}) => { const num = window.CAPTAIN || 27, L = window.L || ((x) => x), out = [], P = PROG.get(); let coins = 0;
     const give = (k, n) => { const up = addXP(num, k, n); if (up == null) return; out.push(`+${n} XP ${L(SK[k])}${up ? '  ▲ ' + L('POZIOM') + ' ' + P.lv[num][k] : ''}`); };
-    if (game === 'bieg' && r.place === 1) P.bieg_win = 1; if (game === 'karne' && r.win) P.pen_win = 1;
+    P.st = P.st || {}; if (game === 'bieg' && r.place === 1) { P.bieg_win = 1; P.st.bw = (P.st.bw || 0) + 1; } if (game === 'karne' && r.win) { P.pen_win = 1; P.st.pw = (P.st.pw || 0) + 1; }
     if (game === 'bieg') { give(4, 15 + (r.place === 1 ? 20 : 0) + (r.record ? 50 : 0)); coins = r.place === 1 ? 10 : 3; }
     if (game === 'kapki') { give(2, Math.min(40, r.score) + (r.record ? 50 : 0)); }
     if (game === 'karne') { give(0, 8 * (r.goals || 0) + (r.win ? 15 : 0) + (r.record ? 50 : 0)); coins = r.win ? 10 : 3; }
@@ -819,7 +819,7 @@
     if (T) { if (a > b) { if (T.i === T.n - 1) { add('MISTRZ TURNIEJU', 300); stage = 'POKONAŁEŚ MROCZNY ZAMEK! JESTEŚ MISTRZEM!'; if (P.ladder <= T.i) { P.ladder = T.i + 1; P.champ++; } }
         else { if (P.ladder <= T.i) { add('Nowy etap', 50); P.ladder = T.i + 1; } stage = `ETAP ${T.i + 1} ZALICZONY!`; $('tnext').hidden = false; } }
       else stage = a === b ? 'REMIS: trzeba wygrać, żeby przejść dalej' : 'Przegrana: spróbuj jeszcze raz'; }
-    if (lv === 2 && a > b) P.master_win = 1; P.coins += sum; PROG.save(); markTour(); window.TRAIN('mecz', { goals: a, win: a > b, clean: b === 0 }); if (stage) stage = (window.L || String)(stage);
+    P.st = P.st || {}; const S = P.st, inc = (k, v = 1) => (S[k] = (S[k] || 0) + v); inc('g', a); inc('sg', G.supGoals || 0); if (a > b) inc('w'); if (b === 0) inc('c'); if (lv === 2 && a > b) { P.master_win = 1; inc('mw'); } P.coins += sum; PROG.save(); markTour(); window.TRAIN('mecz', { goals: a, win: a > b, clean: b === 0 }); if (stage) stage = (window.L || String)(stage);
     $('reward').innerHTML = (stage ? `<span class="stage">${stage}</span>` : '') + lines.join(' · ') + `<span class="tot">+${sum} MONET · MASZ ${P.coins}</span>`; };
   $('tnext').onclick = () => { $('end').hidden = true; const T = window.TOUR, A = tourList(), n = T ? T.i + 1 : 0; if (A[n]) { window.TOUR = { i: n, id: A[n].id, n: A.length }; window.GAME?.arena(A[n].id); go(); } };
   $('tmenu').onclick = () => { $('end').hidden = true; document.body.classList.remove('playing'); arenaPick(); };
@@ -842,12 +842,42 @@
       [18, 'NOCNE NIEBO', 'NIGHT SKY'], [19, 'FENIKS', 'PHOENIX'], [20, 'MIEDZIANY PUCHAR', 'COPPER CUP'], [21, 'AMETYSTOWY OBELISK', 'AMETHYST OBELISK'], [22, 'FIOLETOWA WSTĘGA', 'VIOLET RIBBON'],
       [23, 'FIOLETOWY PUCHAR', 'PURPLE CUP'], [3, 'ZŁOTA OŚMIORNICA', 'GOLDEN OCTOPUS'], [4, 'CESARSKI ORZEŁ', 'IMPERIAL EAGLE'], [5, 'SKRZYDLATY LEW', 'WINGED LION']];
     names.forEach(([i, pl, en], k) => { const n = 3 * (k + 1); T.push({ i, n: L(pl, en), how: L(`Przejdź ${n} etapów turnieju`, `Clear ${n} tournament stages`), ok: (P) => P.ladder >= n }); });
-    let free = TSLOT.map((_, k) => k).filter((k) => k !== 3); for (const t of T) if (t.s == null) t.s = free.shift();
+    let free = TSLOT.map((_, k) => k).filter((k) => k !== 3); for (const t of T) if (t.s == null) { t.s = free.shift(); t.room = 0; }
+    T[0].room = 0;
+    // the second cabinet: 26 trophies for totals (wins, goals, power goals, clean sheets...) and records
+    const st = (P, k) => (P.st && P.st[k]) || 0;
+    const C2 = [[47, 'ZŁOTY LIŚĆ', 'GOLDEN LEAF', 'Wygraj 5 meczów', 'Win 5 matches', (P) => st(P, 'w') >= 5],
+      [27, 'ZŁOTY DĄB', 'GOLDEN OAK', 'Strzel 10 goli', 'Score 10 goals', (P) => st(P, 'g') >= 10],
+      [29, 'ZŁOTA SPIRALA', 'GOLDEN SPIRAL', 'Strzel 5 goli z mocy', 'Score 5 power goals', (P) => st(P, 'sg') >= 5],
+      [38, 'BURSZTYNOWY PŁOMIEŃ', 'AMBER FLAME', 'Zachowaj 3 czyste konta', 'Keep 3 clean sheets', (P) => st(P, 'c') >= 3],
+      [42, 'WIENIEC ZWYCIĘZCY', "VICTOR'S LAUREL", 'Zrób 50 kapek', 'Do 50 keepy-uppies', () => kb() >= 50],
+      [30, 'PRASTARE DRZEWO', 'ANCIENT TREE', 'Wygraj 3 biegi', 'Win 3 races', (P) => st(P, 'bw') >= 3],
+      [36, 'ZŁOTY LEW', 'GOLDEN LION', 'Wygraj 3 serie karnych', 'Win 3 penalty shootouts', (P) => st(P, 'pw') >= 3],
+      [37, 'KARAWELA', 'CARAVEL', 'Kup 3 rzeczy w sklepie', 'Buy 3 things in the shop', (P) => (P.owned || []).length >= 3],
+      [43, 'ZŁOTY PUCHAR GILDII', 'GOLDEN GUILD CUP', 'Wygraj 10 meczów', 'Win 10 matches', (P) => st(P, 'w') >= 10],
+      [28, 'RZYMSKI RYDWAN', 'ROMAN CHARIOT', 'Strzel 25 goli', 'Score 25 goals', (P) => st(P, 'g') >= 25],
+      [31, 'GRECKA ŚWIĄTYNIA', 'GREEK TEMPLE', 'Wygraj 3 mecze na poziomie MISTRZ', 'Win 3 matches on MASTER', (P) => st(P, 'mw') >= 3],
+      [33, 'SMOK', 'DRAGON', 'Zachowaj 10 czystych kont', 'Keep 10 clean sheets', (P) => st(P, 'c') >= 10],
+      [34, 'PAGODA', 'PAGODA', 'Strzel 20 goli z mocy', 'Score 20 power goals', (P) => st(P, 'sg') >= 20],
+      [35, 'KOSMICZNE DNA', 'COSMIC DNA', 'Zrób 100 kapek', 'Do 100 keepy-uppies', () => kb() >= 100],
+      [44, 'OGNISTY FENIKS', 'FIRE PHOENIX', 'Wygraj 10 biegów', 'Win 10 races', (P) => st(P, 'bw') >= 10],
+      [45, 'PRASTARA PIRAMIDA', 'ANCIENT PYRAMID', 'Wygraj 10 serii karnych', 'Win 10 penalty shootouts', (P) => st(P, 'pw') >= 10],
+      [46, 'KRYSZTAŁOWY KOMPAS', 'CRYSTAL COMPASS', 'Wygraj 25 meczów', 'Win 25 matches', (P) => st(P, 'w') >= 25],
+      [39, 'NOCNY OBELISK', 'NIGHT OBELISK', 'Strzel 50 goli', 'Score 50 goals', (P) => st(P, 'g') >= 50],
+      [40, 'KOSMICZNY ODKRYWCA', 'COSMIC EXPLORER', 'Strzel 50 goli z mocy', 'Score 50 power goals', (P) => st(P, 'sg') >= 50],
+      [41, 'ZŁOTA KOMETA', 'GOLDEN COMET', 'Wygraj 10 meczów na poziomie MISTRZ', 'Win 10 matches on MASTER', (P) => st(P, 'mw') >= 10],
+      [32, 'KOSMICZNA WSTĘGA', 'COSMIC RIBBON', 'Kup wszystko w sklepie', 'Buy everything in the shop', (P) => (P.owned || []).length >= 9],
+      [48, 'ZŁOTE GRAND PRIX', 'GOLDEN GRAND PRIX', 'Wygraj 50 meczów', 'Win 50 matches', (P) => st(P, 'w') >= 50],
+      [49, 'ZŁOTY KIELICH', 'GOLDEN CHALICE', 'Strzel 100 goli', 'Score 100 goals', (P) => st(P, 'g') >= 100],
+      [24, 'DIAMENTOWE DRZEWKO', 'DIAMOND TREE', 'Wygraj turniej 2 razy', 'Win the tournament twice', (P) => (P.champ || 0) >= 2],
+      [25, 'DIAMENTOWA FONTANNA', 'DIAMOND FOUNTAIN', 'Wygraj 100 meczów', 'Win 100 matches', (P) => st(P, 'w') >= 100],
+      [26, 'DIAMENTOWA GWIAZDA', 'DIAMOND STAR', 'Wygraj turniej 3 razy', 'Win the tournament 3 times', (P) => (P.champ || 0) >= 3]];
+    C2.forEach(([i, pl, en, hp, he, ok], k) => T.push({ i, n: L(pl, en), how: L(hp, he), ok, s: k, room: 1 }));
     let room = 0;
     const draw = (fresh = []) => { const P = PROG.get(), box = $('tslots'); box.innerHTML = ''; let n = 0;
       $('tleft').hidden = room !== 0; $('tright').hidden = room !== 1; const bi = document.querySelector('#trofea .tbox > img'); const en = window.LANG === 'en' ? '_en' : ''; bi.src = room ? `trofea_bg2${en}.jpg?v=1` : `trofea_bg${en}.jpg?v=3`;
-      for (const t of T) { if (room !== 0) { n += !!t.ok(P); continue; } const [x, y, w, h] = TSLOT[t.s], got = !!t.ok(P); n += got; const d = document.createElement('div'); d.className = 'tro' + (got ? '' : ' off') + (fresh.includes(t.i) ? ' new' : '');
-        d.style.cssText = `left:${x}%;top:${y}%;width:${w}%;height:${h}%`; d.innerHTML = `<i style="background-position:${t.i / 23 * 100}% 0"></i>`;
+      for (const t of T) { if (t.room !== room) { n += !!t.ok(P); continue; } const [x, y, w, h] = TSLOT[t.s], got = !!t.ok(P); n += got; const d = document.createElement('div'); d.className = 'tro' + (got ? '' : ' off') + (fresh.includes(t.i) ? ' new' : '');
+        d.style.cssText = `left:${x}%;top:${y}%;width:${w}%;height:${h}%`; d.innerHTML = `<i style="background-position:${t.i / 49 * 100}% 0"></i>`;
         d.onclick = () => { const e = $('tinfo'); e.innerHTML = `<b>${got ? t.n : '???'}</b><br>${t.how}${got ? '<br>✔ ' + L('ZDOBYTE', 'WON') : ''}`; e.hidden = false; }; box.appendChild(d); }
       $('tcount').textContent = `${n} / ${T.length}`; };
     // called after every match and mini-game: new trophies get a message
