@@ -85,15 +85,19 @@ function bolt(f, l, fi) { if (power !== 'robot' || fi > 3.5 || !f) return; const
   g.fillStyle = gr; g.fillRect(x - w * 2, 0, w * 4, y1 + 40 * f.k); g.strokeStyle = '#ffffffcc'; g.lineWidth = 2; g.beginPath(); let yy = 0, xx = x; g.moveTo(xx, yy); while (yy < y1) { yy += 18; xx = x + (Math.random() - 0.5) * w * 2.5; g.lineTo(xx, yy); } g.stroke(); g.globalCompositeOperation = 'source-over'; }
 // glitch with colour aberration: draws a callback into an offscreen canvas, then paints it back in shifted slices with red / cyan ghosts
 const OFF = document.createElement('canvas'), OG = OFF.getContext('2d'), TIN = document.createElement('canvas'), TG = TIN.getContext('2d');
-function glitchDraw(drawFn, amt) { if (OFF.width !== cv.width || OFF.height !== cv.height) { OFF.width = TIN.width = cv.width; OFF.height = TIN.height = cv.height; }
+function glitchDraw(drawFn, amt, bx) { if (OFF.width !== cv.width || OFF.height !== cv.height) { OFF.width = TIN.width = cv.width; OFF.height = TIN.height = cv.height; }
   OG.setTransform(1, 0, 0, 1, 0, 0); OG.clearRect(0, 0, OFF.width, OFF.height); OG.setTransform(DPR, 0, 0, DPR, 0, 0); const keep = g; g = OG; drawFn(); g = keep;
-  const sh = amt * 18;
+  // flicker: now and then the figure drops out for a frame
+  if (Math.random() < amt * 0.35) return;
+  const X = Math.max(0, bx.x) * DPR, Y = Math.max(0, bx.y) * DPR, BW = Math.min(W, bx.w) * DPR, BH = Math.min(H, bx.h) * DPR, sh = amt * bx.w * 0.06 * DPR;
   for (const [col, dx] of [['#ff2a4a', -sh], ['#2affff', sh]]) { TG.setTransform(1, 0, 0, 1, 0, 0); TG.clearRect(0, 0, TIN.width, TIN.height); TG.globalCompositeOperation = 'source-over'; TG.drawImage(OFF, 0, 0); TG.globalCompositeOperation = 'source-in'; TG.fillStyle = col; TG.fillRect(0, 0, TIN.width, TIN.height);
-    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 0.55 * Math.min(1, amt * 2); g.globalCompositeOperation = 'lighter'; g.drawImage(TIN, dx * DPR, 0); g.restore(); }
-  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); const n = 18, bh = Math.ceil(OFF.height / n);
-  for (let i = 0; i < n; i++) { const off = Math.random() < amt * 0.8 ? (Math.random() - 0.5) * amt * 90 * DPR : 0; if (Math.random() < amt * 0.25) continue; g.drawImage(OFF, 0, i * bh, OFF.width, bh, off, i * bh, OFF.width, bh); }
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 0.6 * Math.min(1, amt * 2); g.globalCompositeOperation = 'lighter'; g.drawImage(TIN, X, Y, BW, BH, X + dx, Y, BW, BH); g.restore(); }
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); const n = 14, bh = Math.ceil(BH / n);
+  for (let i = 0; i < n; i++) { const off = Math.random() < amt * 0.7 ? (Math.random() - 0.5) * amt * bx.w * 0.25 * DPR : 0; if (Math.random() < amt * 0.2) continue; g.drawImage(OFF, X, Y + i * bh, BW, bh, X + off, Y + i * bh, BW, bh); }
   g.restore();
-  if (amt > 0.3) for (let i = 0; i < 4; i++) { g.fillStyle = ['#ff2a4a', '#2affff', '#ffffff'][i % 3]; g.globalAlpha = 0.5; g.fillRect(Math.random() * W, Math.random() * H, 20 + Math.random() * 120, 2 + Math.random() * 5); } g.globalAlpha = 1; }
+  if (amt > 0.25) for (let i = 0; i < 3; i++) { g.fillStyle = ['#ff2a4a', '#2affff', '#ffffff'][i % 3]; g.globalAlpha = 0.55; g.fillRect(bx.x + Math.random() * bx.w * 0.8, bx.y + Math.random() * bx.h, bx.w * (0.1 + Math.random() * 0.3), 2 + Math.random() * 4); } g.globalAlpha = 1; }
+const boxP = (l) => ({ x: l.px - l.ph * 0.45, y: l.ground - l.ph * 1.05, w: l.ph * 0.9, h: l.ph * 1.1 });
+const boxC = (l) => ({ x: l.px - l.big * (power === 'smok' ? 0.95 : 0.55), y: l.ground - l.big * 1.05, w: l.big * (power === 'smok' ? 1.6 : 1.2), h: l.big * 1.1 });
 // ---- particles ----
 const spark = (x, y, n, cols, sp = 200, life = 0.8, sz = 4, grav = 0) => { for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, v = sp * (0.3 + Math.random()); parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, l: life * (0.5 + Math.random() * 0.5), L: life, c: cols[i % cols.length], s: sz * (0.5 + Math.random()), grav }); } };
 function drawParts(dt) { for (const p of parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.grav * dt; p.vx *= 0.98; p.l -= dt; } parts = parts.filter((p) => p.l > 0);
@@ -125,20 +129,18 @@ function frame(t) { requestAnimationFrame(frame); const dt = Math.min(0.05, (t -
   if (st === 'run') { const x = -W * 0.1 + Math.min(1, e / 2.2) * (l.px + W * 0.1); sheetFrame(P.run, P.rn, (now * 12) % P.rn, x, l.ground, l.ph);
     ball.x = x + l.ph * 0.32; ball.y = l.ground - l.ph * 0.07 - Math.abs(Math.sin(now * 6)) * l.ph * 0.05; ball.spin += dt * 10; drawBall(ball.x, ball.y, l.ph * 0.07, ball.spin);
     if (e > 2.2) { setState('choose'); tone(600, 900, 0.12); } }
-  else if (st === 'choose') { sheetFrame(P.turn, P.tn, 0, l.px, l.ground, l.ph); drawBall(l.px + l.ph * 0.32, l.ground - l.ph * 0.07, l.ph * 0.07, 0); aura(l, 0.1 + Math.sin(now * 4) * 0.05, ['#ffffff', '#ffffff', '#c8d8ff']); }
-  else if (st === 'charge') { const k = Math.min(1, e / 1.6); const jit = k * 4; sheetFrame(P.turn, P.tn, 0, l.px + (Math.random() - 0.5) * jit, l.ground, l.ph * (1 + k * 0.08)); drawBall(l.px + l.ph * 0.32, l.ground - l.ph * 0.07, l.ph * 0.07, 0); aura(l, k, pw.col);
-    if (Math.random() < 0.3) tone(200 + k * 600, 300 + k * 900, 0.08, 'sawtooth', 0.02);
-    if (e > 1.6) { flash = 0.5; shake = 0.3; spark(l.px, l.ground - l.ph * 0.5, 60, pw.col.concat('#ffffff'), W * 0.45, 0.9, 6); noise(0.6, 0.12, 2000); tone(120, 40, 0.6, 'sawtooth', 0.08); fx = { m: power, t: now }; setState('emerge'); } }
+  else if (st === 'choose') { sheetFrame(P.turn, P.tn, 0, l.px, l.ground, l.ph); drawBall(l.px + l.ph * 0.32, l.ground - l.ph * 0.07, l.ph * 0.07, 0); }
+  else if (st === 'charge') { const k = Math.min(1, e / 0.8); glitchDraw(() => { sheetFrame(P.turn, P.tn, 0, l.px, l.ground, l.ph); drawBall(l.px + l.ph * 0.32, l.ground - l.ph * 0.07, l.ph * 0.07, 0); }, 0.15 + k * 0.9, boxP(l));
+    if (Math.random() < 0.35) tone(300 + Math.random() * 1600, 120, 0.04, 'square', 0.03);
+    if (e > 0.8) { noise(0.4, 0.1, 3000); fx = { m: power, t: now }; setState('emerge'); } }
   else if (st === 'emerge') { const F = FX[power], fi = (now - fx.t) / F.dt;
     // the player is swallowed by the fire / the plates; the creature shows up inside the effect
-    if (fi < 2) { g.globalAlpha = 1 - fi / 2; sheetFrame(P.turn, P.tn, 0, l.px, l.ground, l.ph); g.globalAlpha = 1; }
     if (power === 'smok' && fi >= F.appear) { g.save(); g.globalAlpha = Math.min(1, (fi - F.appear) / 3); powerFrame(pw, 0, l); g.restore(); }
     if (fi >= 6 && power === 'smok' && !fx.boom) { fx.boom = 1; shake = 0.25; noise(0.5, 0.1, 900); }
     if (power === 'robot' && fi >= F.appear) { setState('transform'); flash = 0.7; shake = 0.4; noise(0.8, 0.14, 2500); }
     if (power === 'smok' && fi >= F.n - 0.5) setState('transform'); }
   else if (st === 'transform' || st === 'fire') { let fi = e * pw.fps; if (fi >= pw.hit && st === 'transform') { setState('fire'); ball = { x: 0, y: 0, u: 0, spin: 0 }; noise(1.6, 0.1, power === 'robot' ? 3000 : 900); tone(power === 'robot' ? 900 : 200, power === 'robot' ? 300 : 80, 1.2, 'sawtooth', 0.05); }
     if (st === 'fire') { const fe = now - t0, span = pw.loop[1] - pw.loop[0] + 1, base = pw.hit + fe * pw.fps; fi = base < pw.loop[0] ? base : pw.loop[0] + ((base - pw.loop[0]) % span); }
-    if (st === 'transform' && e < 0.5) aura(l, 1 - e * 2, pw.col);
     if (fx && power === 'smok') drawFx(l);
     const f = powerFrame(pw, Math.min(fi, pw.n - 1), l); if (st === 'transform') bolt(f, l, fi);
     if (fx && power === 'robot') drawFx(l);
@@ -149,8 +151,8 @@ function frame(t) { requestAnimationFrame(frame); const dt = Math.min(0.05, (t -
       if (fe > 2.4) { setState('back'); noise(0.8, 0.1, 2500); tone(300, 1200, 0.5, 'triangle', 0.06); } } }
   else if (st === 'back') { const k = Math.min(1, e / 1.3);
     // the creature breaks up into glitches, a flicker swaps it for the player, then the player's glitch settles
-    if (k < 0.5) { const amt = 0.2 + k * 1.6; glitchDraw(() => powerFrame(pw, pw.loop[0] + ((e * 12) % 2 | 0), l), amt); if (Math.random() < 0.3) tone(200 + Math.random() * 1500, 100, 0.05, 'square', 0.03); }
-    else { const amt = Math.max(0, 1 - (k - 0.5) * 2); if (!ball.back) { ball.back = true; flash = 0.35; noise(0.25, 0.1, 4000); tone(1200, 300, 0.25, 'square', 0.05); } glitchDraw(() => sheetFrame(P.turn, P.tn, 0, l.px, l.ground, l.ph), amt); if (amt > 0.2 && Math.random() < 0.3) tone(300 + Math.random() * 1500, 120, 0.04, 'square', 0.03); }
+    if (k < 0.5) { const amt = 0.2 + k * 1.6; glitchDraw(() => powerFrame(pw, pw.loop[0] + ((e * 12) % 2 | 0), l), amt, boxC(l)); if (Math.random() < 0.3) tone(200 + Math.random() * 1500, 100, 0.05, 'square', 0.03); }
+    else { const amt = Math.max(0, 1 - (k - 0.5) * 2); if (!ball.back) { ball.back = true; noise(0.25, 0.1, 4000); tone(1200, 300, 0.25, 'square', 0.05); } glitchDraw(() => sheetFrame(P.turn, P.tn, 0, l.px, l.ground, l.ph), amt, boxP(l)); if (amt > 0.2 && Math.random() < 0.3) tone(300 + Math.random() * 1500, 120, 0.04, 'square', 0.03); }
     if (e > 2.2) setState('done'); }
   else if (st === 'done') sheetFrame(P.turn, P.tn, 0, l.px, l.ground, l.ph);
   if (st === 'emerge') drawFx(l);
