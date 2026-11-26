@@ -7,9 +7,14 @@ import extraArenas from './arenas.js?v=15';
 
 // ---- data ------------------------------------------------------------------------------------------------------------
 const FR = await (await fetch('./frames.json')).json();
+// the new animated boys (cut from the GIFs): one frame map, a green and a red atlas; ?old=1 brings the old pixel boys back
+const HD = !/[?&]old=1/.test(location.search);
+if (HD) Object.assign(FR, await (await fetch('./frames_hd_g.json?v=1')).json());
 const POSE = FR.poses;
 const loadImg = (src) => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
 const [IMG_G, IMG_P, IMG_C] = await Promise.all([loadImg('./atlas_green.png'), loadImg('./atlas_purple.png'), loadImg('./creatures.png')]);
+const [IMG_HG, IMG_HR] = HD ? await Promise.all([loadImg('./atlas_hd_g.png?v=1'), loadImg('./atlas_hd_r.png?v=1')]) : [null, null];
+const HD_MAP = { 0: { 7: 'h7', 10: 'h10', 14: 'h14', 27: 'h27' }, 1: { 21: 'h7', 17: 'h10', 14: 'h14', 11: 'h27' } };
 const CR = await (await fetch('./creatures.json')).json();   // wolf and dragon frames [x, y, w, h, anchorX, feet]
 const EX = await (await fetch('./extras.json')).json();
 const [IMG_FANS, IMG_FRONT, ...IMG_FLAGS] = await Promise.all([loadImg('./fans.png'), loadImg('./crowdfront.png'), ...EX.flags.map((_, i) => loadImg(`./flag${i}.png`))]);
@@ -393,7 +398,7 @@ goal(-1); goal(1);
 for (const [x, z] of [[-PX, -PZ], [PX, -PZ], [-PX, PZ], [PX, PZ]]) { const p = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2, 0.12), lam({ color: '#eee' })); p.position.set(x, 1, z); scene.add(p); const f = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.5), lam({ color: '#3fbf55', side: THREE.DoubleSide })); f.position.set(x + 0.4, 1.75, z); scene.add(f); }
 
 // ---- sprites: flat figures standing on the pitch, turned to face the camera -------------------------------------------
-function makeSprite(img, { lean = LEAN } = {}) {
+function makeSprite(img, { lean = LEAN, unit = UNIT } = {}) {
   const t = new THREE.Texture(img); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.colorSpace = THREE.SRGBColorSpace; t.needsUpdate = true;
   const mat = new THREE.MeshBasicMaterial({ map: t, transparent: true, alphaTest: 0.5, fog: false });
   const geo = new THREE.PlaneGeometry(1, 1); geo.translate(0, 0.5, 0);    // the origin at the feet
@@ -410,8 +415,8 @@ function makeSprite(img, { lean = LEAN } = {}) {
     show(f, flip = false, flat = false) {    // f = [x, y, w, h, anchorX]; flat: a lying frame, anchored at its centre
       if (this.cur === f && this.flip === flip && this.flat === flat) return;
       const [x, y, w, h, ax] = f; t.repeat.set(w / W, h / H); t.offset.set(x / W, 1 - (y + h) / H);
-      mesh.scale.set(w * UNIT * (flip ? -1 : 1), h * UNIT, 1);
-      mesh.position.x = (flat ? 0 : (w / 2 - ax)) * UNIT * (flip ? -1 : 1);
+      mesh.scale.set(w * unit * (flip ? -1 : 1), h * unit, 1);
+      mesh.position.x = (flat ? 0 : (w / 2 - ax)) * unit * (flip ? -1 : 1);
       shadow.scale.set(mesh.scale.x, mesh.scale.y * (flat ? 0.35 : 0.62), 1); shadow.position.x = mesh.position.x;
       this.cur = f; this.flip = flip; this.flat = flat;
     },
@@ -425,11 +430,12 @@ const label = (t, w, h) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w,
 
 // ---- players and the ball ------------------------------------------------------------------------------------------
 const players = [];
-TEAMS.forEach((T, ti) => T.squad.forEach((def) => {
+TEAMS.forEach((T, ti) => T.squad.forEach((def0) => {
+  const hs = HD && !def0.keeper && HD_MAP[ti][def0.num], def = hs ? { ...def0, sheet: hs } : def0;
   const p = { ...def, team: ti, T, anim: FR[def.sheet], pose: { ...FR.poses, ...(FR['poses_' + def.sheet] || {}) }, id: players.length, x: 0, z: 0, y: 0, vx: 0, vz: 0, vy: 0, face: T.dir,
     st: 'run', t: 0, act: null, lie: 'lieBack', dizzy: false, walked: 0, hold: 0, dash: false, cool: 0, order: null, autoSuper: false, sta: 1 };
   if (p.keeper) p.home = [1.6, 0];
-  p.spr = makeSprite(T.img);
+  p.spr = hs ? makeSprite(ti === 0 ? IMG_HG : IMG_HR, { unit: 2.55 / 128 }) : makeSprite(T.img); p.hd = !!hs;
   p.stars = [0, 1, 2].map(() => { const m = label(STAR, 0.34, 0.34); m.visible = false; return m; });
   players.push(p);
 }));
@@ -1419,7 +1425,7 @@ function frameOf(p) {
     return { f: p.pose.gkReady[0], flip: kf, hop: sp > 0.5 ? Math.abs(Math.sin(t * 14)) * 0.12 : 0 };
   }
   if (p.st === 'dive') return { f: p.y > 0.2 ? p.pose.dive[1] : p.t > 0.5 ? p.pose.dive[0] : p.pose.dive[2], flip, flat: p.y > 0.2 || p.t <= 0.5 };
-  if (p.st === 'slide') return { f: A.slide ? A.slide[0] : p.pose.dive[2], flip, flat: !A.slide };
+  if (p.st === 'slide') return A.hd ? { f: pick(A.slide, Math.min(0.999, 1 - p.t / 0.5)), flip } : { f: A.slide ? A.slide[0] : p.pose.dive[2], flip, flat: !A.slide };
   if (p.st === 'shoulder') return { f: p.pose.dive[0], flip };
   if (p.st === 'dropkick') return { f: p.pose.dive[1], flip, flat: true };
   if (p.st === 'jump') {
@@ -1432,6 +1438,7 @@ function frameOf(p) {
   if (sp > 0.6) {
     const rate = p.dash ? 0.5 : 0.85, mostlyZ = Math.abs(p.vz) > Math.abs(p.vx) * 1.7;
     if (mostlyZ && p.vz < 0) { if (A.runUp) return { f: A.runUp[(p.walked / rate | 0) % A.runUp.length], flip }; return { f: A.back[0], flip: (p.walked / 0.8 | 0) % 2 === 1, hop: Math.abs(Math.sin(p.walked * 2)) * 0.12 }; }
+    if (A.hd) { const r = p.dash ? 0.28 : 0.4; if (mostlyZ && p.vz < 0 && A.runUp) return { f: A.runUp[(p.walked / r | 0) % A.runUp.length], flip }; if (mostlyZ && p.vz > 0 && A.runDown) return { f: A.runDown[(p.walked / r | 0) % A.runDown.length], flip }; if (!mostlyZ || !A.runUp) return { f: A.run[(p.walked / r | 0) % A.run.length], flip }; }
     if (mostlyZ && p.vz > 0) return { f: A.front[0], flip: (p.walked / 0.8 | 0) % 2 === 1, hop: Math.abs(Math.sin(p.walked * 2)) * 0.12 };
     return { f: A.run[(p.walked / rate | 0) % A.run.length], flip };
   }
@@ -1440,7 +1447,7 @@ function frameOf(p) {
 function draw(dt) {
   const t = performance.now() / 1000;
   for (const p of players) {
-    const fr = frameOf(p); p.spr.show(fr.f, fr.flip, !!fr.flat);
+    const fr = frameOf(p); if (p.hd) fr.flat = false; p.spr.show(fr.f, fr.flip, !!fr.flat);
     p.spr.holder.position.set(p.x, p.y + (fr.hop || 0), p.z);
     const sprint = p.dash && p.st === 'run' && p.y <= 0.01 && !fr.flat && Math.hypot(p.vx, p.vz) > 8;
     p.spr.mesh.rotation.z = sprint ? -(Math.sign(p.vx) || p.face) * 0.17 : 0;
