@@ -23,7 +23,7 @@
   const LANES = [-13, -4.5, 4.5, 13];
   const LAMPS = [[172, 148], [1497, 148], [157, 636], [1512, 640]];
   const NAMES = { 14: 'SOWA', 10: 'ARTUR', 7: 'SZYMON', 27: 'DOMINIK' };
-  const SPR_H = 118;
+  const SPR_H = 72;
 
   // ---- sound ----
   let AC = null;
@@ -124,7 +124,7 @@
   const btn = () => { const w = Math.min(300, W * 0.42), h = 60; return { x: W / 2 - w / 2, y: H * 0.68, w, h }; };
   const drawRunner = (r) => { if (!ATJ || !AT.complete) return; const [x, y, dir, flip] = posAt(r.lane, Math.min(r.d, r.dist + 60)), lst = ATJ.p[r.n][dir];
     const idx = r.v > 12 ? lst[Math.floor(r.ft) % lst.length] : lst[0], [fx, fy, fw, fh] = ATJ.f[idx];
-    const h = SPR_H * sc * (fh / 96), w = h * fw / fh, [sx, sy] = TS(x, y);
+    const u = Math.max(1, Math.round(SPR_H * sc / (ATJ.h || 28) * 2) / 2), h = fh * u, w = fw * u, [sx, sy] = TS(x, y);
     g.fillStyle = 'rgba(0,10,0,.35)'; g.beginPath(); g.ellipse(sx, sy, w * 0.42, h * 0.08, 0, 0, 7); g.fill();
     const fy0 = sy / H, blur = fy0 < 0.16 ? (0.16 - fy0) * 18 : fy0 > 0.86 ? (fy0 - 0.86) * 18 : 0;
     g.save(); if (blur > 0.3) g.filter = `blur(${blur.toFixed(1)}px)`; g.translate(Math.round(sx), Math.round(sy)); if (flip < 0) g.scale(-1, 1);
