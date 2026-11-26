@@ -93,13 +93,12 @@
   /* the analog stick: a round well and a knob that follows the thumb */
   #joy { left: max(18px, env(safe-area-inset-left)); width: 150px; height: 150px; }
   /* blue middle = run, red ring = sprint (the knob's centre past 68% of its travel) */
-  #joy .base { position: absolute; inset: 0; border-radius: 50%; border: 4px solid #2a2a2c; box-shadow: 0 0 0 5px #bdbdbd, 0 4px 0 5px #8e8e8e;
-               background: radial-gradient(circle, #2a5bd0 0, #1d3f8a 43px, #0d1f48 46px, #3a0d0a 47px, #b3201a 50px, #e8361f 60px, #7a120d 71px); }
-  #joy .base::after { content: 'SPRINT'; position: absolute; left: 0; right: 0; top: 3px; text-align: center; font: 700 10px "Pixelify Sans", monospace; letter-spacing: .12em; color: #ffd0c8; text-shadow: 1px 1px 0 #000; }
-  #joy.dash .base { box-shadow: 0 0 0 5px #bdbdbd, 0 4px 0 5px #8e8e8e, 0 0 18px 8px rgba(255,60,40,.7); }
-  #joy.dash .knob { background: radial-gradient(circle at 38% 32%, #ffd8d0, #ff5a3a 55%, #9a1a0a) !important; }
-  #joy .knob { position: absolute; left: 41px; top: 41px; width: 68px; height: 68px; border-radius: 50%; background: radial-gradient(circle at 38% 32%, #f4f4f6, #a9a9b0 60%, #6a6a70); border: 3px solid #1a1a1c; box-shadow: 0 5px 0 #0008; will-change: transform; }
-  #joy.on .knob { background: radial-gradient(circle at 38% 32%, #fff6c0, #ffe14a 55%, #b08a00); }
+  #joy .base { position: absolute; inset: 0; background: url(joy_base.png) center / 100% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 4px 0 rgba(0,0,0,.45)); }
+  #joy .base::after { content: 'SPRINT'; position: absolute; left: 0; right: 0; top: -14px; text-align: center; font: 8px "Press Start 2P", monospace; color: #ff8a6a; text-shadow: 2px 2px 0 #000; }
+  #joy.dash .base { animation: jdash .3s steps(2) infinite; } @keyframes jdash { 50% { filter: drop-shadow(0 4px 0 rgba(0,0,0,.45)) brightness(1.35); } }
+  #joy.dash .knob { background-image: url(joy_knob_dash.png) !important; }
+  #joy .knob { position: absolute; left: 40px; top: 40px; width: 69px; height: 69px; background: url(joy_knob.png) center / 100% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 4px 0 rgba(0,0,0,.5)); will-change: transform; }
+  #joy.on .knob { background-image: url(joy_knob_on.png); }
   #btns { right: max(14px, env(safe-area-inset-right)); width: 282px; height: 186px; }
   .nb { position: absolute; width: 74px; text-align: center; }
   .nb i { display: block; width: 68px; height: 68px; margin: 0 auto; background: var(--ic) center / contain no-repeat; image-rendering: pixelated; filter: drop-shadow(0 4px 0 rgba(0,0,0,.45)); }
@@ -122,10 +121,9 @@
   #nbB .pw { position: absolute; left: 50%; top: 46px; width: 104px; height: 104px; margin: -52px 0 0 -52px; border-radius: 50%; pointer-events: none; opacity: 0;
              background: conic-gradient(#ffe14a calc(var(--pw, 0) * 360deg), rgba(0,0,0,.35) 0); -webkit-mask: radial-gradient(circle, transparent 47px, #000 48px); mask: radial-gradient(circle, transparent 47px, #000 48px); }
   #nbB.charging .pw { opacity: 1; }
-  #nbStar i { width: 58px; height: 58px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #fff3a0, #ffc21a 55%, #b07800); border: 4px solid #1a1a1a; box-shadow: 0 0 0 3px #fff6, 0 4px 0 rgba(0,0,0,.45);
-               font-style: normal; font-size: 34px; line-height: 50px; color: #fff; text-shadow: 2px 2px 0 #8a4a00; text-align: center; }
-  #nbStar span { color: #ffe14a; } #nbStar.off { opacity: .32; } #nbStar.ready i { animation: glow .8s steps(2) infinite; }
-  @keyframes glow { 50% { box-shadow: 0 0 0 3px #fff, 0 0 18px 6px #ffe14a, 0 4px 0 rgba(0,0,0,.45); } }
+  #nbStar i { width: 64px; height: 64px; --ic: url(btn_super.png); --on: url(btn_super_on.png); }
+  #nbStar span { color: #d08aff; } #nbStar.off { opacity: .32; } #nbStar.ready i { animation: glow .8s steps(2) infinite; }
+  @keyframes glow { 50% { background-image: url(btn_super_lit.png); filter: drop-shadow(0 4px 0 rgba(0,0,0,.45)) drop-shadow(0 0 6px #e07aff); } }
   #nbStar .cnt { position: absolute; right: 2px; top: -4px; min-width: 20px; padding: 1px 4px; border-radius: 10px; background: #e8361f; border: 2px solid #000; font: 700 13px "Pixelify Sans", monospace; color: #fff; }
   #nbStar .cnt:empty { display: none; }
   /* the plain red shot, right above B (which tackles when you have no ball) */
@@ -503,7 +501,7 @@
   <p class="k-keys"><span class="kc">J</span> zielony · <span class="kc">K</span> czerwony · <span class="kc">L</span> ★ · <span class="kc w">SHIFT</span> sprint</p><p class="k-touch">Wychyl gałkę do końca, żeby biec sprintem. Możesz też dotknąć kolegi na boisku.</p>
   <div class="cont">▶ DOTKNIJ ALBO WCIŚNIJ KLAWISZ, ŻEBY GRAĆ</div></div></div>
 <div class="nes" id="joy"><div class="base"></div><div class="knob"></div></div>
-<div class="nes" id="btns"><div class="nb" id="nbA"><i></i><span>PODAJ</span></div><div class="nb big" id="nbB"><em class="pw"></em><i></i><span>STRZAŁ</span></div><div class="nb" id="nbShot"><i></i><span>STRZAŁ</span></div><div class="nb" id="nbStar"><i>★</i><span>SUPER</span><b class="cnt"></b></div></div>
+<div class="nes" id="btns"><div class="nb" id="nbA"><i></i><span>PODAJ</span></div><div class="nb big" id="nbB"><em class="pw"></em><i></i><span>STRZAŁ</span></div><div class="nb" id="nbShot"><i></i><span>STRZAŁ</span></div><div class="nb" id="nbStar"><i></i><span>SUPER</span><b class="cnt"></b></div></div>
 
 <script>
 {
