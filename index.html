@@ -417,6 +417,14 @@
   #trofea .tro i { display: block; height: 92%; aspect-ratio: 1; background: url(trofea.png?v=2) 0 0 / 2400% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0,0,0,.6)); }
   #trofea .tro.off i { filter: brightness(0) drop-shadow(0 0 1px rgba(255,255,255,.35)); opacity: .55; }
   #trofea .tro.new i { animation: tronew 0.5s steps(2) 6; } @keyframes tronew { 50% { filter: brightness(1.8) drop-shadow(0 0 6px #ffe14a); } }
+  #trofea .lamp { position: absolute; top: 1.3%; height: 3.6%; border-radius: 40%; background: radial-gradient(ellipse at center, rgba(255,230,210,.85) 0%, rgba(255,190,180,.35) 45%, rgba(255,160,200,0) 75%); mix-blend-mode: screen; pointer-events: none; animation: tlamp 4.2s steps(1) infinite; }
+  #trofea .lamp::after { content: ''; position: absolute; left: -10%; right: -10%; top: 60%; height: 900%; background: radial-gradient(ellipse at 50% 0%, rgba(255,220,230,.18), rgba(255,220,230,0) 70%); }
+  #trofea .lamp.b { animation-duration: 5.3s; animation-delay: -1.7s; } #trofea .lamp.c { animation-duration: 3.7s; animation-delay: -2.9s; }
+  @keyframes tlamp { 0%, 100% { opacity: .9; } 8% { opacity: .55; } 9% { opacity: .95; } 41% { opacity: .8; } 42% { opacity: .35; } 43% { opacity: .9; } 44% { opacity: .5; } 45% { opacity: .95; } 77% { opacity: .85; } }
+  #trofea .tarrow { position: absolute; top: 46%; width: 6%; aspect-ratio: 1; display: grid; place-items: center; font: 22px "Press Start 2P", monospace; color: #1a1030; background: #ffe14a; border: 3px solid #fff6c0; box-shadow: 0 5px 0 #b08a00, 0 0 0 3px #000; cursor: pointer; animation: tarr 0.9s steps(2) infinite; }
+  #trofea .tarrow.l { left: 1.5%; } #trofea .tarrow.r { right: 1.5%; } #trofea .tarrow[hidden] { display: none; }
+  @keyframes tarr { 50% { transform: translateX(var(--dx, -4px)); } } #trofea .tarrow.r { --dx: 4px; }
+  #trofea .tbox > img { transition: opacity .15s; }
   #trofea .tback { position: absolute; left: 1.5%; top: 2.5%; padding: 8px 12px; font: 10px "Press Start 2P", monospace; color: #fff; background: #1a1540; border: 3px solid #7a6ad8; cursor: pointer; }
   #trofea .tcount { position: absolute; right: 2%; top: 3%; padding: 8px 12px; font: 10px "Press Start 2P", monospace; color: #ffe14a; background: rgba(0,0,0,.7); }
   #trofea .tinfo { position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%); min-width: 40%; padding: 8px 14px; text-align: center; font: 9px "Press Start 2P", monospace; line-height: 1.7; color: #fff; background: rgba(10,8,24,.9); border: 3px solid #ffe14a; }
@@ -516,6 +524,8 @@
   <p class="arenahint" id="tourhint">Turniej: wygraj mecz, żeby odblokować następne boisko. Na końcu czeka MROCZNY ZAMEK.</p>
   <p class="arenahint" id="freehint" hidden>Na start masz 3 boiska. Każda wygrana w turnieju odkrywa kolejne. Na Księżycu, w oceanie, w niebie i na stacji niższa grawitacja: piłka i skoki lecą wyżej.</p></div></div>
 <div id="trofea" hidden><div class="sbg"></div><div class="tbox"><img src="trofea_bg.jpg?v=3" alt=""><div id="tslots"></div>
+  <div class="lamp a" style="left:19.6%;width:13%"></div><div class="lamp b" style="left:43%;width:13.5%"></div><div class="lamp c" style="left:67.5%;width:13%"></div>
+  <button class="tarrow l" id="tleft" aria-label="W lewo">◀</button><button class="tarrow r" id="tright" aria-label="W prawo" hidden>▶</button>
   <button class="tback" id="tback">◀ WRÓĆ</button><div class="tcount" id="tcount"></div><div class="tinfo" id="tinfo" hidden></div></div></div>
 <div class="setov" id="shop" hidden><div class="setp" role="dialog" aria-label="Sklep"><h2>SKLEP <span class="coin" id="coinS">0</span><button class="x" id="shopx" aria-label="Zamknij">X</button></h2>
   <div class="shopgrid" id="shopgrid"></div>
@@ -832,15 +842,18 @@
       [23, 'FIOLETOWY PUCHAR', 'PURPLE CUP'], [3, 'ZŁOTA OŚMIORNICA', 'GOLDEN OCTOPUS'], [4, 'CESARSKI ORZEŁ', 'IMPERIAL EAGLE'], [5, 'SKRZYDLATY LEW', 'WINGED LION']];
     names.forEach(([i, pl, en], k) => { const n = 3 * (k + 1); T.push({ i, n: L(pl, en), how: L(`Przejdź ${n} etapów turnieju`, `Clear ${n} tournament stages`), ok: (P) => P.ladder >= n }); });
     let free = TSLOT.map((_, k) => k).filter((k) => k !== 3); for (const t of T) if (t.s == null) t.s = free.shift();
+    let room = 0;
     const draw = (fresh = []) => { const P = PROG.get(), box = $('tslots'); box.innerHTML = ''; let n = 0;
-      for (const t of T) { const [x, y, w, h] = TSLOT[t.s], got = !!t.ok(P); n += got; const d = document.createElement('div'); d.className = 'tro' + (got ? '' : ' off') + (fresh.includes(t.i) ? ' new' : '');
+      $('tleft').hidden = room !== 0; $('tright').hidden = room !== 1; const bi = document.querySelector('#trofea .tbox > img'); bi.src = room ? 'trofea_bg2.jpg?v=1' : 'trofea_bg.jpg?v=3';
+      for (const t of T) { if (room !== 0) { n += !!t.ok(P); continue; } const [x, y, w, h] = TSLOT[t.s], got = !!t.ok(P); n += got; const d = document.createElement('div'); d.className = 'tro' + (got ? '' : ' off') + (fresh.includes(t.i) ? ' new' : '');
         d.style.cssText = `left:${x}%;top:${y}%;width:${w}%;height:${h}%`; d.innerHTML = `<i style="background-position:${t.i / 23 * 100}% 0"></i>`;
         d.onclick = () => { const e = $('tinfo'); e.innerHTML = `<b>${got ? t.n : '???'}</b><br>${t.how}${got ? '<br>✔ ' + L('ZDOBYTE', 'WON') : ''}`; e.hidden = false; }; box.appendChild(d); }
       $('tcount').textContent = `${n} / ${T.length}`; };
     // called after every match and mini-game: new trophies get a message
     const check = () => { const P = PROG.get(); P.tro = P.tro || []; const fresh = T.filter((t) => t.ok(P) && !P.tro.includes(t.i)); if (!fresh.length) return [];
       for (const t of fresh) P.tro.push(t.i); PROG.save(); setTimeout(() => toast(L('NOWE TROFEUM!', 'NEW TROPHY!') + '\n' + fresh.map((t) => t.n).join('\n')), 2800); return fresh.map((t) => t.i); };
-    const open = () => { const fresh = check(); draw(fresh); $('tinfo').hidden = true; $('trofea').hidden = false; };
+    $('tleft').onclick = () => { room = 1; draw(); $('tinfo').hidden = true; }; $('tright').onclick = () => { room = 0; draw(); $('tinfo').hidden = true; };
+    const open = () => { room = 0; const fresh = check(); draw(fresh); $('tinfo').hidden = true; $('trofea').hidden = false; };
     $('tback').onclick = () => { $('trofea').hidden = true; }; $('tslots').addEventListener('click', (e) => e.stopPropagation());
     return { open, check }; })();
   $('strophy').onclick = () => TRO.open(); $('trobtn').onclick = () => TRO.open();
