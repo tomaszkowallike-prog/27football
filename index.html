@@ -421,7 +421,8 @@
   #trofea .lamp::after { content: ''; position: absolute; left: -10%; right: -10%; top: 60%; height: 900%; background: radial-gradient(ellipse at 50% 0%, rgba(255,220,230,.18), rgba(255,220,230,0) 70%); }
   #trofea .lamp.b { animation-duration: 5.3s; animation-delay: -1.7s; } #trofea .lamp.c { animation-duration: 3.7s; animation-delay: -2.9s; }
   @keyframes tlamp { 0%, 100% { opacity: .9; } 8% { opacity: .55; } 9% { opacity: .95; } 41% { opacity: .8; } 42% { opacity: .35; } 43% { opacity: .9; } 44% { opacity: .5; } 45% { opacity: .95; } 77% { opacity: .85; } }
-  #trofea .tarrow { position: absolute; top: 46%; width: 6%; aspect-ratio: 1; display: grid; place-items: center; font: 22px "Press Start 2P", monospace; color: #1a1030; background: #ffe14a; border: 3px solid #fff6c0; box-shadow: 0 5px 0 #b08a00, 0 0 0 3px #000; cursor: pointer; animation: tarr 0.9s steps(2) infinite; }
+  #trofea .tarrow { position: absolute; top: 44%; width: 7.5%; aspect-ratio: 133 / 122; padding: 0; font-size: 0; color: transparent; background: url(arrow_l.png?v=1) center / 100% 100% no-repeat; border: 0; image-rendering: pixelated; filter: drop-shadow(0 4px 0 rgba(0,0,0,.5)); cursor: pointer; animation: tarr 0.9s steps(2) infinite; }
+  #trofea .tarrow.r { background-image: url(arrow_r.png?v=1); }
   #trofea .tarrow.l { left: 1.5%; } #trofea .tarrow.r { right: 1.5%; } #trofea .tarrow[hidden] { display: none; }
   @keyframes tarr { 50% { transform: translateX(var(--dx, -4px)); } } #trofea .tarrow.r { --dx: 4px; }
   #trofea .tbox > img { transition: opacity .15s; }
