@@ -384,6 +384,8 @@
   .side90 { display: none; position: absolute; top: 0; bottom: 0; width: calc((100vw - 177.78vh) / 2 + 4px); z-index: 0; pointer-events: none; overflow: hidden;
     background: url(side_a.png) 0 0 / 192px 192px repeat, #ffd21a; image-rendering: pixelated; animation: side90up 8s linear infinite; }
   .side90::after { content: ""; position: absolute; inset: 0; background: url(side_b.png) 0 0 / 192px 192px repeat; image-rendering: pixelated; animation: side90up 8s linear infinite, side90blink .9s steps(1) infinite; }
+  .side90.blue { background-image: url(side_a_blue.png); background-color: #2a8cff; } .side90.blue::after { background-image: url(side_b_blue.png); }
+  @media (min-aspect-ratio: 17/9) { #trofea { background: #0a0614; } #trofea .sbg { display: none; } }
   .side90.l { left: 0; border-right: 4px solid #111; } .side90.r { right: 0; border-left: 4px solid #111; background-position: 96px 0; }
   .side90.r::after { animation-delay: 0s, -.45s; }
   @keyframes side90up { to { background-position-y: -192px; } }
@@ -544,7 +546,7 @@
   <div class="flipgrid arenagrid" id="arenagrid" hidden></div>
   <p class="arenahint" id="tourhint">Turniej: wygraj mecz, żeby odblokować następne boisko. Na końcu czeka MROCZNY ZAMEK.</p>
   <p class="arenahint" id="freehint" hidden>Na start masz 3 boiska. Każda wygrana w turnieju odkrywa kolejne. Na Księżycu, w oceanie, w niebie i na stacji niższa grawitacja: piłka i skoki lecą wyżej.</p></div></div>
-<div id="trofea" hidden><div class="sbg"></div><div class="tbox"><img src="trofea_bg.jpg?v=3" alt=""><div id="tslots"></div>
+<div id="trofea" hidden><div class="side90 l blue"></div><div class="side90 r blue"></div><div class="sbg"></div><div class="tbox"><img src="trofea_bg.jpg?v=3" alt=""><div id="tslots"></div>
   <div class="lamp a" style="left:19.6%;width:13%"></div><div class="lamp b" style="left:43%;width:13.5%"></div><div class="lamp c" style="left:67.5%;width:13%"></div>
   <button class="tarrow l" id="tleft" aria-label="W lewo">◀</button><button class="tarrow r" id="tright" aria-label="W prawo" hidden>▶</button>
   <button class="tback" id="tback">◀ WRÓĆ</button><div class="tcount" id="tcount"></div><div class="tinfo" id="tinfo" hidden></div></div></div>
