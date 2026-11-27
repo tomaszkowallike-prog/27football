@@ -162,7 +162,7 @@
   .go { margin-top: 4px; font-size: 13px; opacity: .8; } .go .kc { font-size: 12px; }
   #bag { left: max(10px, env(safe-area-inset-left)); top: calc(max(10px, env(safe-area-inset-top)) + 50px); gap: 6px; }
   #bag .it { display: flex; align-items: center; gap: 3px; padding: 2px 6px 2px 2px; background: linear-gradient(#24272c, #101114); border: 2px solid #3a3d44; border-radius: 5px; font-weight: 700; font-size: 15px; }
-  #bag .it img { width: 24px; height: 24px; image-rendering: pixelated; } #bag .it.zero { opacity: .35; } #bag .it.new { animation: pop .5s steps(4); }
+  #bag .it img { width: 24px; height: 24px; image-rendering: pixelated; } #bag .it.zero { display: none; } #bag .it.new { animation: pop .5s steps(4); }
   @keyframes pop { 0% { transform: scale(1.8); } 100% { transform: none; } }
   body.touch #bag { transform: scale(.85); transform-origin: top left; }
   #picker { position: fixed; inset: 0; z-index: 8; display: grid; place-items: start center; padding-top: max(8vh, 40px); pointer-events: none; }
