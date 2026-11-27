@@ -231,6 +231,7 @@
   #kend p { margin: 0 0 10px; color: #8fd99a; min-height: 1em; }
   .btn.ghost { background: transparent; border-color: #8a8a8a; color: #fff; }
   #kback { right: max(10px, env(safe-area-inset-right)); top: max(10px, env(safe-area-inset-top)); }
+  #ktest { right: max(10px, env(safe-area-inset-right)); top: calc(max(10px, env(safe-area-inset-top)) + 40px); font-size: 9px; background: #ffd23a; color: #1a1030; } #ktest.off { background: #555; color: #ddd; }
   /* the locker room: the user's picture, contained, with hot spots on the four boys */
   #szatnia { position: fixed; inset: 0; z-index: 19; background: #120a24; overflow: hidden; }
   #szatnia[hidden] { display: none; }
@@ -719,7 +720,7 @@
   <div class="khud"><div><small>KAPKI</small><b id="kscore">0</b></div><div><small>REKORD</small><b id="kbest">0</b></div></div>
   <div id="kmsg"><b>DOTYKAJ KÓŁEK!</b><span>Masz chwilę na każde, inaczej piłka spadnie.</span></div>
   <div id="kend" hidden><div class="tbox"><small>PIŁKA SPADŁA</small><div class="kres"><b id="kres">0</b> kapek</div><p id="knew"></p><div class="row"><button class="btn" id="kagain">JESZCZE RAZ</button><button class="btn ghost" id="kmenu">MENU</button></div></div></div>
-  <button class="ibtn" id="kback">✕ MENU</button></div>
+  <button class="ibtn" id="kback">✕ MENU</button><button class="ibtn" id="ktest">TEST: NOWE ANIMACJE</button></div>
 <div id="picker" hidden><div class="pbox"><small>WYBIERZ MOC</small><div class="cards" id="pcards"></div><div class="pbar"><i></i></div><div class="phint k-keys">← → wybierz · <span class="kc">K</span> użyj · <span class="kc">Esc</span> wyjdź</div><div class="phint k-touch">Dotknij mocy albo WRÓĆ</div></div></div>
 <div id="tip" hidden><div class="tbox"><small>JAK GRAĆ</small>
   <div class="combo"><span class="cb" style="--c:#5be36e">PODAJ</span><span class="cb" style="--c:#ff5a4a">STRZAŁ</span><span class="cb" style="--c:#ffc21a">★ SUPER</span></div>
@@ -1200,7 +1201,9 @@
   document.querySelectorAll('#modes .mb, #modes .mback').forEach((b) => b.addEventListener('click', () => pickMode(b.dataset.m)));
   // keepy-uppy: a dot appears, you have about a second to tap it; every tap is a touch on the ball
   const K = (() => {
-    let FW = 16; const HDJ = {}; let J = null, cur = 0, seqT = 0; const jug = $('jug'), dots = $('kdots'); let score = 0, best = 0, alive = false, timer = 0, AC = null, airT = 0, pairI = 0;
+    let FW = 16; const HDJ = {};
+    const NEWJ = { 14: { n: 30, step: 3, ar: '122 / 210' }, 10: { n: 30, step: 3, ar: '111 / 210' }, 7: { n: 30, step: 3, ar: '104 / 210' }, 27: { n: 30, step: 3, ar: '105 / 210' } };
+    let useNew = true; try { useNew = localStorage.getItem('kapki_new') !== '0'; } catch (e) {} let J = null, cur = 0, seqT = 0; const jug = $('jug'), dots = $('kdots'); let score = 0, best = 0, alive = false, timer = 0, AC = null, airT = 0, pairI = 0;
     try { best = +localStorage.getItem('kapki_best') || 0; } catch (e) {}
     const PAIRS = [[3, 5], [6, 4], [8, 10], [11, 9], [12, 14], [15, 13], [4, 6], [9, 11]];   // a touch, then the ball in the air
     const frame = (i) => { jug.style.backgroundPosition = `${(i / (FW - 1)) * 100}% 0`; };
@@ -1254,9 +1257,11 @@
       const rec = score > best; if (rec) { best = score; try { localStorage.setItem('kapki_best', best); } catch (e) {} }
       $('kbest').textContent = best; $('kres').textContent = score; { window.TRAIN?.('kapki', { score, record: rec && score > 0 }); const kc = window.KAPKI_COINS?.(score) || 0; $('knew').textContent = (rec && score ? 'NOWY REKORD!' : best ? `Rekord: ${best}` : '') + (kc ? ` +${kc} monet` : ''); }
       setTimeout(() => { $('kend').hidden = false; }, 700); };
-    const start = () => { const cap = window.CAPTAIN || 27; J = HDJ[cap] || null; FW = J ? J.n : 16; cur = 0; clearInterval(seqT);
-      jug.style.backgroundImage = J ? `url(juggle_hd_${cap}.png)` : `url(juggle_${cap}.png)`; jug.style.backgroundSize = `${FW * 100}% 100%`; jug.style.aspectRatio = J ? J.ar : ''; MUS.start(actx()); $('kapki').hidden = false; window.BIDON?.hud(true); $('kend').hidden = true; $('kmsg').hidden = false; score = 0; pairI = (Math.random() * 8) | 0; $('kscore').textContent = 0; $('kbest').textContent = best; frame(0); alive = true; setTimeout(() => alive && spawn(), 900); };
+    const start = () => { const cap = window.CAPTAIN || 27; J = (useNew && NEWJ[cap]) || HDJ[cap] || null; FW = J ? J.n : 16; cur = 0; clearInterval(seqT);
+      $('ktest').textContent = useNew ? 'TEST: NOWE ANIMACJE' : 'TEST: STARE ANIMACJE'; $('ktest').classList.toggle('off', !useNew);
+      jug.style.backgroundImage = J ? (useNew && NEWJ[cap] ? `url(juggle_n_${cap}.png?v=3)` : `url(juggle_hd_${cap}.png)`) : `url(juggle_${cap}.png)`; jug.style.backgroundSize = `${FW * 100}% 100%`; jug.style.aspectRatio = J ? J.ar : ''; MUS.start(actx()); $('kapki').hidden = false; window.BIDON?.hud(true); $('kend').hidden = true; $('kmsg').hidden = false; score = 0; pairI = (Math.random() * 8) | 0; $('kscore').textContent = 0; $('kbest').textContent = best; frame(0); alive = true; setTimeout(() => alive && spawn(), 900); };
     const stop = () => { window.BIDON?.hud(false); MUS.stop(); alive = false; clearTimeout(timer); dots.innerHTML = ''; $('kapki').hidden = true; showModes(); };
+    $('ktest').addEventListener('click', (e) => { e.stopPropagation(); useNew = !useNew; try { localStorage.setItem('kapki_new', useNew ? '1' : '0'); } catch (x) {} start(); });
     $('kagain').addEventListener('click', start); $('kmenu').addEventListener('click', stop); $('kback').addEventListener('click', stop);
     return { start, stop };
   })();
