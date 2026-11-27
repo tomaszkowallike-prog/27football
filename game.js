@@ -1012,7 +1012,8 @@ function beastUpdate(dt) {
 }
 function beastDraw() {
   const b = BEAST; for (const k in b.spr) { if (!b.on || k !== b.kind) { b.spr[k].holder.visible = b.spr[k].blob.visible = false; } }
-  if (!b.on) return; const B = BEAST_DEF[b.kind], c = b.c, s2 = b.spr[b.kind], fw = 400;
+  if (!b.on) { if (b.c && b.c.spr.mat.color.getHex() !== 0xffffff) b.c.spr.mat.color.set('#ffffff'); return; }   // the glitch must not leave the player tinted red or cyan
+  const B = BEAST_DEF[b.kind], c = b.c, s2 = b.spr[b.kind], fw = 400;
   const glitch = (sp, amt) => { sp.mesh.position.x += (Math.random() - 0.5) * amt * 1.2; sp.mat.color.set(Math.random() < 0.5 ? (Math.random() < 0.5 ? '#ff5a7a' : '#5affff') : '#ffffff'); sp.holder.visible = Math.random() > amt * 0.35; };
   const reset = (sp) => sp.mat.color.set('#ffffff');
   const showBeast = (fi) => { const f = [(fi | 0) * fw, 0, fw, 225, B.ax]; s2.show(f, b.dir < 0); s2.holder.visible = s2.blob.visible = true; s2.holder.position.set(c.x, 0, c.z); s2.blob.position.set(c.x, 0.02, c.z); s2.blob.scale.set(b.kind === 'smok' ? 3.2 : 2.2, 1.1, 1); };
