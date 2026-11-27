@@ -360,7 +360,7 @@
   #end .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
   .arenagrid[hidden] { display: none !important; }
   #coin { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: radial-gradient(circle at 50% 40%, rgba(40,30,90,.92), rgba(6,4,16,.97)); }
-  #coin[hidden], #coin [hidden] { display: none !important; } #coincv { width: min(38vh, 200px); height: min(38vh, 200px); image-rendering: pixelated; }
+  #coin[hidden], #coin [hidden] { display: none !important; } #coincv { width: min(38vh, 200px); height: auto; aspect-ratio: 160 / 300; margin-top: calc(min(38vh, 200px) * -0.875); image-rendering: pixelated; pointer-events: none; }
   #coinmsg { font: 16px "Press Start 2P", monospace; color: #ffe14a; text-shadow: 3px 3px 0 #000; text-align: center; } #coinq { font: 9px "Press Start 2P", monospace; color: #d8d4ff; text-align: center; line-height: 1.6; }
   #coin .cbtns { display: flex; gap: 12px; } #coin .cbtns button { all: unset; cursor: pointer; padding: 12px 22px; font: 14px "Press Start 2P", monospace; color: #1a1030; background: #ffe14a; border: 3px solid #fff6c0; box-shadow: 0 5px 0 #b08a00; }
   #coin .cbtns button:active { transform: translateY(3px); box-shadow: 0 2px 0 #b08a00; }
@@ -392,6 +392,8 @@
   .side90 { display: none; position: absolute; top: 0; bottom: 0; width: calc((100vw - 177.78vh) / 2 + 4px); z-index: 0; pointer-events: none; overflow: hidden;
     background: url(side_a.png) 0 0 / 192px 192px repeat, #ffd21a; image-rendering: pixelated; animation: side90up 8s linear infinite; }
   .side90::after { content: ""; position: absolute; inset: 0; background: url(side_b.png) 0 0 / 192px 192px repeat; image-rendering: pixelated; animation: side90up 8s linear infinite, side90blink .9s steps(1) infinite; }
+  .side90.mono { background-image: url(side_a_white.png); background-color: #000; } .side90.mono::after { background-image: url(side_b_white.png); }
+  #intro .side90.l { border-right-color: #333; } #intro .side90.r { border-left-color: #333; }
   .side90.blue { background-image: url(side_a_red.png); background-color: #e8302a; } .side90.blue::after { background-image: url(side_b_blue.png); }
   @media (min-aspect-ratio: 17/9) { #trofea { background: #0a0614; } #trofea .sbg { display: none; } }
   .side90.l { left: 0; border-right: 4px solid #111; } .side90.r { right: 0; border-left: 4px solid #111; background-position: 96px 0; }
@@ -438,6 +440,62 @@
   #trofea .tarrow.l { left: 1.5%; } #trofea .tarrow.r { right: 1.5%; } #trofea .tarrow[hidden] { display: none; }
   @keyframes tarr { 50% { transform: translateX(var(--dx, -4px)); } } #trofea .tarrow.r { --dx: 4px; }
   #trofea .tbox > img { transition: opacity .15s; }
+
+  /* the player's room */
+  #pokoj { position: fixed; inset: 0; z-index: 22; background: #0e1a16; overflow: hidden; } #pokoj[hidden], #pokoj [hidden] { display: none !important; }
+  #pokoj .pbg { position: absolute; inset: -40px; background: url(pokoj_a.jpg?v=2) center / cover; filter: blur(22px) brightness(.45); }
+  #pokoj .pbox { position: absolute; left: 50%; top: 50%; width: min(100vw, 177.78vh); aspect-ratio: 16 / 9; transform: translate(-50%, -50%); }
+  #pokoj .pv, #pokoj .pv > img { position: absolute; inset: 0; width: 100%; height: 100%; } #pokoj .pv > img { image-rendering: pixelated; animation: pfade .25s steps(4); }
+  @keyframes pfade { from { opacity: 0; } }
+  #pokoj .phot { position: absolute; background: none; border: 0; padding: 0; cursor: pointer; }
+  #pokoj .phot:active { background: rgba(255,240,180,.12); }
+  #pokoj .side90.purple { background-color: #5a2aa8; } #pokoj .side90.purple::after { background-image: url(side_b_white.png); }
+  @media (min-aspect-ratio: 17/9) { #pokoj { background: #0a0614; } #pokoj .pbg { display: none; } #pokoj .pv { -webkit-mask-image: linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%); mask-image: linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%); } }
+  #pokoj .ptv { position: absolute; left: 58.8%; top: 29.2%; width: 20.4%; height: 17.8%; pointer-events: none; background: radial-gradient(ellipse at 40% 45%, #6ab8ff, #1a4ad8 60%, #0a1a6a); animation: ptvflick 2.4s steps(1) infinite; }
+  #pokoj .ptv::after { content: ''; position: absolute; left: -60%; top: -50%; width: 220%; height: 300%; background: radial-gradient(ellipse at 50% 35%, rgba(80,150,255,.42), rgba(60,120,255,.12) 40%, rgba(40,100,255,0) 65%); mix-blend-mode: screen; animation: inherit; }
+  #pokoj .ptv::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(transparent 0 3px, rgba(0,0,0,.18) 3px 4px); }
+  @keyframes ptvflick { 0% { opacity: .9; } 7% { opacity: .55; } 12% { opacity: 1; } 31% { opacity: .7; } 36% { opacity: .95; } 52% { opacity: .45; } 55% { opacity: .85; } 71% { opacity: 1; } 78% { opacity: .6; } 84% { opacity: .9; } 93% { opacity: .5; } }
+  #pokoj .psun { position: absolute; left: 30%; top: 0; width: 45%; height: 100%; pointer-events: none; background: linear-gradient(100deg, rgba(255,170,110,0) 20%, rgba(255,170,110,.14) 45%, rgba(255,140,120,0) 75%); mix-blend-mode: soft-light; }
+  #pokoj #pmon.lit { display: grid; place-items: center; }
+  #pokoj #pmon.lit::after { content: 'PIXELS SOCCER'; font: clamp(6px, 1.2vw, 14px) "Press Start 2P", monospace; color: #6ee05a; text-shadow: 2px 2px 0 #000; animation: pblink 1s steps(2) infinite; }
+  @keyframes pblink { 50% { opacity: .4; } }
+  #pokoj .plamp { position: absolute; left: 74%; top: 40%; width: 16%; height: 26%; background: radial-gradient(ellipse at 55% 10%, rgba(255,230,150,.45), rgba(255,220,140,0) 70%); mix-blend-mode: screen; pointer-events: none; animation: tlamp 4s ease-in-out infinite; }
+  #pokoj .parrow { position: absolute; top: 50%; width: 7%; aspect-ratio: 133 / 122; transform: translateY(-50%); background: url(arrow_l.png?v=1) center / 100% 100% no-repeat; border: 0; cursor: pointer; image-rendering: pixelated; filter: drop-shadow(0 4px 0 rgba(0,0,0,.5)); }
+  #pokoj .parrow.l { left: 1.5%; } #pokoj .parrow.r { right: 1.5%; background-image: url(arrow_r.png?v=1); }
+  #pokoj .parrow:active { transform: translateY(-46%); }
+  #pokoj .pbtn { position: absolute; padding: 8px 12px; font: clamp(7px, 1.1vw, 12px) "Press Start 2P", monospace; color: #fff; background: #1a1540; border: 3px solid #7a6ad8; box-shadow: 0 4px 0 #0a0820; cursor: pointer; }
+  #pokoj .pbtn.shop { color: #1a1030; background: #ff9a2a; border-color: #ffd8a0; box-shadow: 0 4px 0 #8a4a00; }
+  #pokoj .pbtn:active { transform: translateY(3px); box-shadow: none; }
+  #pokoj .ptitle { position: absolute; left: 50%; top: 3%; transform: translateX(-50%); font: clamp(9px, 1.5vw, 18px) "Press Start 2P", monospace; color: #ffe14a; background: rgba(0,0,0,.72); padding: 6px 14px; text-shadow: 2px 2px 0 #000; pointer-events: none; }
+  #pokoj .phint { position: absolute; left: 50%; bottom: 2.5%; transform: translateX(-50%); font: clamp(6px, .9vw, 11px) "Press Start 2P", monospace; color: #fff; background: rgba(0,0,0,.65); padding: 5px 10px; white-space: nowrap; pointer-events: none; }
+  #pokoj .phint:empty { display: none; }
+  #pokoj .pinfo { position: absolute; left: 50%; top: 3%; transform: translateX(-50%); font: clamp(6px, 1vw, 12px) "Press Start 2P", monospace; color: #fff; background: rgba(0,0,0,.75); padding: 6px 12px; white-space: nowrap; }
+  #pokoj .pinfo b { color: #ffe14a; font-weight: 400; }
+  #pokoj .pitem { position: absolute; background: none; border: 0; padding: 0; cursor: pointer; }
+  #pokoj .pitem canvas { display: block; image-rendering: pixelated; }
+  #pokoj .pitem.shirt { top: 25.8%; width: 9%; transform-origin: 50% 0; animation: psway 3s ease-in-out infinite; } #pokoj .pitem.shirt canvas { width: 100%; height: auto; filter: drop-shadow(3px 4px 0 rgba(0,0,0,.35)); }
+  @keyframes psway { 50% { transform: rotate(2.5deg); } }
+  #pokoj .pitem.boot { bottom: 17.4%; width: 8%; display: flex; gap: 4%; align-items: flex-end; } #pokoj .pitem.boot canvas { width: 48%; height: auto; filter: drop-shadow(2px 2px 0 rgba(0,0,0,.4)); }
+  #pokoj .pitem.on canvas { filter: drop-shadow(0 0 2px #fff6a0) drop-shadow(0 0 6px #ffe14a); }
+  #pokoj .pitem.on::after { content: '✔'; position: absolute; right: -4%; top: 30%; font: clamp(7px, 1.1vw, 13px) "Press Start 2P", monospace; color: #6ee05a; text-shadow: 2px 2px 0 #000; }
+  #pokoj .pitem.boot.on::after { top: -40%; }
+  #pokoj .pitem.none { opacity: .75; } #pokoj .pitem.none i { display: block; margin: 0 auto; width: 52%; aspect-ratio: 1 / 1.6; border: 2px dashed rgba(255,255,255,.55); }
+  #pokoj .pitem.boot.none i { aspect-ratio: 2 / 1; width: 90%; }
+  #pokoj .pitem.none em { display: block; margin-top: 4px; font: normal clamp(5px, .7vw, 10px) "Press Start 2P", monospace; color: #ffe14a; text-shadow: 2px 2px 0 #000; text-align: center; }
+  #pokoj .pitem.none em::before { content: ''; display: inline-block; width: .8em; height: .8em; margin-right: .3em; background: #ffc21a; box-shadow: 0 0 0 1px #000; }
+  #szatnia .sroom { position: absolute; right: .8%; top: 40%; width: 5.4%; aspect-ratio: 133 / 122; padding: 0; border: 0; cursor: pointer; z-index: 3; background: url(arrow_r.png?v=1) center / 100% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 4px 0 rgba(0,0,0,.5)); animation: sroomnudge 1.2s steps(3) infinite; }
+  #szatnia .sroom:active { transform: translateY(3px); }
+  @keyframes sroomnudge { 50% { translate: 18% 0; } }
+  #soon .setp { width: min(80vw, 380px); text-align: center; } #soon .soont { margin: 10px 0 8px; font: 20px "Press Start 2P", monospace; color: #ffe14a; text-shadow: 3px 3px 0 #b8321e, 3px 3px 0 #000; animation: pblink 1s steps(2) infinite; }
+  #soon .soons { margin: 0; font: 9px "Press Start 2P", monospace; color: #d8d4ff; line-height: 1.6; }
+  @keyframes pblink { 50% { opacity: .4; } }
+  #roomcode .setp { width: min(80vw, 330px); text-align: center; }
+  #roomcode .rdisp { display: flex; justify-content: center; gap: 8px; margin: 6px 0 10px; } #roomcode .rdisp u { width: 30px; height: 36px; display: grid; place-items: center; background: #0b0820; border: 3px solid #7a6ad8; font: 16px "Press Start 2P", monospace; color: #ffe14a; text-decoration: none; }
+  #roomcode .rdisp.bad u { border-color: #e8402a; } #roomcode .rdisp.ok u { border-color: #6ee05a; color: #6ee05a; }
+  #roomcode .rpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; } #roomcode .rpad button { all: unset; cursor: pointer; padding: 8px 0; font: 13px "Press Start 2P", monospace; color: #1a1030; background: #ffe14a; box-shadow: 0 4px 0 #b08a00; text-align: center; }
+  #roomcode .rpad button:active { transform: translateY(3px); box-shadow: 0 1px 0 #b08a00; } #roomcode .rpad .del { background: #8a84b8; box-shadow: 0 4px 0 #4a4470; } #roomcode .rpad .okb { background: #6ee05a; box-shadow: 0 4px 0 #2a7a20; }
+  #roomcode .rmsg { min-height: 1.4em; margin: 0 0 4px; font: 9px "Press Start 2P", monospace; color: #d8d4ff; line-height: 1.5; }
+  @media (max-height: 460px) { #roomcode .rpad button { padding: 5px 0; font-size: 11px; } #roomcode .rdisp u { width: 26px; height: 28px; font-size: 13px; } }
   #warsztat { position: fixed; inset: 0; z-index: 21; background: #0c0a16; overflow: hidden; } #warsztat[hidden], #warsztat [hidden] { display: none !important; }
   #warsztat .wbox { position: absolute; left: 50%; top: 50%; width: min(100vw, 225.6vh); aspect-ratio: 2576 / 1142; transform: translate(-50%, -50%); }
   #wroom, #wedit { position: absolute; inset: 0; } #wroom > img, #wedit > img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; }
@@ -497,7 +555,7 @@
   body.playing #mute { display: block; } body.playing.touch #mute { top: max(10px, env(safe-area-inset-top)); right: calc(max(10px, env(safe-area-inset-right)) + 156px); bottom: auto; }
   @media (max-width: 700px) { #score .tn { font-size: 16px; } #score .num { font-size: 24px; min-width: 50px; } #score .clockp { font-size: 18px; } #score .crest { width: 26px; height: 30px; } #score .plate, #score .clockp { height: 38px; } }
 </style>
-<script src="./lang.js?v=1"></script>
+<script src="./lang.js?v=4"></script>
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
 <script>
   // music volume for every track (match, locker room, penalties, keepy-uppy): 100 / 60 / 30 / off, remembered
@@ -531,7 +589,7 @@
 <div id="toast"></div>
 <div id="stage"></div>
 <div id="rot"><div class="ph">📱</div><b>OBRÓĆ TELEFON POZIOMO</b><span>Gra działa tylko w poziomie</span></div>
-<div id="intro"><div class="f169"><video id="v1" src="intro.mp4" muted playsinline preload="auto" poster="intro_first.jpg"></video><video id="v2" src="intro_loop.mp4" muted loop playsinline preload="auto" poster="intro_loop.jpg"></video>
+<div id="intro"><div class="side90 l mono"></div><div class="side90 r mono"></div><div class="f169"><video id="v1" src="intro.mp4" muted playsinline preload="auto" poster="intro_first.jpg"></video><video id="v2" src="intro_loop.mp4" muted loop playsinline preload="auto" poster="intro_loop.jpg"></video>
   <div id="pressStart"><span><b>▶</b> PRESS START <b>◀</b></span></div>
   <button class="ibtn" id="skip">POMIŃ ▶▶</button><button class="ibtn" id="snd">🔊 WŁĄCZ DŹWIĘK</button></div></div>
 <div id="score" class="hud"><div class="plate"><svg class="crest" viewBox="0 0 34 38"><path d="M17 1 L32 6 V18 C32 28 25 34 17 37 C9 34 2 28 2 18 V6 Z" fill="#1d1f22" stroke="#e9e9ee" stroke-width="2"/><path d="M17 6 L27 9.5 V18 C27 25 22.5 29.5 17 32 Z" fill="#3fbf55"/><text x="17" y="23" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="11" font-weight="700" fill="#f4f1e8">P</text></svg><span class="tn" style="color:var(--g)">PIX</span><span class="num" id="sc">0 - 0</span><span class="tn" style="color:var(--p)">FIO</span><svg class="crest" viewBox="0 0 34 38"><path d="M17 1 L32 6 V18 C32 28 25 34 17 37 C9 34 2 28 2 18 V6 Z" fill="#4a2a78" stroke="#e9e9ee" stroke-width="2"/><path d="M17 6 L27 9.5 V18 C27 25 22.5 29.5 17 32 Z" fill="#a46ee8"/><text x="17" y="23" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="11" font-weight="700" fill="#f4f1e8">F</text></svg></div><div class="clockp"><span id="clock">2:00</span><span id="half">1P</span><span id="wx"></span></div></div>
@@ -575,9 +633,13 @@
   <div id="wedit" hidden><img id="wbg" src="warsztat_side.jpg?v=1" alt=""><div class="lamp" style="left:30%;top:0;width:39%;height:12%"></div><canvas id="wcv" class="side"></canvas>
     <div id="wtabs"><button class="wbtn on" id="wtabS">BOK</button><button class="wbtn" id="wtabP">PODESZWA</button></div><div id="wcoinbox" class="coin"><span id="wcoins">0</span></div><div id="wtools"></div><div id="wstats"></div><div id="wpart"></div><div id="wpanel"></div></div>
   <button class="wbtn" id="wback">◀ WRÓĆ</button></div></div>
-<div id="coin" hidden><canvas id="coincv" width="160" height="160"></canvas><div id="coinmsg">RZUT MONETĄ</div><div id="coinq">Wybierz stronę monety</div>
+<div id="coin" hidden><canvas id="coincv" width="160" height="300"></canvas><div id="coinmsg">RZUT MONETĄ</div><div id="coinq">Wybierz stronę monety</div>
   <div class="cbtns" id="coinpick"><button data-c="27">27</button><button data-c="DS">DS</button></div>
   <div class="cbtns" id="coinside" hidden><button data-s="-1">◀ LEWA BRAMKA</button><button data-s="1">PRAWA BRAMKA ▶</button></div></div>
+<div class="setov" id="roomcode" hidden><div class="setp" role="dialog" aria-label="Pokój gracza"><h2>POKÓJ GRACZA <button class="x" id="rcx" aria-label="Zamknij">X</button></h2>
+  <p class="rmsg" id="rcmsg">PODAJ KOD</p><div class="rdisp" id="rcdisp"><u></u><u></u><u></u><u></u></div>
+  <div class="rpad" id="rcpad"><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>6</button><button>7</button><button>8</button><button>9</button><button class="del">◀</button><button>0</button><button class="okb">OK</button></div></div></div>
+<div class="setov" id="soon" hidden><div class="setp" role="dialog" aria-label="Sklep"><h2>SKLEP <button class="x" id="soonx" aria-label="Zamknij">X</button></h2><p class="soont">COMING SOON</p><p class="soons">Sklep jeszcze się buduje. Zajrzyj tu później!</p></div></div>
 <div class="setov" id="shop" hidden><div class="setp" role="dialog" aria-label="Sklep"><h2>SKLEP <span class="coin" id="coinS">0</span><button class="x" id="shopx" aria-label="Zamknij">X</button></h2>
   <div class="shopgrid" id="shopgrid"></div>
   <p class="arenahint">Monety zdobywasz za gole, wygrane, czyste konto, gole z mocy, etapy turnieju i kapki. Na trudniejszym poziomie dostajesz więcej.</p></div></div>
@@ -617,7 +679,7 @@
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <button class="hot" id="sset" aria-label="Ustawienia"></button>
-  <div class="stitle">WYBIERZ KAPITANA</div><button class="sshop" id="sshop">SKLEP</button><div class="scoin" id="coinL">0</div><button class="scoinhit" id="coinHit" aria-label="Monety"></button><button class="hot" id="sworks" aria-label="Warsztat"></button><img id="scup" src="szatnia_cup.png?v=1" alt=""><button class="hot" id="strophy" aria-label="Trofea"></button></div></div>
+  <div class="stitle">WYBIERZ KAPITANA</div><button class="sshop" id="sshop">SKLEP</button><button class="sroom" id="sroom" aria-label="Pokój gracza"></button><div class="scoin" id="coinL">0</div><button class="scoinhit" id="coinHit" aria-label="Monety"></button><button class="hot" id="sworks" aria-label="Warsztat"></button><img id="scup" src="szatnia_cup.png?v=1" alt=""><button class="hot" id="strophy" aria-label="Trofea"></button></div></div>
 <div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt=""><button class="hbottle" id="hbottle" aria-label="Butelka"><img src="flip_woda.png" alt=""></button>
   <small id="mq">CO ROBIMY?</small>
   <div class="mrow"><button class="mb" data-m="match"><b><img class="pxi" src="ico_match.png" alt=""></b>MECZ<em>Pixels kontra Fioletowi</em></button><button class="mb" data-m="karne"><b><img class="pxi" src="ico_karne.png" alt=""></b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b><img class="pxi" src="ico_kapki.png" alt=""></b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b><img class="pxi" src="ico_but.png" alt=""></b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b><img class="pxi" src="ico_kapsle.png" alt=""></b>KAPSLE<em>wyścig kapsli po torze</em></button><button class="mb" data-m="bieg"><b><img class="pxi" src="ico_bieg.png" alt=""></b>BIEG<em>wyścig dookoła boiska</em></button></div>
@@ -714,13 +776,13 @@
   let ready = false, wantStart = false;
   window.GAME_READY = () => { const P = window.GAME.players; for (const p of P) (p.team ? $('sqB') : $('sqA')).appendChild(full(p)); $('play').disabled = false; $('play').textContent = 'GRAJ'; ready = true; window.UI.inv(window.GAME.G.inv); if (wantStart) afterIntro(); };
   // ---- the coin toss before the kick-off: pick 27 or DS, the coin spins; the winner picks the goal to attack, the loser kicks off
-  const COIN = (() => { const cv = $('coincv'), g = cv.getContext('2d'), N = 160; let ang = 0, y = 0, spin = 0, raf = 0, face = '27', T = null;
+  const COIN = (() => { const cv = $('coincv'), g = cv.getContext('2d'), N = 160, H = 300, BASE = H - 80; let ang = 0, y = 0, spin = 0, raf = 0, face = '27', T = null;
     const L2 = (pl, en) => (window.LANG === 'en' ? en : pl);
-    const draw = () => { g.clearRect(0, 0, N, N); g.imageSmoothingEnabled = false; const c = Math.cos(ang), w = Math.max(0.06, Math.abs(c)), r = 52, cx = N / 2, cy = N / 2 + y;
+    const draw = () => { g.clearRect(0, 0, N, H); g.imageSmoothingEnabled = false; const c = Math.cos(ang), w = Math.max(0.06, Math.abs(c)), r = 52, cx = N / 2, cy = BASE + y;
       const showFront = c >= 0, lbl = showFront ? '27' : 'DS';
       // the rim (thickness) when it is edge-on, then the face, squeezed by the turn: chunky pixels, gold shades
       const step = 4, px = (x0, y0, col) => { g.fillStyle = col; g.fillRect(Math.round(x0 / step) * step, Math.round(y0 / step) * step, step, step); };
-      g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(cx, N / 2 + 64, 40 * (1 - Math.min(1, -y / 60) * 0.5), 7, 0, 0, 7); g.fill();
+      g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(cx, BASE + 64, 40 * (1 - Math.min(1, -y / 60) * 0.5), 7, 0, 0, 7); g.fill();
       for (let yy = -r; yy <= r; yy += step) for (let xx = -r; xx <= r; xx += step) { const d = Math.hypot(xx, yy); if (d > r) continue;
         const X = cx + xx * w, rimSide = Math.sign(c) * 6 * (1 - w);
         const edge = d > r - 8, shade = 0.75 + 0.25 * (-(xx + yy) / (r * 1.4)) * Math.sign(c || 1);
@@ -827,6 +889,10 @@
     { id: 'p1', slot: 'ball', name: 'OGNISTA PIŁKA', price: 120, desc: 'Pomarańczowa piłka', ball: '#ffb070', perk: { ball: '#ffb070' } },
     { id: 'p2', slot: 'ball', name: 'KOSMICZNA PIŁKA', price: 250, desc: 'Fioletowa piłka z gwiazd', ball: '#c8a8ff', perk: { ball: '#c8a8ff' } },
     { id: 'p3', slot: 'ball', name: 'ZŁOTA PIŁKA', price: 600, desc: 'Złota i 10% mocniejsze strzały', ball: '#ffe070', perk: { ball: '#ffe070', shot: 1.1 } },
+    { id: 's0', slot: 'shirt', name: 'KOSZULKA PIXELS', price: 0, free: true, hide: true, desc: 'Twoja pierwsza koszulka', shirt: { body: '#3fae4a', sl: '#1f2a2a', num: '#ffffff', collar: '#111' }, perk: {} },
+    { id: 's1', slot: 'shirt', name: 'CZERWONA KOSZULKA', price: 200, desc: 'Wisi w szafie w Twoim pokoju', shirt: { body: '#e8402a', sl: '#ffffff', num: '#ffffff', trim: '#ffe14a' }, perk: {} },
+    { id: 's2', slot: 'shirt', name: 'NIEBIESKIE PASY', price: 350, desc: 'Biało-niebieskie pasy, do szafy w pokoju', shirt: { body: '#ffffff', stripes: '#3a6ae8', sl: '#3a6ae8', num: '#1a1030' }, perk: {} },
+    { id: 's3', slot: 'shirt', name: 'ZŁOTA KOSZULKA', price: 800, desc: 'Dla mistrza. Wisi w szafie w pokoju', shirt: { body: '#ffc21a', sl: '#1a1a1a', num: '#1a1a1a', trim: '#fff6c0' }, perk: {} },
     { id: 'g1', slot: null, name: 'RĘKAWICE BRAMKARZA', price: 300, desc: 'Twój bramkarz łapie więcej super strzałów', perk: { gloves: true } },
     { id: 'e1', slot: null, name: 'NAPÓJ ENERGII', price: 250, desc: 'Szybciej odzyskujesz siły', perk: { sta: 1.4 } },
     { id: 'k1', slot: null, name: 'KARTA NA START', price: 500, desc: 'Każdy mecz zaczynasz z losową mocą', perk: { card: true } },
@@ -854,13 +920,14 @@
     if (out.length) toast((r.record ? L('NOWY REKORD!') + '\n' : '') + out.join('\n')); return out; };
   const itemIcon = (it) => { const c = document.createElement('canvas'); c.width = c.height = 16; const g = c.getContext('2d'), r = (col, x, y, w, h) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
     if (it.slot === 'boots') { const [a, b] = it.col; r('#000', 2, 6, 7, 6); r('#000', 2, 10, 13, 4); r(a, 3, 7, 5, 5); r(a, 3, 11, 11, 2); r(b, 5, 8, 2, 1); r(b, 9, 11, 3, 1); r('#222', 3, 13, 11, 1); }
+    else if (it.slot === 'shirt' && window.SHIRT_ART) { const sc = window.SHIRT_ART(it); g.drawImage(sc, 0, 4, 26, 26, -1, 0, 18, 18); }
     else if (it.slot === 'ball') { r('#000', 4, 2, 8, 12); r('#000', 2, 4, 12, 8); r(it.ball, 5, 3, 6, 10); r(it.ball, 3, 5, 10, 6); r('#000', 7, 7, 2, 2); r('#000', 4, 5, 2, 1); r('#000', 10, 10, 2, 1); r('#fff', 5, 4, 2, 1); }
     else if (it.id === 'g1') { r('#000', 3, 3, 10, 11); r('#ffe14a', 4, 4, 8, 9); r('#e8402a', 4, 10, 8, 3); r('#000', 6, 4, 1, 5); r('#000', 9, 4, 1, 5); r('#000', 1, 6, 3, 4); r('#ffe14a', 2, 7, 2, 2); }
     else if (it.id === 'e1') { r('#000', 5, 1, 6, 14); r('#6ee05a', 6, 5, 4, 9); r('#fff', 6, 2, 4, 3); r('#ffe14a', 7, 8, 2, 3); }
     else { r('#000', 3, 1, 10, 14); r('#ff6ab8', 4, 2, 8, 12); r('#fff', 5, 3, 6, 4); r('#ffe14a', 7, 9, 2, 4); r('#ffe14a', 6, 10, 4, 2); }
     return c; };
   const drawShop = () => { const P = PROG.get(), gr = $('shopgrid'); gr.innerHTML = ''; PROG.save();
-    for (const it of ITEMS) { const own = P.owned.includes(it.id), on = own && (!it.slot || P[it.slot] === it.id), d = document.createElement('div'); d.className = 'it' + (own ? ' own' : '');
+    for (const it of ITEMS) { if (it.hide) continue; const own = P.owned.includes(it.id), on = own && (!it.slot || P[it.slot] === it.id), d = document.createElement('div'); d.className = 'it' + (own ? ' own' : '');
       d.appendChild(itemIcon(it)); d.insertAdjacentHTML('beforeend', `<h4>${it.name}</h4><p>${it.desc}</p>`);
       const b = document.createElement('button'); b.textContent = !own ? `KUP ${it.price}` : on ? (it.slot ? 'ZAŁOŻONE' : 'MASZ') : 'ZAŁÓŻ';
       if (!own && P.coins < it.price) b.className = 'no'; else if (on) b.className = 'eq';
@@ -876,7 +943,21 @@
       if (lv[k] >= 5) { b.textContent = 'MAKS'; b.className = 'eq'; } else { b.textContent = `KUP ${price}`; if (P.coins < price) b.className = 'no';
         b.onclick = () => { if (P.coins < price) { b.textContent = 'ZA MAŁO MONET'; return; } P.coins -= price; P.lv[num] = lv; lv[k]++; if (P.xp[num]) P.xp[num][k] = 0; PROG.save(); drawShop(); }; }
       d.appendChild(b); gr.appendChild(d); }); };
-  const openShop = () => { drawShop(); $('shop').hidden = false; };
+  // the shop is closed for now: a COMING SOON sign instead
+  const openShop = () => { $('soon').hidden = false; }; $('soonx').onclick = $('soon').onclick = () => { $('soon').hidden = true; }; window.OPENSHOP = openShop; window.ITEMS = ITEMS;
+  // the player's room is not finished yet: it opens only with the code
+  { let code = ''; const disp = $('rcdisp'), msg = $('rcmsg'), Lc = (pl, en) => (window.LANG === 'en' ? en : pl);
+    const show = () => { disp.className = 'rdisp'; disp.querySelectorAll('u').forEach((u, i) => (u.textContent = code[i] ? '*' : '')); };
+    const reset = () => { code = ''; msg.textContent = Lc('PODAJ KOD', 'ENTER THE CODE'); show(); };
+    const check = () => { if (code === '2708') { disp.className = 'rdisp ok'; msg.textContent = Lc('KOD DOBRY!', 'CODE OK!'); window.SZFX?.shop?.();
+        setTimeout(() => { $('roomcode').hidden = true; window.POKOJ?.open(); }, 450); }
+      else { disp.className = 'rdisp bad'; msg.textContent = Lc('ZŁY KOD. Ta część gry jest jeszcze niedostępna.', 'WRONG CODE. This part of the game is not open yet.');
+        disp.animate([{ transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'none' }], { duration: 220 }); code = ''; setTimeout(show, 500); } };
+    $('rcpad').querySelectorAll('button').forEach((b) => (b.onclick = () => { const k = b.textContent;
+      if (k === '◀') code = code.slice(0, -1); else if (k === 'OK') { if (code.length === 4) check(); return; } else if (code.length < 4) code += k;
+      show(); if (code.length === 4) setTimeout(check, 150); }));
+    $('rcx').onclick = () => { $('roomcode').hidden = true; };
+    $('sroom').onclick = (e) => { e.stopPropagation(); reset(); $('roomcode').hidden = false; }; }
   $('sshop').onclick = (e) => { e.stopPropagation(); window.SZFX?.shop(); openShop(); }; $('shopx').onclick = () => { $('shop').hidden = true; };
   // difficulty buttons
   const markLv = () => $('lvbtns').querySelectorAll('button').forEach((b) => b.classList.toggle('on', +b.dataset.l === CFG.lvl));
@@ -1163,6 +1244,7 @@
   document.getElementById('mvol').addEventListener('click', (e) => { e.stopPropagation(); MV.next(); }); MV.lbl();
 </script>
 <script src="./warsztat.js?v=8"></script>
+<script src="./room.js?v=3"></script>
 <script src="./pen.js?v=2"></script>
 <script src="./lace.js"></script>
 <script src="./caps.js"></script>
