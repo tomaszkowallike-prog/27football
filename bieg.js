@@ -206,8 +206,8 @@
         done.forEach((r, i) => txt(`${i + 1}. ${r.n} ${NAMES[r.n]}  ${r.done ? r.time.toFixed(1) + ' s' : '--'}`, W / 2, H * (0.32 + i * 0.1), Math.min(18, W / 36), r.me ? '#ffe14a' : '#fff'));
         txt('DOTKNIJ, ŻEBY WRÓCIĆ', W / 2, H * 0.82, 14, '#9fd8ff'); } } };
   let lastT = 0, raf = 0;
-  const loop = (now) => { if (!S.on) return; raf = requestAnimationFrame(loop); const dt = Math.min(0.04, (now - (lastT || now)) / 1000); lastT = now; update(dt); draw(); };
+  const loop = (now) => { if (!S.on) return; raf = requestAnimationFrame(loop); { const bh = document.getElementById('bhud'); if (bh) bh.style.visibility = (S.phase === 'count' || S.phase === 'run') ? '' : 'hidden'; } /* the bottle only during the race, not over the menus */ const dt = Math.min(0.04, (now - (lastT || now)) / 1000); lastT = now; update(dt); draw(); };
   const close = () => { window.BIDON?.hud(false); S.on = false; cancelAnimationFrame(raf); root.hidden = true; if (S.onExit) S.onExit(); };
-  window.BIEG = { start(onExit) { S.onExit = onExit; root.hidden = false; window.BIDON?.hud(true); S.bpend = 0; layout(); S.phase = 'intro'; S.runners = []; reset(); S.phase = 'intro'; S.on = true; lastT = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); },
+  window.BIEG = { start(onExit) { S.onExit = onExit; root.hidden = false; window.BIDON?.hud(true, 'bieg'); S.bpend = 0; layout(); S.phase = 'intro'; S.runners = []; reset(); S.phase = 'intro'; S.on = true; lastT = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); },
     get _S() { return S; } };
 })();
