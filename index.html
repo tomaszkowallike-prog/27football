@@ -142,7 +142,7 @@
   /* the intro: one film (skippable), then a seamless loop of the two boys in the wind with 27FOOTBALL and PRESS START baked in */
   #intro { position: fixed; inset: 0; z-index: 20; background: #000; overflow: hidden; cursor: pointer; }
   #intro[hidden] { display: none; }
-  #intro .f169 { position: absolute; left: 50%; top: 50%; width: max(100vw, 177.78vh); height: max(56.25vw, 100vh); transform: translate(-50%, -50%); }
+  #intro .f169 { position: absolute; left: 50%; top: 50%; width: min(100vw, 177.78vh); height: min(56.25vw, 100vh); transform: translate(-50%, -50%); } /* whole film visible: the title must not be cut on wide phones */
   #intro video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
   #v2 { visibility: hidden; } #intro.two #v2 { visibility: visible; } #intro.two #v1 { visibility: hidden; }
   #pressStart { position: absolute; left: 50%; top: 35.2%; transform: translate(-50%, -50%); width: 27%; height: 10.5%; display: none; place-items: center; background: #030b19; box-shadow: 0 0 1.2vw 1vw #030b19;
@@ -470,6 +470,7 @@
   #szatnia .hot { position: absolute; background: transparent; border: 0; cursor: pointer; }
   #szatnia .hot:hover, #szatnia .hot:focus-visible { outline: 3px solid #ffe14a; border-radius: 10px; }
   #mvol { position: fixed; z-index: 40; left: 50%; top: max(4px, env(safe-area-inset-top)); transform: translateX(-50%); font: 700 13px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.6); border: 2px solid #8a8a8a; border-radius: 6px; padding: 2px 9px; cursor: pointer; }
+  body:has(#intro:not([hidden])) #mvol { left: auto; right: max(8px, env(safe-area-inset-right)); transform: none; opacity: .75; }
   body.playing #mvol { left: auto; right: max(8px, env(safe-area-inset-right)); top: calc(max(10px, env(safe-area-inset-top)) + 150px); transform: none; }
   /* the whole game is landscape: a phone held upright gets one screen asking to turn it */
   #rot { display: none; position: fixed; inset: 0; z-index: 100; background: #02070f; color: #fff; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 20px; }
