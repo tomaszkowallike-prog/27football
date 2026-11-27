@@ -361,7 +361,7 @@
   #modes .tbox2 small, #szatnia .stitle { font-family: var(--px) !important; font-size: clamp(7px, 1.1vw, 14px) !important; letter-spacing: .05em !important; padding: 5px 10px !important; }
   #modes .mback, #mvol { font-family: var(--px) !important; font-size: 9px !important; border-radius: 0 !important; }
   body:has(#szatnia:not([hidden])) #mvol { display: none; }
-  body:has(#flip:not([hidden])) #mvol, body:has(#bieg:not([hidden])) #mvol { display: none; }
+  body:has(#flip:not([hidden])) #mvol, body:has(#paluchy:not([hidden])) #mvol, body:has(#bieg:not([hidden])) #mvol { display: none; }
   #modes .tbox2 .mb { padding-top: .42em !important; padding-bottom: .42em !important; }
   /* board buttons stand still; now and then a pixel glitch with colour fringes runs through one of them */
   #modes .tbox2 .mb { animation: none !important; transform: none; }
@@ -378,6 +378,12 @@
   /* the hidden bottle on the board's floor: stands still and now and then blinks */
   #modes .hbottle { position: absolute; left: 25%; bottom: 3.5%; height: 13%; aspect-ratio: 97 / 300; padding: 0; border: 0; background: none; cursor: pointer; z-index: 3; }
   #modes .hbottle img { width: 100%; height: 100%; display: block; image-rendering: pixelated; animation: hbl 2.6s steps(1) infinite; filter: drop-shadow(3px 4px 0 rgba(10,0,25,.5)); }
+  #modes .hsocks { position: absolute; left: 85.407%; top: 72.264%; width: 7.177%; height: 7.651%; padding: 0; border: 0; background: none; cursor: pointer; z-index: 3; }
+  #modes .hsocks img { width: 100%; height: 100%; display: block; image-rendering: pixelated; animation: hsk 2.2s steps(1) infinite; }
+  #modes .hsocks::after { content: ''; position: absolute; left: 30%; top: 8%; width: 7%; aspect-ratio: 1; background: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,.35); opacity: 0; animation: hskp 2.2s steps(1) infinite; pointer-events: none; }
+  @keyframes hsk { 0%, 70% { filter: none; } 72% { filter: brightness(1.6); } 76% { filter: none; } 80% { filter: brightness(1.4); } 84% { filter: none; } }
+  @keyframes hskp { 0%, 70% { opacity: 0; } 72% { opacity: 1; left: 30%; top: 10%; } 78% { opacity: 0; } 80% { opacity: .8; left: 72%; top: 22%; } 86% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { #modes .hsocks img, #modes .hsocks::after { animation: none; } }
   @keyframes hbl { 0%, 82% { filter: drop-shadow(3px 4px 0 rgba(10,0,25,.5)); } 84% { filter: drop-shadow(3px 4px 0 rgba(10,0,25,.5)) brightness(1.7); } 87% { filter: drop-shadow(3px 4px 0 rgba(10,0,25,.5)); } 90% { filter: drop-shadow(3px 4px 0 rgba(10,0,25,.5)) brightness(1.6) drop-shadow(0 0 0 #fff); } 93% { filter: drop-shadow(3px 4px 0 rgba(10,0,25,.5)); } }
   .flipgrid { display: flex; gap: 10px; justify-content: center; align-items: flex-end; margin: 10px 0 4px; flex-wrap: wrap; }
   .flipgrid button { background: #2a2454; border: 0; clip-path: var(--notch); box-shadow: inset 0 0 0 3px #000, inset -5px -5px 0 0 rgba(0,0,0,.3), inset 5px 5px 0 0 rgba(255,255,255,.25); padding: 10px 12px 8px; cursor: pointer; }
@@ -776,7 +782,7 @@
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <button class="hot" id="sset" aria-label="Ustawienia"></button>
   <div class="stitle">WYBIERZ KAPITANA</div><button class="sshop" id="sshop">SKLEP</button><button class="sroom" id="sroom" aria-label="Pokój gracza"></button><div class="scoin" id="coinL">0</div><button class="scoinhit" id="coinHit" aria-label="Monety"></button><button class="hot" id="sworks" aria-label="Warsztat"></button><img id="scup" src="szatnia_cup.png?v=1" alt=""><button class="hot" id="strophy" aria-label="Trofea"></button></div></div>
-<div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt=""><button class="hbottle" id="hbottle" aria-label="Butelka"><img src="flip_woda.png" alt=""></button>
+<div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt=""><button class="hbottle" id="hbottle" aria-label="Butelka"><img src="flip_woda.png" alt=""></button><button class="hsocks" id="hsocks" aria-label="Paluchy"><img src="paluchy_buty.png?v=1" alt=""></button>
   <small id="mq">CO ROBIMY?</small>
   <div class="mrow"><button class="mb" data-m="match"><b><img class="pxi" src="ico_match.png" alt=""></b>MECZ<em>Pixels kontra Fioletowi</em></button><button class="mb" data-m="karne"><b><img class="pxi" src="ico_karne.png" alt=""></b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b><img class="pxi" src="ico_kapki.png" alt=""></b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b><img class="pxi" src="ico_but.png" alt=""></b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b><img class="pxi" src="ico_kapsle.png" alt=""></b>KAPSLE<em>wyścig kapsli po torze</em></button><button class="mb" data-m="bieg"><b><img class="pxi" src="ico_bieg.png" alt=""></b>BIEG<em>wyścig dookoła boiska</em></button></div>
   <button class="ibtn mback" data-m="back">◀ SZATNIA</button></div></div></div>
@@ -967,6 +973,7 @@
     setTimeout(glitchLoop, 700 + Math.random() * 1400); })();
   // the hidden bottle game
   $('hbottle').onclick = (e) => { e.stopPropagation(); $('flipask').hidden = false; };
+  $('hsocks').onclick = (e) => { e.stopPropagation(); $('modes').hidden = true; window.PALUCHY.start(showModes); };
   $('flipno').onclick = () => { $('flipask').hidden = true; };
   $('flipyes').onclick = () => { $('flipask').hidden = true; $('flippick').hidden = false; };
   $('flipx').onclick = () => { $('flippick').hidden = true; };
@@ -1478,6 +1485,7 @@
 <script src="./lace.js"></script>
 <script src="./caps.js"></script>
 <script src="./flip.js"></script>
+<script src="./paluchy.js?v=1"></script>
 <script src="./bieg.js?v=1795689649"></script>
 <script type="module" src="./game.js?v=4"></script>
 </body>
