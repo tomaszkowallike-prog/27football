@@ -39,7 +39,7 @@
     pg.clearRect(0, 0, W, H); undo = []; try { const s = localStorage.getItem('boot_paint_' + id) || (id === 'm1' ? localStorage.getItem('boot_paint') : null); if (s) pg.drawImage(await load(s), 0, 0); } catch (e) {} };
   const prep = async () => {
     sole = await load('boot_sole.png?v=1'); await loadModel('m2');
-    const sm = soleMaskImg = await load('boot_sole_m.png?v=5'), c2 = document.createElement('canvas'); c2.width = SW; c2.height = SH; const g2 = c2.getContext('2d'); g2.drawImage(sm, 0, 0);
+    const sm = soleMaskImg = await load('boot_sole_m.png?v=6'), c2 = document.createElement('canvas'); c2.width = SW; c2.height = SH; const g2 = c2.getContext('2d'); g2.drawImage(sm, 0, 0);
     const d2 = g2.getImageData(0, 0, SW, SH).data; soleMask = new Uint8Array(SW * SH); for (let i = 0; i < SW * SH; i++) soleMask[i] = d2[i * 4 + 3] > 128 ? 1 : 0;
   };
   const save = () => { try { localStorage.setItem('boot_paint_' + MOD, paint.toDataURL()); } catch (e) {} const B = cfg(), d = pg.getImageData(0, 0, W, H).data; let n = 0;
