@@ -126,7 +126,10 @@
       g.fillStyle = '#7ad04a'; for (const [a2, b2, rr] of [[0, 0, 1], [-0.8, 0.3, 0.7], [0.8, 0.3, 0.7], [0, -0.7, 0.6]]) { const s = Math.round(r * rr); g.fillRect(Math.round(x + a2 * r - s / 2), Math.round(y + b2 * r - s / 2), s, s); }
       g.fillStyle = '#3a7a1a'; g.fillRect(Math.round(x - r * 0.2), Math.round(y - r * 0.1), Math.max(3, r * 0.15), Math.max(3, r * 0.15)); } g.restore(); };
   const draw = () => { g.imageSmoothingEnabled = false; g.fillStyle = '#2a0f55'; g.fillRect(0, 0, W, H);
-    if (BG.complete) g.drawImage(BGT || BG, ox, oy, BW * sc, BH * sc);
+    // behind the picture: the same floor stretched to cover the whole screen, so no empty bars ever show at the sides
+    if (BG.complete) { const cs = Math.max(W / BW, H / BH) * 1.02; g.drawImage(BGT || BG, (W - BW * cs) / 2, (H - BH * cs) / 2, BW * cs, BH * cs); g.fillStyle = 'rgba(14,4,32,.55)'; g.fillRect(0, 0, W, H);
+      g.drawImage(BGT || BG, ox, oy, BW * sc, BH * sc);
+      if (ox > 0) { const fw = Math.min(ox, 60); for (const [x0, d] of [[ox, 1], [ox + BW * sc, -1]]) { const gr = g.createLinearGradient(x0, 0, x0 + d * fw, 0); gr.addColorStop(0, 'rgba(14,4,32,.55)'); gr.addColorStop(1, 'rgba(14,4,32,0)'); g.fillStyle = gr; g.fillRect(Math.min(x0, x0 + d * fw), 0, fw, H); } } }
     for (const k in S.out) { const o = S.out[k]; drawToe(+k, Math.min(1, o.a / 0.08, o.l / 0.1)); }
     if (S.phase === 'show' && S.arrow >= 0) drawArrow(S.arrow);
     if (S.phase === 'bad' && S.right != null && Math.floor(S.t * 5) % 2) drawArrow(S.right);
