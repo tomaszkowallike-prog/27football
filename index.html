@@ -126,6 +126,7 @@
   @keyframes glow { 50% { background-image: url(btn_super_lit.png); filter: drop-shadow(0 4px 0 rgba(0,0,0,.45)) drop-shadow(0 0 6px #e07aff); } }
   #nbStar .cnt { position: absolute; right: 2px; top: -4px; min-width: 20px; padding: 1px 4px; border-radius: 10px; background: #e8361f; border: 2px solid #000; font: 700 13px "Pixelify Sans", monospace; color: #fff; }
   #nbStar .cnt:empty { display: none; }
+  #bag { display: none !important; }   /* the cards live in the SUPER button now: its red number says how many, a tap opens them */
   /* the plain red shot, right above B (which tackles when you have no ball) */
   #nbShot { right: 15px; top: -30px; --ic: url(btn_shoot.png); --on: url(btn_shoot_on.png); } #nbShot i { width: 60px; height: 60px; } #nbShot span { color: #ff5a4a; margin-top: 4px; } #nbShot.off { opacity: .4; }
   #nbJump { right: 96px; top: 0; } #nbSlide { right: 0; top: 0; } #nbPass { right: 96px; top: 98px; } #nbShoot { right: 0; top: 98px; } #nbSprint { right: 190px; top: 56px; } #nbSwap { right: 190px; top: -34px; } #nbSwap i { width: 54px; height: 54px; } #nbSwap span { margin-top: 6px; }
@@ -852,6 +853,7 @@
       el.textContent = P.team === 0 ? `KARNY! ${P.taker.name}: celuj góra/dół i STRZAŁ` : 'KARNY DLA RYWALI! Wybierz stronę rzutu bramkarza: góra/dół'; clearTimeout(this._ph); this._ph = setTimeout(() => el.classList.remove('on'), 300); },
     inv(inv) { const el = $('bag'), G = window.GAME; if (!G || !G.icons) return; const prev = this._inv || {};
       el.innerHTML = Object.keys(G.powers).map((k) => `<div class="it${inv[k] ? '' : ' zero'}${inv[k] > (prev[k] || 0) ? ' new' : ''}" title="${G.powers[k].name}"><img src="${G.icons[k]}" alt="">×${inv[k]}</div>`).join('');
+      { let n = 0, got = false; for (const k in inv) { n += inv[k]; if (inv[k] > (prev[k] || 0)) got = true; } const cn = document.querySelector('#nbStar .cnt'); if (cn) { if (got) cn.animate([{ transform: 'scale(1.8)' }, { transform: 'scale(1)' }], { duration: 300, easing: 'steps(4)' }); } }
       this._inv = { ...inv }; },
     picker(P) { const el = $('picker'); if (!P) { el.hidden = true; this._pk = null; return; } const G = window.GAME;
       if (this._pk !== P.opts) { this._pk = P.opts; el.hidden = false; const bar = el.querySelector('.pbar i'); bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = '';
