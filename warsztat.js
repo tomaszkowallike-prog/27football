@@ -9,7 +9,7 @@
   // boot models: each has its own picture, its own parts map (cut seam to seam) and its own paint
   const MODELS = { m2: { n: L('KLASYK', 'CLASSIC'), side: 'boot2_side.png?v=3', parts: 'boot2_parts.png?v=3', bg: 'warsztat_side2.jpg?v=1', div: 18,
       names: { 1: L('CZUBEK', 'TOE'), 13: L('PRZESZYCIE', 'TOE BAND'), 3: L('PRZÓD', 'FOREFOOT'), 4: L('ŚRÓDSTOPIE', 'MIDFOOT'), 5: L('TYŁ', 'BACK'), 6: L('PIĘTA', 'HEEL'), 7: L('KOŁNIERZ', 'COLLAR'), 8: L('JĘZYK', 'TONGUE'), 9: L('SZNURÓWKI', 'LACES'), 12: L('OCZKA', 'EYELETS'), 10: L('PODESZWA', 'SOLE'), 11: L('KORKI', 'STUDS') } },
-    m1: { n: L('PASKI', 'STRIPES'), side: 'boot_side.png?v=1', parts: 'boot_parts.png?v=2', bg: 'warsztat_side.jpg?v=1', div: 20, names: { ...PARTS } } };
+  };
   let MOD = 'm2';
   const COLS = ['#ffffff', '#d8d8e0', '#8a8a96', '#2a2a32', '#e8402a', '#ff8a1f', '#ffe14a', '#6ee05a', '#1f9a4a', '#3fd8ff', '#2a6ae8', '#6b3fa8',
     '#ff6ab8', '#8a4a20', '#ffc21a', '#b8f0ff'];
@@ -38,7 +38,7 @@
     const d = g.getImageData(0, 0, W, H).data; partsData = new Uint8Array(W * H); for (let i = 0; i < W * H; i++) partsData[i] = Math.round(d[i * 4] / Md.div);
     pg.clearRect(0, 0, W, H); undo = []; try { const s = localStorage.getItem('boot_paint_' + id) || (id === 'm1' ? localStorage.getItem('boot_paint') : null); if (s) pg.drawImage(await load(s), 0, 0); } catch (e) {} };
   const prep = async () => {
-    sole = await load('boot_sole.png?v=1'); await loadModel(cfg().model || 'm2');
+    sole = await load('boot_sole.png?v=1'); await loadModel('m2');
     const sm = soleMaskImg = await load('boot_sole_m.png?v=5'), c2 = document.createElement('canvas'); c2.width = SW; c2.height = SH; const g2 = c2.getContext('2d'); g2.drawImage(sm, 0, 0);
     const d2 = g2.getImageData(0, 0, SW, SH).data; soleMask = new Uint8Array(SW * SH); for (let i = 0; i < SW * SH; i++) soleMask[i] = d2[i * 4 + 3] > 128 ? 1 : 0;
   };
@@ -89,15 +89,18 @@
   const opts = (list, key) => list.map((it) => { const B = cfg(), own = B.own.includes(it.id), on = B[key] === it.id;
     return `<button class="wopt${on ? ' on' : ''}" data-k="${key}" data-id="${it.id}" title="${bonusTxt(it.b)}">${it.n}<small>${own ? bonusTxt(it.b) : it.p + ' ' + L('MONET', 'COINS')}</small></button>`; }).join('');
   const panel = () => { const B = cfg(), bb = window.BOOT_BONUS();
+    if (view === 'sole') {   // from below: only what can be done to the sole: its colour, the studs' colour, layout and material
+      $('wpanel').innerHTML = `<p class="whint">${L('Wybierz kolor i dotknij podeszwy albo korka.', 'Pick a colour and tap the sole or a stud.')}</p>
+        <div class="wrow wpal">${COLS.map((c) => `<i data-c="${c}" style="background:${c}" class="${c === color ? 'on' : ''}"></i>`).join('')}<label class="wcust" style="background:${color}"><input type="color" id="wpick" value="${color}"></label></div>
+        <h5>${L('UKŁAD KORKÓW', 'STUD LAYOUT')}</h5><div class="wrow">${opts(LAYS, 'lay')}</div>
+        <h5>${L('KORKI Z', 'STUDS MADE OF')}</h5><div class="wrow">${opts(SMAT, 'smat')}</div>`;
+    } else
     $('wpanel').innerHTML = `
       <div class="wrow">${[['part', L('CZĘŚCI', 'PARTS')], ['brush', L('PĘDZEL', 'BRUSH')], ['pat', L('WZÓR', 'PATTERN')], ['erase', L('GUMKA', 'ERASER')]].map(([t, n]) => `<button class="wt${tool === t ? ' on' : ''}" data-t="${t}">${n}</button>`).join('')}</div>
       <div class="wrow wpal">${COLS.map((c) => `<i data-c="${c}" style="background:${c}" class="${c === color ? 'on' : ''}"></i>`).join('')}<label class="wcust" style="background:${color}"><input type="color" id="wpick" value="${color}"></label></div>
       ${tool === 'brush' || tool === 'erase' ? `<div class="wrow">${[1, 2, 3].map((s) => `<button class="wt${size === s ? ' on' : ''}" data-s="${s}">${['S', 'M', 'L'][s - 1]}</button>`).join('')}</div>` : ''}
       ${tool === 'pat' ? `<div class="wrow">${Object.keys(PATS).map((p) => `<button class="wt${pat === p ? ' on' : ''}" data-p="${p}">${{ paski: L('PASKI', 'STRIPES'), kropki: L('KROPKI', 'DOTS'), kratka: L('KRATKA', 'CHECK'), zygzak: L('ZYGZAK', 'ZIGZAG'), gwiazdki: L('GWIAZDKI', 'STARS'), plomienie: L('PŁOMIENIE', 'FLAMES') }[p]}</button>`).join('')}</div>` : ''}
-      <h5>${L('MODEL BUTA', 'BOOT MODEL')}</h5><div class="wrow">${Object.entries(MODELS).map(([id, Md]) => `<button class="wopt${MOD === id ? ' on' : ''}" data-model="${id}">${Md.n}</button>`).join('')}</div>
       <h5>${L('MATERIAŁ', 'MATERIAL')}</h5><div class="wrow">${opts(MATS, 'mat')}</div>
-      <h5>${L('UKŁAD KORKÓW', 'STUD LAYOUT')}</h5><div class="wrow">${opts(LAYS, 'lay')}</div>
-      <h5>${L('KORKI Z', 'STUDS MADE OF')}</h5><div class="wrow">${opts(SMAT, 'smat')}</div>
 `;
     $('wcoins').textContent = PROG().get().coins;
     // left column: undo / clear always in reach, and the boot's bonuses always visible
@@ -134,7 +137,7 @@
   document.addEventListener('mousemove', (e) => { if (down || e.target !== cvEl() || view !== 'side') return; const [x, y] = pos(e); $('wpart').textContent = PARTS[partsData[(y | 0) * W + (x | 0)]] || ''; });
   // ---- views
   const setView = (v) => { view = v; const sideV = v === 'side'; $('wbg').src = sideV ? MODELS[MOD].bg : 'warsztat_sole.jpg?v=1';
-    $('wcv').className = sideV ? 'side' : 'sole'; $('wtabS').classList.toggle('on', sideV); $('wtabP').classList.toggle('on', !sideV); $('wpart').textContent = ''; draw(); };
+    $('wcv').className = sideV ? 'side' : 'sole'; panel(); $('wtabS').classList.toggle('on', sideV); $('wtabP').classList.toggle('on', !sideV); $('wpart').textContent = ''; draw(); };
   const openEditor = async () => { await (ready || (ready = prep())); $('wroom').hidden = true; $('wedit').hidden = false; panel(); setView('side'); };
   window.WARSZTAT = { open() { $('warsztat').hidden = false; $('wroom').hidden = false; $('wedit').hidden = true; ready = ready || prep(); } };
   $('wtable').onclick = openEditor; $('wgo').onclick = openEditor;
