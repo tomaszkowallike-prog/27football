@@ -7,7 +7,7 @@
   const PARTS = { 1: L('CZUBEK', 'TOE'), 2: L('PRZÓD', 'FOREFOOT'), 3: L('ŚRÓDSTOPIE', 'MIDFOOT'), 4: L('PASKI', 'STRIPES'), 5: L('TYŁ', 'BACK'),
     6: L('KOŁNIERZ', 'COLLAR'), 7: L('JĘZYK', 'TONGUE'), 8: L('SZNURÓWKI', 'LACES'), 10: L('PODESZWA', 'SOLE'), 11: L('KORKI', 'STUDS') };
   // boot models: each has its own picture, its own parts map (cut seam to seam) and its own paint
-  const MODELS = { m2: { n: L('KLASYK', 'CLASSIC'), side: 'boot2_side.png?v=2', parts: 'boot2_parts.png?v=2', bg: 'warsztat_side2.jpg?v=1', div: 18,
+  const MODELS = { m2: { n: L('KLASYK', 'CLASSIC'), side: 'boot2_side.png?v=3', parts: 'boot2_parts.png?v=3', bg: 'warsztat_side2.jpg?v=1', div: 18,
       names: { 1: L('CZUBEK', 'TOE'), 13: L('PRZESZYCIE', 'TOE BAND'), 3: L('PRZÓD', 'FOREFOOT'), 4: L('ŚRÓDSTOPIE', 'MIDFOOT'), 5: L('TYŁ', 'BACK'), 6: L('PIĘTA', 'HEEL'), 7: L('KOŁNIERZ', 'COLLAR'), 8: L('JĘZYK', 'TONGUE'), 9: L('SZNURÓWKI', 'LACES'), 12: L('OCZKA', 'EYELETS'), 10: L('PODESZWA', 'SOLE'), 11: L('KORKI', 'STUDS') } },
     m1: { n: L('PASKI', 'STRIPES'), side: 'boot_side.png?v=1', parts: 'boot_parts.png?v=2', bg: 'warsztat_side.jpg?v=1', div: 20, names: { ...PARTS } } };
   let MOD = 'm2';
@@ -39,7 +39,7 @@
     pg.clearRect(0, 0, W, H); undo = []; try { const s = localStorage.getItem('boot_paint_' + id) || (id === 'm1' ? localStorage.getItem('boot_paint') : null); if (s) pg.drawImage(await load(s), 0, 0); } catch (e) {} };
   const prep = async () => {
     sole = await load('boot_sole.png?v=1'); await loadModel(cfg().model || 'm2');
-    const sm = soleMaskImg = await load('boot_sole_m.png?v=3'), c2 = document.createElement('canvas'); c2.width = SW; c2.height = SH; const g2 = c2.getContext('2d'); g2.drawImage(sm, 0, 0);
+    const sm = soleMaskImg = await load('boot_sole_m.png?v=4'), c2 = document.createElement('canvas'); c2.width = SW; c2.height = SH; const g2 = c2.getContext('2d'); g2.drawImage(sm, 0, 0);
     const d2 = g2.getImageData(0, 0, SW, SH).data; soleMask = new Uint8Array(SW * SH); for (let i = 0; i < SW * SH; i++) soleMask[i] = d2[i * 4 + 3] > 128 ? 1 : 0;
   };
   const save = () => { try { localStorage.setItem('boot_paint_' + MOD, paint.toDataURL()); } catch (e) {} const B = cfg(), d = pg.getImageData(0, 0, W, H).data; let n = 0;
@@ -98,18 +98,20 @@
       <h5>${L('MATERIAŁ', 'MATERIAL')}</h5><div class="wrow">${opts(MATS, 'mat')}</div>
       <h5>${L('UKŁAD KORKÓW', 'STUD LAYOUT')}</h5><div class="wrow">${opts(LAYS, 'lay')}</div>
       <h5>${L('KORKI Z', 'STUDS MADE OF')}</h5><div class="wrow">${opts(SMAT, 'smat')}</div>
-      <h5>${L('PREMIE BUTA', 'BOOT BONUSES')}</h5><div class="wstat">${SKN.map((n, i) => `<span>${n}</span><b>${bb[i] ? '+' + bb[i] : '-'}</b>`).join('')}</div>
-      <p class="whint">${L('Własny wzór (pomalowany but) daje +0.5 do dryblingu.', 'Your own paint job gives +0.5 dribbling.')}</p>
-      <div class="wrow"><button class="wt" id="wundo">${L('COFNIJ', 'UNDO')}</button><button class="wt" id="wclear">${L('WYCZYŚĆ', 'CLEAR')}</button></div>`;
+`;
     $('wcoins').textContent = PROG().get().coins;
+    // left column: undo / clear always in reach, and the boot's bonuses always visible
+    $('wtools').innerHTML = `<button class="wbtn" id="wundo">↶ ${L('COFNIJ', 'UNDO')}</button><button class="wbtn" id="wclear">✕ ${L('WYCZYŚĆ', 'CLEAR')}</button>`;
+    $('wstats').innerHTML = `<h5>${L('PREMIE BUTA', 'BOOT BONUSES')}</h5>${SKN.map((n, i) => `<span>${n}</span><b>${bb[i] ? '+' + bb[i] : '-'}</b>`).join('')}`;
   };
-  $('wpanel')?.addEventListener('click', (e) => { const b = e.target.closest('button, i'); if (!b) return;
+  const onTool = (e) => { const b = e.target.closest('button, i'); if (!b) return;
     if (b.dataset.model) { save(); loadModel(b.dataset.model).then(() => { cfg().model = MOD; PROG().save(); panel(); setView('side'); }); return; }
     if (b.dataset.t) tool = b.dataset.t; else if (b.dataset.c) color = b.dataset.c; else if (b.dataset.s) size = +b.dataset.s; else if (b.dataset.p) pat = b.dataset.p;
     else if (b.dataset.k) { const list = { mat: MATS, lay: LAYS, smat: SMAT }[b.dataset.k]; buy(list.find((x) => x.id === b.dataset.id), b.dataset.k); PROG().save(); if (b.dataset.k !== 'mat') setView('sole'); }
     else if (b.id === 'wundo') { const u = undo.pop(); if (u) pg.putImageData(u, 0, 0); save(); }
     else if (b.id === 'wclear') { pushUndo(); pg.clearRect(0, 0, W, H); const B = cfg(); B.sole = '#ffffff'; B.stud = '#d8d8e0'; save(); }
-    panel(); draw(); });
+    panel(); draw(); };
+  $('wpanel')?.addEventListener('click', onTool); $('wtools')?.addEventListener('click', onTool);
   $('wpanel')?.addEventListener('input', (e) => { if (e.target.id === 'wpick') { color = e.target.value; e.target.parentElement.style.background = color; } });
   // ---- painting on the boot
   const pos = (e) => { const cv = $('wcv'), r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * cv.width, (e.clientY - r.top) / r.height * cv.height]; };

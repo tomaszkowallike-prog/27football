@@ -446,7 +446,11 @@
   #wback { left: 1.5%; top: 2.5%; } #wgo { left: 50%; bottom: 4%; transform: translateX(-50%); color: #1a1030 !important; background: #ffe14a !important; border-color: #fff6c0 !important; box-shadow: 0 4px 0 #b08a00; animation: tarr 0.9s steps(2) infinite; }
   #wtabs { position: absolute; left: 1.5%; top: 14%; display: flex; flex-direction: column; gap: 6px; } #wtabs .wbtn { position: static; font-size: 8px; } #wtabs .wbtn.on { color: #1a1030; background: #6ee05a; border-color: #d8ffc8; }
   #wpart { position: absolute; left: 1.5%; bottom: 4%; max-width: 13%; font: 9px "Press Start 2P", monospace; line-height: 1.5; color: #ffe14a; text-shadow: 2px 2px 0 #000; }
-  #wcoinbox { position: absolute; left: 1.5%; top: 34%; }
+  #wcoinbox { position: absolute; left: 1.5%; top: 32%; }
+  #wtools { position: absolute; left: 1.5%; top: 40%; display: flex; flex-direction: column; gap: 6px; } #wtools .wbtn { position: static; font-size: 8px; padding: 7px 8px; }
+  #wstats { position: absolute; left: 1.5%; top: 58%; width: 15%; display: grid; grid-template-columns: 1fr auto; gap: 2px 6px; padding: 6px; background: rgba(12,9,28,.85); border: 3px solid #5a4aa8; font: 6px "Press Start 2P", monospace; color: #fff; }
+  #wstats h5 { grid-column: 1 / -1; margin: 0 0 3px; font: 7px "Press Start 2P", monospace; color: #ffe14a; } #wstats b { color: #6ee05a; font-weight: 400; }
+  #wpart { bottom: 2% !important; }
   #wpanel { position: absolute; right: 0.8%; top: 2%; bottom: 2%; width: 24.5%; overflow-y: auto; padding: 6px; box-sizing: border-box; background: rgba(12,9,28,.9); border: 3px solid #5a4aa8; font: 7px "Press Start 2P", monospace; color: #fff; }
   #wpanel h5 { margin: 7px 0 3px; font: 7px "Press Start 2P", monospace; color: #ffe14a; } #wpanel .wrow { display: flex; flex-wrap: wrap; gap: 3px; }
   #wpanel .wt, #wpanel .wopt { all: unset; cursor: pointer; padding: 4px 5px; font: 7px "Press Start 2P", monospace; color: #d8d4ff; background: #2c2660; border: 2px solid #5a52a8; }
@@ -565,7 +569,7 @@
 <div id="warsztat" hidden><div class="wbox">
   <div id="wroom"><img src="warsztat_room.jpg?v=1" alt=""><div class="lamp" style="left:48%;top:3%;width:20%;height:11%"></div><button id="wtable" aria-label="But"></button><button class="wbtn" id="wgo">▶ EDYTUJ BUTA</button></div>
   <div id="wedit" hidden><img id="wbg" src="warsztat_side.jpg?v=1" alt=""><div class="lamp" style="left:30%;top:0;width:39%;height:12%"></div><canvas id="wcv" class="side"></canvas>
-    <div id="wtabs"><button class="wbtn on" id="wtabS">BOK</button><button class="wbtn" id="wtabP">PODESZWA</button></div><div id="wcoinbox" class="coin"><span id="wcoins">0</span></div><div id="wpart"></div><div id="wpanel"></div></div>
+    <div id="wtabs"><button class="wbtn on" id="wtabS">BOK</button><button class="wbtn" id="wtabP">PODESZWA</button></div><div id="wcoinbox" class="coin"><span id="wcoins">0</span></div><div id="wtools"></div><div id="wstats"></div><div id="wpart"></div><div id="wpanel"></div></div>
   <button class="wbtn" id="wback">◀ WRÓĆ</button></div></div>
 <div id="coin" hidden><canvas id="coincv" width="160" height="160"></canvas><div id="coinmsg">RZUT MONETĄ</div><div id="coinq">Wybierz stronę monety</div>
   <div class="cbtns" id="coinpick"><button data-c="27">27</button><button data-c="DS">DS</button></div>
@@ -1136,7 +1140,7 @@
 <script>
   document.getElementById('mvol').addEventListener('click', (e) => { e.stopPropagation(); MV.next(); }); MV.lbl();
 </script>
-<script src="./warsztat.js?v=4"></script>
+<script src="./warsztat.js?v=5"></script>
 <script src="./pen.js?v=2"></script>
 <script src="./lace.js"></script>
 <script src="./caps.js"></script>
