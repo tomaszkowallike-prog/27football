@@ -22,6 +22,7 @@
     bx.fillStyle = gr; bx.fillRect(-3000, -3000, 6000, 6000); bx.restore();
     x.drawImage(BG, 0, 0); x.drawImage(b, 0, 0); BGT = c; } catch (e) { BGT = null; } };
   const TOES = new Image(); TOES.src = 'paluchy_toes.png?v=1';
+  const DOG = new Image(); DOG.src = 'dog.png';   // the locker-room dog; frame 3 is the happy face with the tongue out
   const BW = 1672, BH = 941, CX = 836, CY = 500, CELL = 80;
   // where each big toe comes out (picture units), in the order of the sprite sheet: red, yellow, green, orange, blue, white, purple pairs
   const FEET = [[519, 244], [394, 348], [764, 248], [907, 249], [1156, 245], [1277, 349], [391, 465], [391, 577], [1281, 465], [1281, 576], [530, 686], [680, 781], [1155, 686], [998, 789]]
@@ -72,7 +73,7 @@
   const tapFoot = (i) => { if (S.phase !== 'play') return;
     toeOut(i, 0.3); pop(i);
     if (i === S.seq[S.step]) { S.icons.push({ ic: ICONS[S.step % ICONS.length], t: 0 }); S.step++; vib(15);
-      if (S.step >= S.seq.length) { S.phase = 'good'; S.t = 0; say(T('DOBRZE!', 'GREAT!'), '#3fe060', 1);
+      if (S.step >= S.seq.length) { S.phase = 'good'; S.t = 0; S.icons = []; say(T('DOBRZE!', 'GREAT!'), '#3fe060', 1);
         [523, 659, 784, 1047].forEach((f, k) => tone(f, f, 0.1, 'square', 0.05, 0.15 + k * 0.08));
         if (S.round > S.best) { S.best = S.round; S.rec = true; try { localStorage.setItem('paluchy_best', S.best); } catch (e) {} } } }
     else { S.phase = 'bad'; S.t = 0; S.smell = 0.01; S.icons = []; FEET.forEach((f) => toeOut(f.i, 2.2)); S.right = S.seq[S.step];
@@ -156,6 +157,10 @@
     // progress pips at the bottom while it's your turn
     if (S.phase === 'play' || S.phase === 'good') { const n = S.seq.length, s = Math.min(16, (W * 0.6) / n - 4), y = H - 26, x0 = W / 2 - (n * (s + 4)) / 2;
       for (let j = 0; j < n; j++) { g.fillStyle = '#000'; g.fillRect(x0 + j * (s + 4), y - s / 2, s, s); g.fillStyle = j < S.step ? '#3fe060' : '#4a3a7a'; g.fillRect(x0 + j * (s + 4) + 2, y - s / 2 + 2, s - 4, s - 4); } }
+    if (S.phase === 'good' && DOG.complete) { const k = Math.min(1, S.t / 0.25), pop = k < 1 ? 0.4 + 0.75 * k : 1 + 0.05 * Math.sin(S.t * 14), [dx, dy] = TS(CX, 560), h = Math.min(H * 0.3, 150) * pop, w = h * 72 / 60;
+      const r = h * 0.5; g.save(); g.imageSmoothingEnabled = false; g.translate(dx, dy); g.rotate(Math.sin(S.t * 9) * 0.08);
+      g.fillStyle = '#000'; g.beginPath(); g.arc(0, 0, r + 5, 0, 7); g.fill(); g.fillStyle = '#ffe14a'; g.beginPath(); g.arc(0, 0, r + 2, 0, 7); g.fill(); g.fillStyle = '#7ad0ff'; g.beginPath(); g.arc(0, 0, r - 2, 0, 7); g.fill();
+      g.beginPath(); g.arc(0, 0, r - 2, 0, 7); g.clip(); g.drawImage(DOG, 176 + 4, 6, 80, 80, -r * 1.05, -r * 0.95, r * 2.1, r * 2.1); g.restore(); }
     if (S.msgT > 0) txt(S.msg, W / 2, TS(CX, 365)[1], Math.min(28, W / 22), S.msgC); };
   let last = 0, raf = 0;
   const loop = (now) => { if (!S.on) return; raf = requestAnimationFrame(loop); const dt = Math.min(0.04, (now - (last || now)) / 1000); last = now; update(dt); draw(); };
