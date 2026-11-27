@@ -6,6 +6,11 @@
   const PROG = () => window.PROG;
   const PARTS = { 1: L('CZUBEK', 'TOE'), 2: L('PRZÓD', 'FOREFOOT'), 3: L('ŚRÓDSTOPIE', 'MIDFOOT'), 4: L('PASKI', 'STRIPES'), 5: L('TYŁ', 'BACK'),
     6: L('KOŁNIERZ', 'COLLAR'), 7: L('JĘZYK', 'TONGUE'), 8: L('SZNURÓWKI', 'LACES'), 10: L('PODESZWA', 'SOLE'), 11: L('KORKI', 'STUDS') };
+  // boot models: each has its own picture, its own parts map (cut seam to seam) and its own paint
+  const MODELS = { m2: { n: L('KLASYK', 'CLASSIC'), side: 'boot2_side.png?v=1', parts: 'boot2_parts.png?v=1', bg: 'warsztat_side2.jpg?v=1',
+      names: { 1: L('CZUBEK', 'TOE'), 2: L('PRZÓD', 'FOREFOOT'), 3: L('ŚRÓDSTOPIE', 'MIDFOOT'), 5: L('PIĘTA', 'HEEL'), 6: L('KOŁNIERZ', 'COLLAR'), 7: L('JĘZYK', 'TONGUE'), 8: L('SZNURÓWKI', 'LACES'), 10: L('PODESZWA', 'SOLE'), 11: L('KORKI', 'STUDS') } },
+    m1: { n: L('PASKI', 'STRIPES'), side: 'boot_side.png?v=1', parts: 'boot_parts.png?v=2', bg: 'warsztat_side.jpg?v=1', names: PARTS } };
+  let MOD = 'm2';
   const COLS = ['#ffffff', '#d8d8e0', '#8a8a96', '#2a2a32', '#e8402a', '#ff8a1f', '#ffe14a', '#6ee05a', '#1f9a4a', '#3fd8ff', '#2a6ae8', '#6b3fa8',
     '#ff6ab8', '#8a4a20', '#ffc21a', '#b8f0ff'];
   const MATS = [{ id: 'skora', n: L('SKÓRA', 'LEATHER'), p: 0, b: { pa: 1 } }, { id: 'syn', n: L('SYNTETYK', 'SYNTHETIC'), p: 120, b: { sp: 1 } },
@@ -27,15 +32,17 @@
   const W = 750, H = 380, SW = 742, SH = 265;
   const paint = document.createElement('canvas'); paint.width = W; paint.height = H; const pg = paint.getContext('2d');
   const tmp = document.createElement('canvas'); tmp.width = W; tmp.height = H; const tg = tmp.getContext('2d');
-  const prep = async () => {
-    [side, sole] = await Promise.all([load('boot_side.png?v=1'), load('boot_sole.png?v=1')]);
-    const pm = await load('boot_parts.png?v=2'), c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.drawImage(pm, 0, 0);
+  let soleMaskImg = null;
+  const loadModel = async (id) => { MOD = id; const Md = MODELS[id]; side = await load(Md.side); Object.keys(PARTS).forEach((k) => delete PARTS[k]); Object.assign(PARTS, Md.names); matFor = '';
+    const pm = await load(Md.parts), c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.drawImage(pm, 0, 0);
     const d = g.getImageData(0, 0, W, H).data; partsData = new Uint8Array(W * H); for (let i = 0; i < W * H; i++) partsData[i] = Math.round(d[i * 4] / 20);
-    const sm = await load('boot_sole_m.png?v=1'), c2 = document.createElement('canvas'); c2.width = SW; c2.height = SH; const g2 = c2.getContext('2d'); g2.drawImage(sm, 0, 0);
+    pg.clearRect(0, 0, W, H); undo = []; try { const s = localStorage.getItem('boot_paint_' + id) || (id === 'm1' ? localStorage.getItem('boot_paint') : null); if (s) pg.drawImage(await load(s), 0, 0); } catch (e) {} };
+  const prep = async () => {
+    sole = await load('boot_sole.png?v=1'); await loadModel(cfg().model || 'm2');
+    const sm = soleMaskImg = await load('boot_sole_m.png?v=2'), c2 = document.createElement('canvas'); c2.width = SW; c2.height = SH; const g2 = c2.getContext('2d'); g2.drawImage(sm, 0, 0);
     const d2 = g2.getImageData(0, 0, SW, SH).data; soleMask = new Uint8Array(SW * SH); for (let i = 0; i < SW * SH; i++) soleMask[i] = d2[i * 4 + 3] > 128 ? 1 : 0;
-    try { const s = localStorage.getItem('boot_paint'); if (s) pg.drawImage(await load(s), 0, 0); } catch (e) {}
   };
-  const save = () => { try { localStorage.setItem('boot_paint', paint.toDataURL()); } catch (e) {} const B = cfg(), d = pg.getImageData(0, 0, W, H).data; let n = 0;
+  const save = () => { try { localStorage.setItem('boot_paint_' + MOD, paint.toDataURL()); } catch (e) {} const B = cfg(), d = pg.getImageData(0, 0, W, H).data; let n = 0;
     for (let i = 3; i < d.length; i += 16) if (d[i] > 0 && (d[i - 3] < 245 || d[i - 2] < 245 || d[i - 1] < 245)) n++; B.style = n > 400 ? 1 : 0; PROG().save(); };
   const pushUndo = () => { undo.push(pg.getImageData(0, 0, W, H)); if (undo.length > 15) undo.shift(); };
   const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
@@ -65,7 +72,7 @@
       buildMat(); g.drawImage(matTex, 0, 0); return; }
     // the sole from below: its colour and the studs of the chosen layout
     cv.width = SW; cv.height = SH; g.clearRect(0, 0, SW, SH); g.drawImage(sole, 0, 0); const B = cfg();
-    tg.clearRect(0, 0, W, H); tg.fillStyle = B.sole; tg.fillRect(0, 0, SW, SH); tg.globalCompositeOperation = 'destination-in'; tg.drawImage(sole, 0, 0); tg.globalCompositeOperation = 'source-over';
+    tg.clearRect(0, 0, W, H); tg.fillStyle = B.sole; tg.fillRect(0, 0, SW, SH); tg.globalCompositeOperation = 'destination-in'; tg.drawImage(soleMaskImg, 0, 0); tg.globalCompositeOperation = 'source-over';
     g.globalCompositeOperation = 'multiply'; g.drawImage(tmp, 0, 0, SW, SH, 0, 0, SW, SH); g.globalCompositeOperation = 'source-over';
     studXY = []; const lay = LAYS.find((l) => l.id === B.lay), metal = B.smat !== 'plast', [sr, sg2, sb] = hex(B.stud);
     for (const [fx, t] of lay.pts) { const x = Math.round(fx * SW); let top = -1, bot = -1; for (let y = 0; y < SH; y++) if (soleMask[y * SW + x]) { if (top < 0) top = y; bot = y; }
@@ -87,6 +94,7 @@
       <div class="wrow wpal">${COLS.map((c) => `<i data-c="${c}" style="background:${c}" class="${c === color ? 'on' : ''}"></i>`).join('')}<label class="wcust" style="background:${color}"><input type="color" id="wpick" value="${color}"></label></div>
       ${tool === 'brush' || tool === 'erase' ? `<div class="wrow">${[1, 2, 3].map((s) => `<button class="wt${size === s ? ' on' : ''}" data-s="${s}">${['S', 'M', 'L'][s - 1]}</button>`).join('')}</div>` : ''}
       ${tool === 'pat' ? `<div class="wrow">${Object.keys(PATS).map((p) => `<button class="wt${pat === p ? ' on' : ''}" data-p="${p}">${{ paski: L('PASKI', 'STRIPES'), kropki: L('KROPKI', 'DOTS'), kratka: L('KRATKA', 'CHECK'), zygzak: L('ZYGZAK', 'ZIGZAG'), gwiazdki: L('GWIAZDKI', 'STARS'), plomienie: L('PŁOMIENIE', 'FLAMES') }[p]}</button>`).join('')}</div>` : ''}
+      <h5>${L('MODEL BUTA', 'BOOT MODEL')}</h5><div class="wrow">${Object.entries(MODELS).map(([id, Md]) => `<button class="wopt${MOD === id ? ' on' : ''}" data-model="${id}">${Md.n}</button>`).join('')}</div>
       <h5>${L('MATERIAŁ', 'MATERIAL')}</h5><div class="wrow">${opts(MATS, 'mat')}</div>
       <h5>${L('UKŁAD KORKÓW', 'STUD LAYOUT')}</h5><div class="wrow">${opts(LAYS, 'lay')}</div>
       <h5>${L('KORKI Z', 'STUDS MADE OF')}</h5><div class="wrow">${opts(SMAT, 'smat')}</div>
@@ -96,6 +104,7 @@
     $('wcoins').textContent = PROG().get().coins;
   };
   $('wpanel')?.addEventListener('click', (e) => { const b = e.target.closest('button, i'); if (!b) return;
+    if (b.dataset.model) { save(); loadModel(b.dataset.model).then(() => { cfg().model = MOD; PROG().save(); panel(); setView('side'); }); return; }
     if (b.dataset.t) tool = b.dataset.t; else if (b.dataset.c) color = b.dataset.c; else if (b.dataset.s) size = +b.dataset.s; else if (b.dataset.p) pat = b.dataset.p;
     else if (b.dataset.k) { const list = { mat: MATS, lay: LAYS, smat: SMAT }[b.dataset.k]; buy(list.find((x) => x.id === b.dataset.id), b.dataset.k); PROG().save(); if (b.dataset.k !== 'mat') setView('sole'); }
     else if (b.id === 'wundo') { const u = undo.pop(); if (u) pg.putImageData(u, 0, 0); save(); }
@@ -122,7 +131,7 @@
   document.addEventListener('pointerup', () => { if (down && (tool === 'brush' || tool === 'erase')) save(); down = false; last = null; });
   document.addEventListener('mousemove', (e) => { if (down || e.target !== cvEl() || view !== 'side') return; const [x, y] = pos(e); $('wpart').textContent = PARTS[partsData[(y | 0) * W + (x | 0)]] || ''; });
   // ---- views
-  const setView = (v) => { view = v; const sideV = v === 'side'; $('wbg').src = sideV ? 'warsztat_side.jpg?v=1' : 'warsztat_sole.jpg?v=1';
+  const setView = (v) => { view = v; const sideV = v === 'side'; $('wbg').src = sideV ? MODELS[MOD].bg : 'warsztat_sole.jpg?v=1';
     $('wcv').className = sideV ? 'side' : 'sole'; $('wtabS').classList.toggle('on', sideV); $('wtabP').classList.toggle('on', !sideV); $('wpart').textContent = ''; draw(); };
   const openEditor = async () => { await (ready || (ready = prep())); $('wroom').hidden = true; $('wedit').hidden = false; panel(); setView('side'); };
   window.WARSZTAT = { open() { $('warsztat').hidden = false; $('wroom').hidden = false; $('wedit').hidden = true; ready = ready || prep(); } };
