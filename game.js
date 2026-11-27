@@ -470,7 +470,7 @@ const FX = (() => {
   const pool = [], geo = new THREE.PlaneGeometry(1, 1);
   for (let i = 0; i < 160; i++) { const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: '#fff', fog: false })); m.visible = false; scene.add(m); toPlay(m); pool.push({ m, life: 0, vx: 0, vy: 0, vz: 0, g: 0 }); }
   let k = 0;
-  const PAL = { fire: ['#ffd23f', '#ff8a1f', '#e8361f', '#fff3a0'], zigzag: ['#7fe3ff', '#ffffff', '#ffe14a', '#3aa0ff'], tornado: ['#ffffff', '#cde9f5', '#9fd3e8', '#e6f7ff'], curve: ['#ffe14a', '#ff7ac8', '#ffffff', '#7affb0'], goal: ['#3fbf55', '#f4ecd6', '#1d1f22', '#ffe14a'], goal2: ['#a46ee8', '#f4ecd6', '#4a2a78', '#ffe14a'], dust: ['#d9caa0', '#bfae84', '#e8dcc0'] };
+  const PAL = { fire: ['#ffd23f', '#ff8a1f', '#e8361f', '#fff3a0'], zigzag: ['#7fe3ff', '#ffffff', '#ffe14a', '#3aa0ff'], tornado: ['#ffffff', '#cde9f5', '#9fd3e8', '#e6f7ff'], curve: ['#ffe14a', '#ff7ac8', '#ffffff', '#7affb0'], goal: ['#3fbf55', '#f4ecd6', '#1d1f22', '#ffe14a'], goal2: ['#a46ee8', '#f4ecd6', '#4a2a78', '#ffe14a'], dust: ['#d9caa0', '#bfae84', '#e8dcc0'], smoke: ['#7ad04a', '#4aa83a', '#b4f08a', '#2e7a2a'] };
   return {
     emit(kind, x, y, z, n = 1, sp = 1.5, size = 0.22, grav = 0) {
       for (let i = 0; i < n; i++) { const p = pool[k++ % pool.length]; const c = PAL[kind] || PAL.dust;
@@ -1071,7 +1071,12 @@ const MAGIC = (() => {
       while (left.length) { left.sort((a, b) => dist(a, at) - dist(b, at)); at = left.shift(); M.route.push(at); }
       M.gx = c.x; M.gz = c.z; M.i = -1; M.hopT = 0; }
     if (kind === 'ninja') { ui.banner?.('NINJA!', c.T, 'super', c); shout(c, 'Cień!'); SFX.charge(1); ball.owner = null; ball.hidden = true;
-      const gx = goalX(c.team), sg = Math.sign(gx); M.fin = [gx - sg * 9, 0]; M.clones = [0, 1, 2, 3, 4].map((i) => [-sg * 4 + (Math.random() - 0.5) * 36, (i - 2) * 6.5 + (Math.random() - 0.5) * 3]); M.sx = c.x; M.sz = c.z; }
+      const gx = goalX(c.team), sg = Math.sign(gx); M.fin = [gx - sg * 9, 0]; M.sx = c.x; M.sz = c.z;
+      // the ninja's round: every rival, nearest first, keeper last
+      const left = players.filter((q) => q.team !== c.team && !q.keeper); let at = c; M.route = [];
+      while (left.length) { left.sort((a, b) => dist(a, at) - dist(b, at)); at = left.shift(); M.route.push(at); }
+      const gk = players.find((q) => q.team !== c.team && q.keeper); if (gk) M.route.push(gk);
+      M.done = new Set(); M.STEP = 0.55; M.T0 = 1.2; M.T1 = M.T0 + M.route.length * M.STEP; }
     if (kind === 'twister') { ui.banner?.('TRĄBA POWIETRZNA!', c.T, 'super', c); shout(c, 'Wiej!'); SFX.super(); SFX.portal();
       M.tx = c.x + M.dir * 4; M.tz = Math.max(-PZ + 5, Math.min(PZ - 2, c.z + 3)); M.dropX = goalX(1 - c.team) * 0.7;
       M.vic = players.filter((q) => q.team !== c.team).map((q, i) => ({ q, x0: q.x, z0: q.z, a: i * 1.1, r: 1.6 + (i % 3) * 0.6, h: 1 + (i % 4) * 1.6 })); }
@@ -1122,19 +1127,24 @@ const MAGIC = (() => {
           SFX.tackle(); G.shake = 0.7; FX.emit('dust', tgt.x, 0.4, tgt.z, 22, 5, 0.5, 6); } }
       return; }
     if (M.kind === 'ninja') { const T = M.t, sg = M.dir, [fx, fz] = M.fin;
-      // 0-0.5 the boy glitches into the kneeling ninja; 0.5-1.2 he leaps up and is gone; 1.2-2.6 five ninjas stand around the pitch;
-      // 2.6-3.1 they streak into one spot before the goal; 3.1-4.3 that ninja draws his sword, leaps and kicks the ball at the goal
+      // 0-0.5 the boy glitches into the kneeling ninja; 0.5-1.2 he leaps up and is gone; then he pops up by every rival in turn,
+      // a slash in a puff of green smoke and the rival lies dizzy; at last he lands before the goal and kicks the ball in
+      const puff = (x, z, n = 18) => { FX.emit('smoke', x, 0.6, z, n, 3.2, 0.55, -1.2); FX.emit('smoke', x, 1.6, z, n >> 1, 2.2, 0.7, -0.8); };
       c.spr.holder.visible = T < 0.5 ? Math.random() < 0.5 : false; njHide();
-      if (T < 1.2) { const k = Math.max(0, (T - 0.5) / 0.7); njShow(NJ[0], T < 0.5 ? (T * 6 | 0) % 3 : 16 + (k * 6 | 0), M.sx, k * k * 14, M.sz, sg); if (T > 0.5 && !M.j) { M.j = true; SFX.tackle(); } }
-      else if (T < 2.6) { if (!M.ap) { M.ap = true; SFX.portal(); for (const [x, z] of M.clones) FX.emit('dust', x, 0.4, z, 10, 3, 0.4, 5); }
-        M.clones.forEach(([x, z], i) => njShow(NJ[i], 3 + ((T * 8 + i * 2) | 0) % 10, x, 0, z, sg)); }
-      else if (T < 3.1) { const k = (T - 2.6) / 0.5; M.clones.forEach(([x, z], i) => { const px = x + (fx - x) * k, pz = z + (fz - z) * k; njShow(NJ[i], 18, px, Math.sin(k * Math.PI) * 2, pz, sg); if (Math.random() < 0.6) FX.streak(px, 1.5, pz, Math.sign(fx - x) || 1); }); if (!M.mg) { M.mg = true; SFX.super(); } }
-      else { const k = (T - 3.1) / 1.2, f = Math.min(29, 3 + (k * 27 | 0)); njShow(NJ[0], f, fx, f > 13 ? Math.sin(Math.min(1, (f - 13) / 16) * Math.PI) * 1.6 : 0, fz, sg);
-        if (!M.flash) { M.flash = true; G.flash = 0.8; G.shake = 0.5; FX.emit('curve', fx, 2, fz, 30, 6, 0.4, 8); ball.hidden = false; ball.x = fx + sg * 1.2; ball.z = fz; ball.y = 0.3; ball.vx = ball.vz = ball.vy = 0; }
+      if (T < M.T0) { const k = Math.max(0, (T - 0.5) / 0.7); njShow(NJ[0], T < 0.5 ? (T * 6 | 0) % 3 : 16 + (k * 6 | 0), M.sx, k * k * 14, M.sz, sg); if (T > 0.5 && !M.j) { M.j = true; SFX.tackle(); puff(M.sx, M.sz, 10); } }
+      else if (T < M.T1) { const i = Math.min(M.route.length - 1, (T - M.T0) / M.STEP | 0), q = M.route[i], u = (T - M.T0 - i * M.STEP) / M.STEP, side = q.x > fx ? -1 : 1;
+        const nx = q.x - sg * 1.5, nz = q.z + 0.2;
+        if (!M.done.has('in' + i)) { M.done.add('in' + i); puff(nx, nz, 14); SFX.portal(); }
+        njShow(NJ[0], u < 0.35 ? 3 + (u / 0.35 * 6 | 0) : 9 + Math.min(6, ((u - 0.35) / 0.4 * 7) | 0), nx, 0, nz, sg);
+        if (u > 0.45 && !M.done.has(i)) { M.done.add(i); knock(q, 6.5, { lie: Math.random() < 0.5 ? 'lieBack' : 'lieFront', dizzy: true, foul: false, push: [sg * 3, (Math.random() - 0.5) * 2] });
+          puff(q.x, q.z, 26); SFX.tackle(); G.shake = Math.max(G.shake, 0.35); FX.streak(q.x, 1.4, q.z, sg); }
+        if (u > 0.85 && !M.done.has('out' + i)) { M.done.add('out' + i); puff(nx, nz, 10); } }
+      else { const k = (T - M.T1) / 1.2, f = Math.min(29, 3 + (k * 27 | 0)); njShow(NJ[0], f, fx, f > 13 ? Math.sin(Math.min(1, (f - 13) / 16) * Math.PI) * 1.6 : 0, fz, sg);
+        if (!M.flash) { M.flash = true; G.flash = 0.6; G.shake = 0.5; puff(fx, fz, 24); ball.hidden = false; ball.x = fx + sg * 1.2; ball.z = fz; ball.y = 0.3; ball.vx = ball.vz = ball.vy = 0; }
         if (f >= 22 && !M.kick) { M.kick = true; const gx = goalX(c.team), tz = (Math.random() - 0.5) * 6, dx = gx + sg * 0.8 - ball.x, dz = tz - ball.z, d = Math.hypot(dx, dz);
           ball.owner = null; ball.vx = dx / d * 34; ball.vz = dz / d * 34; ball.vy = 0; ball.y = 1; ball.last = c; ball.hot = 1; ball.sup = { name: 'NINJA', kind: 'fire', team: c.team, t: 0, ox: sg, oz: 0, by: c };
           SFX.kick(); SFX.super(); G.state = 'play'; }
-        if (T > 4.3) { c.spr.holder.visible = true; end(); } }
+        if (T > M.T1 + 1.2) { c.spr.holder.visible = true; end(); } }
       return; }
     if (M.kind === 'twister') {
       const T = M.t; twister.visible = true; twMap.offset.x = twFrame(T) / TWN; twister.quaternion.copy(camera.quaternion);
