@@ -234,6 +234,15 @@
   /* the locker room: the user's picture, contained, with hot spots on the four boys */
   #szatnia { position: fixed; inset: 0; z-index: 19; background: #120a24; overflow: hidden; }
   /* the jersey shop: shirts on white, between black side strips with colourful patterns and a shadow */
+  /* the shop front: the user's picture, the three cards are buttons; the picked one gets a pink frame */
+  #sfront { position: fixed; inset: 0; z-index: 40; background: #000; overflow: hidden; } #sfront[hidden] { display: none; }
+  #sfront .side90.l { border-right-color: #000; } #sfront .side90.r { border-left-color: #000; }
+  #sfront .fbox { position: absolute; left: 50%; top: 50%; width: min(100vw, 179.1vh); aspect-ratio: 2576 / 1438; transform: translate(-50%, -50%); box-shadow: 0 0 0 4px #000, 0 0 30px 12px rgba(0,0,0,.9); z-index: 1; }
+  #sfront .fbox > img { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+  #sfront .fcard { position: absolute; padding: 0; background: none; border: 0; cursor: pointer; border-radius: 6px; }
+  #sfront .fcard.sel { box-shadow: 0 0 0 4px #ff3fae, 0 0 0 7px #000, 0 0 18px 6px rgba(255,63,174,.55); animation: fsel .5s steps(2) infinite; } @keyframes fsel { 50% { box-shadow: 0 0 0 4px #ff8ad0, 0 0 0 7px #000, 0 0 22px 8px rgba(255,63,174,.75); } }
+  #sfront .fx { position: absolute; right: .8%; top: 1.6%; width: 4.2%; aspect-ratio: 1; font: clamp(9px, 1.3vw, 16px) "Press Start 2P", monospace; color: #fff; background: #e8302a; border: 3px solid #000; box-shadow: 0 3px 0 #000; cursor: pointer; padding: 0; }
+  #sfront .fcoin { position: absolute; left: 33.6%; top: 4.2%; font: clamp(9px, 1.3vw, 15px) "Press Start 2P", monospace; color: #1a1030; pointer-events: none; }
   #jshop { position: fixed; inset: 0; z-index: 41; background: #000; overflow: hidden; } #jshop[hidden] { display: none; }
   .side90.dark { background-color: #0a0a0e; } #jshop .side90.l { border-right-color: #000; } #jshop .side90.r { border-left-color: #000; }
   #jshop .jbox { position: absolute; left: 50%; top: 50%; width: min(100vw, 177.78vh); aspect-ratio: 16 / 9; max-height: 100vh; transform: translate(-50%, -50%); background: #fff; box-shadow: 0 0 0 4px #000, 0 0 30px 12px rgba(0,0,0,.9), inset 18px 0 20px -12px rgba(0,0,0,.45), inset -18px 0 20px -12px rgba(0,0,0,.45); display: flex; flex-direction: column; z-index: 1; }
@@ -684,7 +693,7 @@
 <div class="setov" id="roomcode" hidden><div class="setp" role="dialog" aria-label="Pokój gracza"><h2>POKÓJ GRACZA <button class="x" id="rcx" aria-label="Zamknij">X</button></h2>
   <p class="rmsg" id="rcmsg">PODAJ KOD</p><div class="rdisp" id="rcdisp"><u></u><u></u><u></u><u></u></div>
   <div class="rpad" id="rcpad"><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>6</button><button>7</button><button>8</button><button>9</button><button class="del">◀</button><button>0</button><button class="okb">OK</button></div></div></div>
-<div class="setov" id="soon" hidden><div class="setp" role="dialog" aria-label="Sklep"><h2>SKLEP <button class="x" id="soonx" aria-label="Zamknij">X</button></h2><p class="soont">COMING SOON</p><p class="soons">Sklep jeszcze się buduje. Zajrzyj tu później!</p></div></div>
+<div class="setov" id="soon" hidden><div class="setp" role="dialog" aria-label="Sklep"><h2>SKLEP <button class="x" id="soonx" aria-label="Zamknij">X</button></h2><p class="soont" id="soont">WKRÓTCE</p><p class="soons" id="soons">Ta część sklepu jeszcze się buduje.</p></div></div>
 <div class="setov" id="shop" hidden><div class="setp" role="dialog" aria-label="Sklep"><h2>SKLEP <span class="coin" id="coinS">0</span><button class="x" id="shopx" aria-label="Zamknij">X</button></h2>
   <div class="shopgrid" id="shopgrid"></div>
   <p class="arenahint">Monety zdobywasz za gole, wygrane, czyste konto, gole z mocy, etapy turnieju i kapki. Na trudniejszym poziomie dostajesz więcej.</p></div></div>
@@ -719,6 +728,7 @@
 <div class="setov" id="staty" hidden><div class="setp" role="dialog" aria-label="Statystyki"><h2>STATYSTYKI <small id="stwho"></small><button class="x" id="stx" aria-label="Zamknij">X</button></h2>
   <div class="stbody"><div class="bbox"><div class="bwin"><div class="bwater"><i></i></div></div><img src="bidon.png?v=1" alt="Bidon"><div class="bpts">0/100</div></div>
     <div class="stcol"><div id="strows"></div><p class="sthint" id="sthint"></p><button class="stok" id="stok">WLEJ ▶</button></div></div></div></div>
+<div id="sfront" hidden><div class="side90 l dark"></div><div class="side90 r dark"></div><div class="fbox"><img src="sklep_bg.jpg?v=1" alt="Sklep"><button class="fcard" data-k="boots" style="left:9.24%;top:50.49%;width:19.02%;height:47.01%" aria-label="boots"></button><button class="fcard" data-k="ball" style="left:30.01%;top:50.49%;width:19.10%;height:47.01%" aria-label="ball"></button><button class="fcard" data-k="shirts" style="left:71.66%;top:50.49%;width:19.10%;height:47.01%" aria-label="shirts"></button><button class="fx" id="fx" aria-label="Zamknij">X</button><span class="coin fcoin" id="coinF">0</span></div></div>
 <div id="jshop" hidden><div class="side90 l dark"></div><div class="side90 r dark"></div><div class="jbox">
   <div class="jtop"><b class="jtitle">SKLEP · KOSZULKI</b><span class="coin" id="coinJ">0</span><button class="x" id="jx" aria-label="Zamknij">X</button></div>
   <div class="jstage"><button class="jarrow l" id="jprev" aria-label="Poprzednia"></button><img id="jimg" alt="Koszulka"><button class="jarrow r" id="jnext" aria-label="Następna"></button></div>
@@ -1071,13 +1081,19 @@
       else P.shirt = P.shirt === k ? null : k;
       PROG.save(); draw(); window.SZ_REFRESH?.(); };
     let sx = null; $('jimg').addEventListener('pointerdown', (e) => { sx = e.clientX; }); $('jimg').addEventListener('pointerup', (e) => { if (sx != null && Math.abs(e.clientX - sx) > 40) go(e.clientX < sx ? 1 : -1); sx = null; });
-    addEventListener('keydown', (e) => { if ($('jshop').hidden) return; if (e.key === 'ArrowLeft') go(-1); else if (e.key === 'ArrowRight') go(1); else if (e.key === 'Escape') $('jshop').hidden = true; });
-    $('jx').onclick = () => { $('jshop').hidden = true; window.SZ_REFRESH?.(); };
+    addEventListener('keydown', (e) => { if ($('jshop').hidden) return; if (e.key === 'ArrowLeft') go(-1); else if (e.key === 'ArrowRight') go(1); else if (e.key === 'Escape') $('jx').click(); });
+    $('jx').onclick = () => { $('jshop').hidden = true; $('coinF').textContent = PROG.get().coins; $('sfront').querySelectorAll('.fcard').forEach((c) => c.classList.remove('sel')); };
     return { preload, open() { preload(); const P = PROG.get(), k = ORDER.findIndex((_, n) => id(n) === P.shirt); if (k >= 0) i = k; $('jshop').hidden = false; draw(); } }; })();
+  window.SFRONT = (() => { const F = $('sfront'), EN = () => window.LANG === 'en';
+    const soon = () => { $('soont').textContent = EN() ? 'COMING SOON' : 'WKRÓTCE'; $('soons').textContent = EN() ? 'This part of the shop is still being built.' : 'Ta część sklepu jeszcze się buduje.'; $('soon').hidden = false; };
+    F.querySelectorAll('.fcard').forEach((b) => (b.onclick = () => { F.querySelectorAll('.fcard').forEach((c) => c.classList.toggle('sel', c === b)); window.SZFX?.drip?.();
+      setTimeout(() => { if (b.dataset.k === 'shirts') window.JSHOP.open(); else soon(); }, 260); }));
+    $('fx').onclick = () => { F.hidden = true; window.SZ_REFRESH?.(); };
+    return { open() { window.JSHOP.preload(); $('coinF').textContent = PROG.get().coins; F.querySelectorAll('.fcard').forEach((c) => c.classList.remove('sel')); F.hidden = false; } }; })();
   // the player's room is not finished yet: it opens only with the code
   { let code = '', target = 'room'; const disp = $('rcdisp'), msg = $('rcmsg'), Lc = (pl, en) => (window.LANG === 'en' ? en : pl);
     // one keypad for the room (2708) and the shop (4545)
-    const TARGETS = { room: { code: '2708', title: ['POKÓJ GRACZA', 'PLAYER ROOM'], open: () => window.POKOJ?.open() }, shop: { code: '4545', title: ['SKLEP', 'SHOP'], open: () => window.JSHOP.open() } };
+    const TARGETS = { room: { code: '2708', title: ['POKÓJ GRACZA', 'PLAYER ROOM'], open: () => window.POKOJ?.open() }, shop: { code: '4545', title: ['SKLEP', 'SHOP'], open: () => window.SFRONT.open() } };
     const show = () => { disp.className = 'rdisp'; disp.querySelectorAll('u').forEach((u, i) => (u.textContent = code[i] ? '*' : '')); };
     const reset = () => { code = ''; msg.textContent = Lc('PODAJ KOD', 'ENTER THE CODE'); show(); };
     const check = () => { if (code === TARGETS[target].code) { disp.className = 'rdisp ok'; msg.textContent = Lc('KOD DOBRY!', 'CODE OK!'); window.SZFX?.shop?.();
