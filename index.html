@@ -644,7 +644,7 @@
   body.playing #mute { display: block; } body.playing.touch #mute { top: max(10px, env(safe-area-inset-top)); right: calc(max(10px, env(safe-area-inset-right)) + 156px); bottom: auto; }
   @media (max-width: 700px) { #score .tn { font-size: 16px; } #score .num { font-size: 24px; min-width: 50px; } #score .clockp { font-size: 18px; } #score .crest { width: 26px; height: 30px; } #score .plate, #score .clockp { height: 38px; } }
 </style>
-<script src="./lang.js?v=7"></script>
+<script src="./lang.js?v=8"></script>
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
 <script>
   // music volume for every track (match, locker room, penalties, keepy-uppy): 100 / 60 / 30 / off, remembered
@@ -703,6 +703,9 @@
 <div class="setov" id="flipask" hidden><div class="setp" role="dialog" aria-label="Butelka"><h2>BUTELKA?</h2>
   <p class="q">Znalazłeś ukrytą grę! Chcesz rzucać butelką?</p>
   <div class="yn"><button class="big grn" id="flipyes">TAK</button><button class="big red2" id="flipno">NIE</button></div></div></div>
+<div class="setov" id="palask" hidden><div class="setp" role="dialog" aria-label="Paluchy"><h2>PALUCHY?</h2>
+  <p class="q">Znalazłeś ukrytą grę w paluchy! Chcesz zagrać?</p>
+  <div class="yn"><button class="big grn" id="palyes">TAK</button><button class="big red2" id="palno">NIE</button></div></div></div>
 <div class="setov" id="flippick" hidden><div class="setp" role="dialog" aria-label="Wybierz butelkę"><h2>WYBIERZ BUTELKĘ <button class="x" id="flipx" aria-label="Zamknij">X</button></h2>
   <div class="flipgrid"><button data-b="woda"><img src="flip_woda.png" alt="Woda"></button><button data-b="cola"><img src="flip_cola.png" alt="Cola"></button><button data-b="cytryna"><img src="flip_cytryna.png" alt="Cytryna"></button><button data-b="truskawka"><img src="flip_truskawka.png" alt="Truskawka"></button><button data-b="fiolet"><img src="flip_fiolet.png" alt="Duża woda"></button></div></div></div>
 <div class="setov" id="arenapick" hidden><div class="setp" role="dialog" aria-label="Wybierz boisko"><h2>WYBIERZ BOISKO <button class="x" id="arenax" aria-label="Zamknij">X</button></h2>
@@ -973,7 +976,9 @@
     setTimeout(glitchLoop, 700 + Math.random() * 1400); })();
   // the hidden bottle game
   $('hbottle').onclick = (e) => { e.stopPropagation(); $('flipask').hidden = false; };
-  $('hsocks').onclick = (e) => { e.stopPropagation(); $('modes').hidden = true; window.PALUCHY.start(showModes); };
+  $('hsocks').onclick = (e) => { e.stopPropagation(); $('palask').hidden = false; };
+  $('palno').onclick = () => { $('palask').hidden = true; };
+  $('palyes').onclick = () => { $('palask').hidden = true; $('modes').hidden = true; window.PALUCHY.start(showModes); };
   $('flipno').onclick = () => { $('flipask').hidden = true; };
   $('flipyes').onclick = () => { $('flipask').hidden = true; $('flippick').hidden = false; };
   $('flipx').onclick = () => { $('flippick').hidden = true; };
