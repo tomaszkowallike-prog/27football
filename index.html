@@ -176,7 +176,7 @@
   #picker .pc b { display: block; margin-top: 3px; font-size: 15px; color: var(--c); }
   #picker .pc.sel { border-color: var(--c); background: #2a2b30; transform: translateY(-4px); box-shadow: 0 0 0 2px #000, 0 6px 0 #000; }
   #picker .pc.off { opacity: .3; cursor: default; }
-  #picker .pbar { height: 5px; background: #333; margin-top: 9px; } #picker .pbar i { display: block; height: 100%; background: #ffe14a; animation: pbar 5s linear forwards; }
+  #picker .pbar { height: 5px; background: #333; margin-top: 9px; } #picker .pbar i { display: block; height: 100%; background: #ffe14a; animation: pbar 6s linear forwards; }
   @keyframes pbar { from { width: 100%; } to { width: 0; } }
   #picker .phint { margin-top: 7px; font-size: 13px; opacity: .8; } body.touch #picker .phint.k-keys { display: none; } body:not(.touch) #picker .phint.k-touch { display: none; }
   body.touch #picker .pc { width: 88px; font-size: 11px; padding: 5px 3px 4px; } body.touch #picker .pc img, body.touch #picker .pc .own { width: 30px; height: 30px; margin-bottom: 3px; } body.touch #picker .pc .own { font-size: 24px; line-height: 30px; } body.touch #picker .pc b { font-size: 13px; } body.touch #picker { padding-top: 6px; }
@@ -555,7 +555,7 @@
   body.playing #mute { display: block; } body.playing.touch #mute { top: max(10px, env(safe-area-inset-top)); right: calc(max(10px, env(safe-area-inset-right)) + 156px); bottom: auto; }
   @media (max-width: 700px) { #score .tn { font-size: 16px; } #score .num { font-size: 24px; min-width: 50px; } #score .clockp { font-size: 18px; } #score .crest { width: 26px; height: 30px; } #score .plate, #score .clockp { height: 38px; } }
 </style>
-<script src="./lang.js?v=4"></script>
+<script src="./lang.js?v=5"></script>
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
 <script>
   // music volume for every track (match, locker room, penalties, keepy-uppy): 100 / 60 / 30 / off, remembered
@@ -689,7 +689,7 @@
   <div id="kmsg"><b>DOTYKAJ KÓŁEK!</b><span>Masz chwilę na każde, inaczej piłka spadnie.</span></div>
   <div id="kend" hidden><div class="tbox"><small>PIŁKA SPADŁA</small><div class="kres"><b id="kres">0</b> kapek</div><p id="knew"></p><div class="row"><button class="btn" id="kagain">JESZCZE RAZ</button><button class="btn ghost" id="kmenu">MENU</button></div></div></div>
   <button class="ibtn" id="kback">✕ MENU</button></div>
-<div id="picker" hidden><div class="pbox"><small>WYBIERZ SUPER STRZAŁ</small><div class="cards" id="pcards"></div><div class="pbar"><i></i></div><div class="phint k-keys">← → wybierz · <span class="kc">K</span> strzał · albo <span class="kc">1</span>–<span class="kc">6</span></div><div class="phint k-touch">Dotknij strzału, który chcesz oddać</div></div></div>
+<div id="picker" hidden><div class="pbox"><small>WYBIERZ MOC</small><div class="cards" id="pcards"></div><div class="pbar"><i></i></div><div class="phint k-keys">← → wybierz · <span class="kc">K</span> użyj · <span class="kc">Esc</span> wyjdź</div><div class="phint k-touch">Dotknij mocy albo WRÓĆ</div></div></div>
 <div id="tip" hidden><div class="tbox"><small>JAK GRAĆ</small>
   <div class="combo"><span class="cb" style="--c:#5be36e">PODAJ</span><span class="cb" style="--c:#ff5a4a">STRZAŁ</span><span class="cb" style="--c:#ffc21a">★ SUPER</span></div>
   <p>Przyciski same się zmieniają: gdy masz piłkę, zielony podaje, a czerwony strzela (przytrzymaj, żeby strzelić mocniej). Bez piłki zielony zmienia zawodnika, a czerwony robi wślizg.</p>
@@ -750,7 +750,7 @@
       this._inv = { ...inv }; },
     picker(P) { const el = $('picker'); if (!P) { el.hidden = true; this._pk = null; return; } const G = window.GAME;
       if (this._pk !== P.opts) { this._pk = P.opts; el.hidden = false; const bar = el.querySelector('.pbar i'); bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = '';
-        $('pcards').innerHTML = P.opts.map((o, i) => `<div class="pc${o.n === 0 ? ' off' : ''}" data-i="${i}" style="--c:${o.col}">${o.id === 'own' ? '<span class="own">🔥</span>' : `<img src="${G.icons[o.id]}" alt="">`}${o.name}<b>${o.n < 0 ? '∞' : '×' + o.n}</b></div>`).join(''); }
+        $('pcards').innerHTML = P.opts.map((o, i) => `<div class="pc${o.n === 0 ? ' off' : ''}" data-i="${i}" style="--c:${o.col}">${o.id === 'back' ? '<span class="own">✖</span>' : `<img src="${G.icons[o.id]}" alt="">`}${o.name}<b>${o.n < 0 ? '' : '×' + o.n}</b></div>`).join(''); }
       el.querySelectorAll('.pc').forEach((c, i) => c.classList.toggle('sel', i === P.sel)); },
     weather(m) { $('wx').textContent = m === 'rain' ? 'DESZCZ' : 'WIATR'; },
     banner(text, T, kind, p) {
@@ -864,7 +864,7 @@
   $('pset').onclick = () => { $('pmenu').hidden = true; openSet(() => { $('pmenu').hidden = false; }); };
   $('pquit').onclick = () => { $('pmenu').hidden = true; ask('Wyjść z meczu? Wynik przepadnie.', () => { try { window.GAME?.quit?.(); } catch (e) {} window.GAME?.freeze(false);
       document.body.classList.remove('playing'); const t = $('tip'); if (t) t.hidden = true; showModes(); }); $('askno').onclick = () => { $('askov').hidden = true; $('pmenu').hidden = false; }; };
-  addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('playing')) { $('pmenu').hidden ? openPause() : closePause(); } });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('playing') && window.GAME?.G?.state !== 'pick') { $('pmenu').hidden ? openPause() : closePause(); } });
   // a random board button glitches every second or two
   (function glitchLoop() { const m = document.getElementById('modes'); if (m && !m.hidden) { const bs = [...m.querySelectorAll('.tbox2 .mb')]; const b = bs[Math.floor(Math.random() * bs.length)];
       if (b) { b.classList.remove('glitch'); void b.offsetWidth; b.classList.add('glitch'); setTimeout(() => b.classList.remove('glitch'), 340); } }
@@ -1232,7 +1232,7 @@
         if (key !== last) { last = key;
           $('nbA').classList.toggle('swap', !c.has); $('nbA').querySelector('span').textContent = c.has ? 'PODAJ' : 'ZMIANA';
           $('nbB').classList.toggle('tackle', !c.has && !c.air); $('nbB').querySelector('span').textContent = c.has ? 'STRZAŁ' : c.air ? 'GŁÓWKA' : 'WŚLIZG';
-          $('nbStar').classList.toggle('off', !c.has); $('nbStar').classList.toggle('ready', c.has); $('nbStar').querySelector('.cnt').textContent = c.bag ? c.bag : '';
+          $('nbStar').classList.toggle('off', !c.has || !c.bag); $('nbStar').classList.toggle('ready', c.has && c.bag > 0); $('nbStar').querySelector('.cnt').textContent = c.bag ? c.bag : '';
           $('joy').classList.toggle('dash', c.dash); }
         $('nbB').classList.toggle('charging', c.charge > 0); $('nbB').style.setProperty('--pw', c.charge.toFixed(2)); }
       requestAnimationFrame(loop); };
@@ -1253,6 +1253,6 @@
 <script src="./caps.js"></script>
 <script src="./flip.js"></script>
 <script src="./bieg.js?v=1795689645"></script>
-<script type="module" src="./game.js?v=2"></script>
+<script type="module" src="./game.js?v=3"></script>
 </body>
 </html>

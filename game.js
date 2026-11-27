@@ -916,17 +916,23 @@ function rivalPower(c, k) {
 }
 // the super picker: in the air with the ball, STRZAŁ freezes the moment and you choose which super to fire
 const PICK = { open: false, opts: [], sel: 0, t: 0, p: null };
+const bagCount = () => { let n = 0; for (const k in G.inv) n += G.inv[k]; return n; };
 function openPick(c) {
-  const opts = [{ id: 'own', name: c.super.name, n: -1, col: '#ff8a1f', kind: c.super.kind }];
-  for (const k in POWERS) opts.push({ id: k, name: POWERS[k].name, n: G.inv[k], col: POWERS[k].col, kind: k });
+  // no super shot of your own any more: only the cards found on the pitch, and a way back out
+  const opts = [];
+  for (const k in POWERS) if (G.inv[k] > 0) opts.push({ id: k, name: POWERS[k].name, n: G.inv[k], col: POWERS[k].col, kind: k });
+  if (!opts.length) return false;
+  opts.push({ id: 'back', name: window.LANG === 'en' ? 'BACK' : 'WRÓĆ', n: -1, col: '#9aa0b0', kind: 'back' });
   Object.assign(PICK, { open: true, opts, sel: 0, t: 0, p: c }); G.state = 'pick'; c.vy = 0; c.vx *= 0.2; c.vz *= 0.2; ball.owner = c;
-  G.ca = Math.max(G.ca, 1); SFX.charge(1); ui.picker?.(PICK);
+  G.ca = Math.max(G.ca, 1); SFX.charge(1); ui.picker?.(PICK); return true;
 }
 function pickMove(d) { if (!PICK.open) return; const n = PICK.opts.length; let i = PICK.sel; for (let k = 0; k < n; k++) { i = (i + d + n) % n; if (PICK.opts[i].n !== 0) break; } PICK.sel = i; SFX.menu(); ui.picker?.(PICK); }
+// close the picker without using a card: the player keeps the ball and drops back down
+function cancelPick() { if (!PICK.open) return; PICK.open = false; ui.picker?.(null); G.state = 'play'; const c = PICK.p; c.act = null; c.jumpBall = false; c.vy = Math.min(c.vy, 0); ball.owner = c; SFX.menu(); }
 function doPick(i = PICK.sel) {
   if (!PICK.open) return; const o = PICK.opts[i]; if (!o || o.n === 0) return;
+  if (o.id === 'back') { cancelPick(); return; }
   PICK.open = false; ui.picker?.(null); G.state = 'play'; const c = PICK.p; c.act = 'volley'; c.t = 0; c.vy = Math.min(c.vy, 0);
-  if (o.id === 'own') { ball.owner = null; shoot(c, 0.9, c.super); return; }
   G.inv[o.id]--; ui.inv?.(G.inv);
   if (o.id === 'lightning') { lightning(c); return; }
   if (o.id === 'wolf') { wolfStart(c); return; }
@@ -1245,7 +1251,7 @@ let keyDash = false, padDash = false, stick = null, stickFull = 0, abT = { a: -9
 addEventListener('keydown', (e) => {
   if (G.state === 'pick') { e.preventDefault(); if (e.repeat) return; const c = e.code;
     if (c === 'ArrowLeft' || c === 'KeyA' || c === 'ArrowUp' || c === 'KeyW') pickMove(-1); else if (c === 'ArrowRight' || c === 'KeyD' || c === 'ArrowDown' || c === 'KeyS') pickMove(1);
-    else if (/^Digit[1-6]$/.test(c)) doPick(+c.slice(5) - 1); else if (['KeyK', 'KeyX', 'KeyJ', 'KeyZ', 'Space', 'Enter'].includes(c)) doPick(); return; }
+    else if (c === 'Escape' || c === 'Backspace') cancelPick(); else if (/^Digit[1-9]$/.test(c)) doPick(+c.slice(5) - 1); else if (['KeyK', 'KeyX', 'KeyJ', 'KeyZ', 'Space', 'Enter'].includes(c)) doPick(); return; }
   if (KEYMAP[e.code]) {
     e.preventDefault(); if (e.repeat) return;
     const d = KEYMAP[e.code].join(), now = performance.now();
@@ -1396,7 +1402,7 @@ function press(btn) {
   if (btn === 'shot') {   // the red button: a plain shot straight away, no charging; in the air it heads or volleys
     if (c.y > 0) { press('b'); return; }
     if (ball.owner === c && free(c)) { G.charge = 0; shoot(c, c.dash ? 0.8 : 0.6); } return; }
-  if (btn === 'star') { if (ball.owner !== c || !free(c) || c.y > 0) return; G.charge = 0; c.st = 'jump'; c.jumpBall = true; c.y = 1.4; c.vy = 0; openPick(c); return; }
+  if (btn === 'star') { if (ball.owner !== c || !free(c) || c.y > 0) return; if (!bagCount()) { SFX.menu(); ui.banner?.(window.LANG === 'en' ? 'NO CARDS' : 'BRAK KART', TEAMS[0], 'small'); return; } G.charge = 0; c.st = 'jump'; c.jumpBall = true; c.y = 1.4; c.vy = 0; openPick(c); return; }
   if (c.st === 'down') { c.t -= 0.22; return; }                  // mash to get up sooner
   if (btn === 'jump') { jump(c); return; }
   if (btn === 'slide') { if (c.st === 'jump' && c.y > 0.3) dropkick(c); else if (free(c) && ball.owner !== c) tackle(c, 'slide'); else if (free(c)) dropkick(c); return; }
@@ -1409,9 +1415,9 @@ function press(btn) {
   if (btn === 'b') {
     if (c.y > 0 && c.st === 'jump' && (ball.owner === c || reach(c, 1.7))) {   // in the air: a header, a volley, a bicycle kick; at the peak a super shot
       const peak = Math.abs(c.vy) < APEX, high = ball.y > c.y + 1.5, back = Math.sign(input.x || c.face) !== c.T.dir;
-      if (peak || (c.jumpBall && ball.owner === c)) { openPick(c); return; }
+      if ((peak || (c.jumpBall && ball.owner === c)) && bagCount() && openPick(c)) return;
       c.act = back && !high ? 'bike' : high ? 'header' : 'volley'; c.t = 0;
-      ball.owner = null; shoot(c, 0.9, peak ? c.super : null, { header: c.act === 'header' }); return;
+      ball.owner = null; shoot(c, 0.9, null, { header: c.act === 'header' }); return;
     }
     if (!free(c)) return;
     if (ball.owner === c) { shoot(c, c.dash ? 1 : 0.55); return; }
@@ -1462,7 +1468,7 @@ function ai(p, dt) {
     }
     const toGoal = Math.hypot(opp - p.x, p.z), pressed = players.some((o) => o.team !== p.team && !o.keeper && free(o) && dist(o, p) < 2.6);
     if (toGoal < 15 && p.hold > 0.35) {
-      if (G.superCool[p.team] <= 0 && Math.random() < (p.team === 1 ? DIFF([0.3, 0.55, 0.8]) : 0.35)) { G.superCool[p.team] = p.team === 1 ? DIFF([16, 11, 7]) : 11; p.autoSuper = true; jump(p); return; }
+      if (false && G.superCool[p.team] <= 0 && Math.random() < (p.team === 1 ? DIFF([0.3, 0.55, 0.8]) : 0.35)) { G.superCool[p.team] = p.team === 1 ? DIFF([16, 11, 7]) : 11; p.autoSuper = true; jump(p); return; }
       shoot(p, 0.5 + Math.random() * 0.5); return;
     }
     if (pressed && p.hold > 0.45 && Math.random() < dt * 2.5) { const m = bestMate(p); if (m) { pass(p, m); return; } }
@@ -1640,7 +1646,7 @@ function step(dt) {
   if (G.charge) { if (ball.owner !== captain || G.state !== 'play') G.charge = 0; else { G.charge += dt; if (G.charge > 1.1) press('Bup'); } }
   if (G.state === 'penExt') { draw(dt); return; }
   if (G.state === 'dragon') { for (const p of players) physics(p, dt, false); draw(dt); return; }
-  if (G.state === 'pick') { PICK.t += dt; if (PICK.t > 5) doPick(); draw(dt); return; }
+  if (G.state === 'pick') { PICK.t += dt; if (PICK.t > 6) cancelPick(); draw(dt); return; }
   if (G.state === 'penalty') { G.pause -= dt; for (const p of players) physics(p, dt, false); if (G.pause <= 0) setupPenalty(); draw(dt); return; }
   if (G.state === 'penAim') {
     G.penT += dt; readInput(dt); const P = G.pen;

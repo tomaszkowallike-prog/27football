@@ -30,7 +30,7 @@
     'KARNE': 'PENALTIES', 'seria rzutów karnych': 'a penalty shootout', 'KAPKI': 'KEEPY-UPPY', 'dotykaj kółek, żongluj piłką': 'tap the circles, juggle the ball', 'BUT': 'BOOT',
     'zawiąż sznurówki': 'tie your laces', 'KAPSLE': 'BOTTLE CAPS', 'wyścig kapsli po torze': 'a bottle-cap race', 'BIEG': 'RACE', 'wyścig dookoła boiska': 'a race around the pitch',
     '◀ SZATNIA': '◀ LOCKER ROOM', 'REKORD': 'BEST', 'DOTYKAJ KÓŁEK!': 'TAP THE CIRCLES!', 'Masz chwilę na każde, inaczej piłka spadnie.': 'You have a moment for each, or the ball drops.',
-    'PIŁKA SPADŁA': 'THE BALL DROPPED', 'kapek': 'touches', 'JESZCZE RAZ': 'AGAIN', 'MENU': 'MENU', '✕ MENU': '✕ MENU', 'WYBIERZ SUPER STRZAŁ': 'PICK A SUPER SHOT',
+    'PIŁKA SPADŁA': 'THE BALL DROPPED', 'kapek': 'touches', 'JESZCZE RAZ': 'AGAIN', 'MENU': 'MENU', '✕ MENU': '✕ MENU', 'WYBIERZ SUPER STRZAŁ': 'PICK A SUPER SHOT', 'WYBIERZ MOC': 'PICK A POWER', 'użyj ·': 'use ·', 'wyjdź': 'leave', 'Dotknij mocy albo WRÓĆ': 'Tap a power or BACK',
     '← → wybierz ·': '← → choose ·', 'strzał · albo': 'shoot · or', 'Dotknij strzału, który chcesz oddać': 'Tap the shot you want to take', 'JAK GRAĆ': 'HOW TO PLAY',
     'PODAJ': 'PASS', 'STRZAŁ': 'SHOOT', '★ SUPER': '★ SUPER', 'GŁÓWKA': 'HEADER',
     'Przyciski same się zmieniają: gdy masz piłkę, zielony podaje, a czerwony strzela (przytrzymaj, żeby strzelić mocniej). Bez piłki zielony zmienia zawodnika, a czerwony robi wślizg.': 'The buttons change by themselves: with the ball, green passes and red shoots (hold to shoot harder). Without the ball, green switches player and red tackles.',
