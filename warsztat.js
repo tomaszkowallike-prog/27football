@@ -7,9 +7,9 @@
   const PARTS = { 1: L('CZUBEK', 'TOE'), 2: L('PRZÓD', 'FOREFOOT'), 3: L('ŚRÓDSTOPIE', 'MIDFOOT'), 4: L('PASKI', 'STRIPES'), 5: L('TYŁ', 'BACK'),
     6: L('KOŁNIERZ', 'COLLAR'), 7: L('JĘZYK', 'TONGUE'), 8: L('SZNURÓWKI', 'LACES'), 10: L('PODESZWA', 'SOLE'), 11: L('KORKI', 'STUDS') };
   // boot models: each has its own picture, its own parts map (cut seam to seam) and its own paint
-  const MODELS = { m2: { n: L('KLASYK', 'CLASSIC'), side: 'boot2_side.png?v=1', parts: 'boot2_parts.png?v=1', bg: 'warsztat_side2.jpg?v=1',
-      names: { 1: L('CZUBEK', 'TOE'), 2: L('PRZÓD', 'FOREFOOT'), 3: L('ŚRÓDSTOPIE', 'MIDFOOT'), 5: L('PIĘTA', 'HEEL'), 6: L('KOŁNIERZ', 'COLLAR'), 7: L('JĘZYK', 'TONGUE'), 8: L('SZNURÓWKI', 'LACES'), 10: L('PODESZWA', 'SOLE'), 11: L('KORKI', 'STUDS') } },
-    m1: { n: L('PASKI', 'STRIPES'), side: 'boot_side.png?v=1', parts: 'boot_parts.png?v=2', bg: 'warsztat_side.jpg?v=1', names: PARTS } };
+  const MODELS = { m2: { n: L('KLASYK', 'CLASSIC'), side: 'boot2_side.png?v=2', parts: 'boot2_parts.png?v=2', bg: 'warsztat_side2.jpg?v=1', div: 18,
+      names: { 1: L('CZUBEK', 'TOE'), 13: L('PRZESZYCIE', 'TOE BAND'), 3: L('PRZÓD', 'FOREFOOT'), 4: L('ŚRÓDSTOPIE', 'MIDFOOT'), 5: L('TYŁ', 'BACK'), 6: L('PIĘTA', 'HEEL'), 7: L('KOŁNIERZ', 'COLLAR'), 8: L('JĘZYK', 'TONGUE'), 9: L('SZNURÓWKI', 'LACES'), 12: L('OCZKA', 'EYELETS'), 10: L('PODESZWA', 'SOLE'), 11: L('KORKI', 'STUDS') } },
+    m1: { n: L('PASKI', 'STRIPES'), side: 'boot_side.png?v=1', parts: 'boot_parts.png?v=2', bg: 'warsztat_side.jpg?v=1', div: 20, names: { ...PARTS } } };
   let MOD = 'm2';
   const COLS = ['#ffffff', '#d8d8e0', '#8a8a96', '#2a2a32', '#e8402a', '#ff8a1f', '#ffe14a', '#6ee05a', '#1f9a4a', '#3fd8ff', '#2a6ae8', '#6b3fa8',
     '#ff6ab8', '#8a4a20', '#ffc21a', '#b8f0ff'];
@@ -35,11 +35,11 @@
   let soleMaskImg = null;
   const loadModel = async (id) => { MOD = id; const Md = MODELS[id]; side = await load(Md.side); Object.keys(PARTS).forEach((k) => delete PARTS[k]); Object.assign(PARTS, Md.names); matFor = '';
     const pm = await load(Md.parts), c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.drawImage(pm, 0, 0);
-    const d = g.getImageData(0, 0, W, H).data; partsData = new Uint8Array(W * H); for (let i = 0; i < W * H; i++) partsData[i] = Math.round(d[i * 4] / 20);
+    const d = g.getImageData(0, 0, W, H).data; partsData = new Uint8Array(W * H); for (let i = 0; i < W * H; i++) partsData[i] = Math.round(d[i * 4] / Md.div);
     pg.clearRect(0, 0, W, H); undo = []; try { const s = localStorage.getItem('boot_paint_' + id) || (id === 'm1' ? localStorage.getItem('boot_paint') : null); if (s) pg.drawImage(await load(s), 0, 0); } catch (e) {} };
   const prep = async () => {
     sole = await load('boot_sole.png?v=1'); await loadModel(cfg().model || 'm2');
-    const sm = soleMaskImg = await load('boot_sole_m.png?v=2'), c2 = document.createElement('canvas'); c2.width = SW; c2.height = SH; const g2 = c2.getContext('2d'); g2.drawImage(sm, 0, 0);
+    const sm = soleMaskImg = await load('boot_sole_m.png?v=3'), c2 = document.createElement('canvas'); c2.width = SW; c2.height = SH; const g2 = c2.getContext('2d'); g2.drawImage(sm, 0, 0);
     const d2 = g2.getImageData(0, 0, SW, SH).data; soleMask = new Uint8Array(SW * SH); for (let i = 0; i < SW * SH; i++) soleMask[i] = d2[i * 4 + 3] > 128 ? 1 : 0;
   };
   const save = () => { try { localStorage.setItem('boot_paint_' + MOD, paint.toDataURL()); } catch (e) {} const B = cfg(), d = pg.getImageData(0, 0, W, H).data; let n = 0;
@@ -59,7 +59,7 @@
   // material texture over the upper (parts 1-8)
   let matTex = null, matFor = '';
   const buildMat = () => { const m = cfg().mat; if (matFor === m) return; matFor = m; matTex = document.createElement('canvas'); matTex.width = W; matTex.height = H; const g = matTex.getContext('2d'), img = g.createImageData(W, H), d = img.data;
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x, p = partsData[i]; if (!p || p > 8) continue; let a = 0;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x, p = partsData[i]; if (!p || p === 10 || p === 11) continue; let a = 0;
       if (m === 'knit') a = (y % 4 < 1) ? 40 : ((x + (y >> 2)) % 6 === 0 ? 22 : 0); else if (m === 'carbon') a = (((x >> 2) + (y >> 2)) % 2 ? 46 : 0) + ((x + y) % 8 === 0 ? 20 : 0);
       else if (m === 'syn') a = ((x - y * 2) % 40 + 40) % 40 < 3 ? -40 : 0; else a = 0;
       if (a > 0) { d[i * 4 + 3] = a; } else if (a < 0) { d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = 255; d[i * 4 + 3] = -a; } }
