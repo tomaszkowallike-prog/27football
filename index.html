@@ -416,6 +416,25 @@
   #szatnia .face { height: 92%; aspect-ratio: 1; background: url(szatnia.jpg) no-repeat; background-size: 900% auto; image-rendering: pixelated; border-radius: 4px; flex: none; align-self: flex-end; }
   #szatnia .who { flex: 1; display: flex; flex-direction: column; gap: .15em; font-size: clamp(9px, 1.25vw, 16px); white-space: nowrap; overflow: hidden; }
   #szatnia .who b { font-size: 2.2em; line-height: 1; } #szatnia .who em { font-style: normal; color: #ffe14a; font-size: .85em; } #szatnia .who i { font-style: normal; color: #ff8a1f; font-size: .85em; }
+  /* the sports bottle: water behind the bottle picture, seen through its window (14,32 10x66 of a 46x108 picture) */
+  .bbox { position: relative; aspect-ratio: 46 / 108; } .bbox img { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+  .bbox .bwin { position: absolute; left: 30.4%; top: 29.6%; width: 21.8%; height: 61.2%; background: #141230; overflow: hidden; }
+  .bbox .bwater { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: linear-gradient(90deg, #4ab8ff, #8ae0ff 40%, #3a9cf0); transition: height .35s steps(8); }
+  .bbox .bwater i { position: absolute; left: 0; right: 0; top: 0; height: 3px; background: #dff6ff; animation: bwave 1.2s steps(2) infinite; } @keyframes bwave { 50% { transform: translateY(1px); opacity: .6; } }
+  .bbox .drop { position: absolute; left: 40%; top: 6%; width: 7px; height: 7px; background: #8ae0ff; box-shadow: 0 0 0 2px #1a3a80; pointer-events: none; }
+  #szatnia .sbidon { position: absolute; left: 1.6%; top: 77.5%; width: 8.4%; height: 20.5%; padding: 0; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; z-index: 3; }
+  #szatnia .sbidon .bbox { height: 82%; } #szatnia .sbidon .bpts { font: clamp(6px, .9vw, 11px) "Press Start 2P", monospace; color: #fff; background: rgba(0,0,0,.7); padding: 2px 4px; margin-top: 2px; white-space: nowrap; }
+  #szatnia .sbidon.full .bbox { animation: bfull .7s steps(2) infinite; } #szatnia .sbidon.full .bpts { color: #6ee05a; } @keyframes bfull { 50% { filter: drop-shadow(0 0 6px #8ae0ff) brightness(1.2); } }
+  #szatnia .spanel { cursor: pointer; }
+  #staty .setp { width: min(94vw, 640px); } #staty h2 small { font-size: .6em; color: #b8b0e8; margin-left: 8px; }
+  #staty .stbody { display: flex; gap: 14px; align-items: stretch; } #staty .bbox { height: min(52vh, 280px); flex: none; } #staty .bbox .bpts { position: absolute; left: 100%; top: 40%; margin-left: -6px; font: 11px "Press Start 2P", monospace; color: #8ae0ff; text-shadow: 2px 2px 0 #000; white-space: nowrap; }
+  #staty .stcol { flex: 1; display: flex; flex-direction: column; gap: 6px; padding-left: 40px; min-width: 0; }
+  #staty .srow { display: grid; grid-template-columns: 7.5em auto 1fr 3.4em; gap: 8px; align-items: center; font: 9px "Press Start 2P", monospace; color: #b8b0e8; }
+  #staty .srow .lvl { display: flex; gap: 2px; } #staty .srow u { width: 14px; height: 9px; background: #3a3270; text-decoration: none; } #staty .srow u.on { background: #ffc21a; } #staty .srow u.pre { background: #8ae0ff; animation: blink .6s steps(2, jump-none) infinite; }
+  #staty .srow b { color: #8ae0ff; font-weight: 400; text-align: right; } #staty .srow input { width: 100%; accent-color: #4ab8ff; } #staty .srow input:disabled { opacity: .35; }
+  #staty .sthint { margin: 4px 0 0; font: 8px "Press Start 2P", monospace; line-height: 1.6; color: #d8d4ff; }
+  #staty .stok { align-self: flex-end; font: 11px "Press Start 2P", monospace; padding: 8px 14px; color: #0a1a30; background: #8ae0ff; border: 3px solid #dff6ff; box-shadow: 0 4px 0 #1a5a9a; cursor: pointer; } #staty .stok:disabled { opacity: .35; cursor: default; }
+  @media (max-height: 420px) { #staty .srow { font-size: 8px; } #staty .bbox { height: 62vh; } }
   #szatnia .bars { display: grid; grid-template-columns: auto auto; gap: .25em .8em; align-items: center; font-size: clamp(8px, 1.15vw, 15px); }
   #szatnia .bars span { color: #b8b0e8; } #szatnia .bars i { display: flex; gap: 2px; } #szatnia .bars i u { width: 1.6em; height: .7em; background: #3a3270; text-decoration: none; }
   #szatnia .bars i u.on { background: #ffc21a; } #szatnia .bars i.max u.on { background: #ff5a1a; box-shadow: 0 0 6px #ff8a1f; }
@@ -555,7 +574,7 @@
   body.playing #mute { display: block; } body.playing.touch #mute { top: max(10px, env(safe-area-inset-top)); right: calc(max(10px, env(safe-area-inset-right)) + 156px); bottom: auto; }
   @media (max-width: 700px) { #score .tn { font-size: 16px; } #score .num { font-size: 24px; min-width: 50px; } #score .clockp { font-size: 18px; } #score .crest { width: 26px; height: 30px; } #score .plate, #score .clockp { height: 38px; } }
 </style>
-<script src="./lang.js?v=5"></script>
+<script src="./lang.js?v=6"></script>
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
 <script>
   // music volume for every track (match, locker room, penalties, keepy-uppy): 100 / 60 / 30 / off, remembered
@@ -670,12 +689,15 @@
 <div class="ov" id="end" hidden><div class="panel"><h1 id="endT">KONIEC</h1><div id="final">0 : 0</div><div id="reward"></div><div class="row"><button class="btn" id="again">REWANŻ</button><button class="btn" id="tnext" hidden>DALEJ</button><button class="btn" id="tmenu">BOISKA</button></div></div></div>
 <div id="penHint"></div>
 <div id="bag" class="hud"></div>
+<div class="setov" id="staty" hidden><div class="setp" role="dialog" aria-label="Statystyki"><h2>STATYSTYKI <small id="stwho"></small><button class="x" id="stx" aria-label="Zamknij">X</button></h2>
+  <div class="stbody"><div class="bbox"><div class="bwin"><div class="bwater"><i></i></div></div><img src="bidon.png?v=1" alt="Bidon"><div class="bpts">0/100</div></div>
+    <div class="stcol"><div id="strows"></div><p class="sthint" id="sthint"></p><button class="stok" id="stok">WLEJ ▶</button></div></div></div></div>
 <div id="szatnia" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg"></div><div class="sbox"><img src="szatnia_base.jpg?v=2" alt="">
   <div class="sanim" aria-hidden="true"><div class="lamp a" style="left:18.541%;top:12.965%;width:12.739%;height:2.657%"><i></i></div><div class="lamp b" style="left:43.182%;top:12.965%;width:12.799%;height:2.657%"><i></i></div><div class="lamp c" style="left:68.600%;top:13.177%;width:12.380%;height:2.550%"><i></i></div><div class="lev" style="left:74.522%;top:42.402%;width:9.988%;height:21.679%"><div class="aura"></div><div class="orb back"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div><img src="kid27.png" alt=""><div class="orb front"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div></div><img class="tie" src="kid10.png" alt="" style="left:36.244%;top:41.445%;width:8.134%;height:23.061%"><img class="sip" src="kid7h.png" alt="" style="left:56.998%;top:40.701%;width:6.220%;height:13.603%"><div class="phone" style="left:19.258%;top:53.879%;width:2.093%;height:1.913%"></div></div>
   <div class="kid" data-i="0" style="left:14.5%;width:12.5%"></div><div class="kid" data-i="1" style="left:34.5%;width:12.5%"></div>
   <div class="kid" data-i="2" style="left:54.5%;width:12.5%"></div><div class="kid" data-i="3" style="left:73.5%;width:12.5%"></div>
   <div class="pick" id="spick">▼</div><div id="dog" title="Pies"></div>
-  <div class="spanel"><div class="face" id="sface"></div><div class="who"><b id="sname"></b><span id="spos"></span><em>KAPITAN · ROZGRYWAJĄCY</em><i id="ssup"></i></div><div class="bars" id="sbars"></div></div>
+  <button class="sbidon" id="sbidon" aria-label="Bidon"><div class="bbox"><div class="bwin"><div class="bwater"><i></i></div></div><img src="bidon.png?v=1" alt=""></div><span class="bpts">0/100</span></button><div class="spanel" id="spanel"><div class="face" id="sface"></div><div class="who"><b id="sname"></b><span id="spos"></span><em>KAPITAN · ROZGRYWAJĄCY</em><i id="ssup"></i></div><div class="bars" id="sbars"></div></div>
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <button class="hot" id="sset" aria-label="Ustawienia"></button>
@@ -912,15 +934,49 @@
   const addXP = (num, k, n) => { const P = PROG.get(), lv = P.lv[num] || (P.lv[num] = [0, 0, 0, 0, 0]), xp = P.xp[num] || (P.xp[num] = [0, 0, 0, 0, 0]); if (lv[k] >= 5) return null;
     xp[k] += n; let up = 0; while (xp[k] >= XPL && lv[k] < 5) { xp[k] -= XPL; lv[k]++; up++; } if (lv[k] >= 5) xp[k] = 0; PROG.save(); return up; };
   window.TRAIN = (game, r = {}) => { const num = window.CAPTAIN || 27, L = window.L || ((x) => x), out = [], P = PROG.get(); let coins = 0;
-    const give = (k, n) => { const up = addXP(num, k, n); if (up == null) return; out.push(`+${n} XP ${L(SK[k])}${up ? '  ▲ ' + L('POZIOM') + ' ' + P.lv[num][k] : ''}`); };
+    // every training pours into the sports bottle (BIDON); a full bottle is poured into the skills in the locker room
+    const give = (k, n) => { const r2 = window.BIDON.fill(n); if (r2.added) out.push(`+${r2.added} ${L('DO BIDONU')} (${r2.now}/${window.BIDON.CAP})`); if (r2.full) out.push(L('BIDON PEŁNY! Rozlej punkty w szatni')); };
     P.st = P.st || {}; if (game === 'bieg' && r.place === 1) { P.bieg_win = 1; P.st.bw = (P.st.bw || 0) + 1; } if (game === 'karne' && r.win) { P.pen_win = 1; P.st.pw = (P.st.pw || 0) + 1; }
-    if (game === 'bieg') { give(4, 15 + (r.place === 1 ? 20 : 0) + (r.record ? 50 : 0)); coins = r.place === 1 ? 10 : 3; }
-    if (game === 'kapki') { give(2, Math.min(40, r.score) + (r.record ? 50 : 0)); }
-    if (game === 'karne') { give(0, 8 * (r.goals || 0) + (r.win ? 15 : 0) + (r.record ? 50 : 0)); coins = r.win ? 10 : 3; }
-    if (game === 'mecz') { give(1, 10 + (r.goals || 0) * 5 + (r.win ? 15 : 0)); give(3, 10 + (r.clean ? 20 : 0) + (r.win ? 10 : 0)); }
+    if (game === 'bieg') { give(4, 12 + (r.place === 1 ? 15 : 0) + (r.record ? 25 : 0)); coins = r.place === 1 ? 10 : 3; }
+    if (game === 'kapki') { give(2, Math.min(30, Math.round(r.score / 2)) + (r.record ? 25 : 0)); }
+    if (game === 'karne') { give(0, 4 * (r.goals || 0) + (r.win ? 12 : 0) + (r.record ? 25 : 0)); coins = r.win ? 10 : 3; }
+    if (game === 'mecz') { give(1, 12 + (r.goals || 0) * 4 + (r.win ? 12 : 0) + (r.clean ? 8 : 0)); }
     if (r.record) coins += 20; if (coins) { PROG.add(coins); out.push(`+${coins} ${L('MONET')}`); }
     setTimeout(() => TRO.check(), 0);
     if (out.length) toast((r.record ? L('NOWY REKORD!') + '\n' : '') + out.join('\n')); return out; };
+  // ---- BIDON: one sports bottle shared by the team. Training fills it up to CAP points; only a FULL bottle can be
+  // poured, with a slider per skill, into the captain's skills (100 points = one level, max 5). The water in the window
+  // only shows how full it is; the number beside it is what counts.
+  window.BIDON = (() => { const CAP = 100;
+    const get = () => { const P = PROG.get(); return P.bidon || 0; };
+    const fill = (n) => { const P = PROG.get(), was = P.bidon || 0; if (was >= CAP || n <= 0) return { added: 0, now: was, full: false }; const now = Math.min(CAP, was + n); P.bidon = now; PROG.save(); B.mini(); return { added: now - was, now, full: now >= CAP }; };
+    const el = $('staty'), sl = [], xpv = [];
+    let pour = [0, 0, 0, 0, 0];
+    const room = (num, k) => { const lv = window.LEVELS(num)[k], xp = (PROG.get().xp[num] || [0, 0, 0, 0, 0])[k]; return lv >= 5 ? 0 : (5 - lv) * XPL - xp; };
+    const left = () => get() - pour.reduce((a, b) => a + b, 0);
+    const water = (pts) => { const f = Math.max(0, Math.min(1, pts / CAP)); el.querySelector('.bwater').style.height = (f * 100) + '%'; el.querySelector('.bpts').textContent = `${Math.round(pts)}/${CAP}`; };
+    const draw = () => { const num = window.CAPTAIN || 27, P = PROG.get(), lv = window.LEVELS(num), xp = P.xp[num] || [0, 0, 0, 0, 0], full = get() >= CAP;
+      el.classList.toggle('full', full); $('stwho').textContent = `${num} ${NAMES[num] || ''}`;
+      $('strows').innerHTML = SK.map((n, k) => { const tot = lv[k] * XPL + xp[k], prev = tot + pour[k], pl = Math.min(5, Math.floor(prev / XPL));
+        return `<div class="srow"><span class="sn">${n}</span><i class="lvl">${[0, 1, 2, 3, 4].map((i) => `<u class="${i < lv[k] ? 'on' : i < pl ? 'pre' : ''}"></u>`).join('')}</i>
+          <input type="range" min="0" max="${Math.min(room(num, k), CAP)}" step="5" value="${pour[k]}" data-k="${k}" ${full && room(num, k) > 0 ? '' : 'disabled'}><b>${pour[k] ? '+' + pour[k] : lv[k] >= 5 ? 'MAKS' : ''}</b></div>`; }).join('');
+      $('strows').querySelectorAll('input').forEach((r) => r.addEventListener('input', () => { if (get() < CAP) { r.value = 0; return; } const k = +r.dataset.k; let v = +r.value; const others = pour.reduce((a, b, i) => a + (i === k ? 0 : b), 0); v = Math.min(v, get() - others); pour[k] = v; r.value = v; drip(); upd(); }));
+      $('stok').disabled = !full || !pour.some((x) => x > 0); $('sthint').textContent = full ? L2('Przesuń suwaki, żeby rozlać punkty, i wciśnij WLEJ.') : L2('Bidon napełnisz w treningach: bieg, kapki, karne i mecze. Punkty rozlejesz, gdy będzie pełny.');
+      water(left()); };
+    const upd = () => { const num = window.CAPTAIN || 27, P = PROG.get(), lv = window.LEVELS(num), xp = P.xp[num] || [0, 0, 0, 0, 0];
+      $('strows').querySelectorAll('.srow').forEach((row, k) => { const prev = lv[k] * XPL + xp[k] + pour[k], pl = Math.min(5, Math.floor(prev / XPL));
+        row.querySelectorAll('u').forEach((u, i) => { u.className = i < lv[k] ? 'on' : i < pl ? 'pre' : ''; }); row.querySelector('b').textContent = pour[k] ? '+' + pour[k] : lv[k] >= 5 ? 'MAKS' : ''; });
+      $('stok').disabled = get() < CAP || !pour.some((x) => x > 0); water(left()); };
+    const L2 = (t) => (window.L ? window.L(t) : t);
+    let dripT = 0; const drip = () => { const now = performance.now(); if (now - dripT < 90) return; dripT = now; window.SZFX?.drip?.(); const d = document.createElement('i'); d.className = 'drop'; el.querySelector('.bbox').appendChild(d); d.animate([{ transform: 'translate(0,0)', opacity: 1 }, { transform: 'translate(60px,-20px)', opacity: 1, offset: .4 }, { transform: 'translate(120px,30px)', opacity: 0 }], { duration: 520, easing: 'steps(8)' }).onfinish = () => d.remove(); };
+    const commit = () => { if (get() < CAP) return; const num = window.CAPTAIN || 27, P = PROG.get(); let used = 0, ups = 0;
+      pour.forEach((v, k) => { if (v > 0) { const u = addXP(num, k, v); used += v; ups += u || 0; } });
+      P.bidon = Math.max(0, get() - used); PROG.save(); pour = [0, 0, 0, 0, 0]; window.SZFX?.shop?.(); toast(ups ? `▲ +${ups} ${L2('POZIOM')}` : L2('Punkty wlane')); draw(); B.mini(); window.SZ_REFRESH?.(); };
+    const open = () => { pour = [0, 0, 0, 0, 0]; el.hidden = false; draw(); };
+    $('stx').onclick = () => { el.hidden = true; pour = [0, 0, 0, 0, 0]; window.SZ_REFRESH?.(); };
+    $('stok').onclick = commit;
+    const B = { CAP, get, fill, open, mini() { const m = $('sbidon'); if (!m) return; const p = get(); m.querySelector('.bwater').style.height = Math.min(100, p / CAP * 100) + '%'; m.querySelector('.bpts').textContent = p >= CAP ? L2('PEŁNY!') : `${p}/${CAP}`; m.classList.toggle('full', p >= CAP); } };
+    setTimeout(() => B.mini(), 0); return B; })();
   const itemIcon = (it) => { const c = document.createElement('canvas'); c.width = c.height = 16; const g = c.getContext('2d'), r = (col, x, y, w, h) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
     if (it.slot === 'boots') { const [a, b] = it.col; r('#000', 2, 6, 7, 6); r('#000', 2, 10, 13, 4); r(a, 3, 7, 5, 5); r(a, 3, 11, 11, 2); r(b, 5, 8, 2, 1); r(b, 9, 11, 3, 1); r('#222', 3, 13, 11, 1); }
     else if (it.slot === 'shirt' && window.SHIRT_ART) { const sc = window.SHIRT_ART(it); g.drawImage(sc, 0, 4, 26, 26, -1, 0, 18, 18); }
@@ -1076,7 +1132,7 @@
     const FACE = [[20.2, 49], [41, 50], [60.4, 48], [79, 51]];   // head centres in % of the picture
     let sel = 3; try { const v = +localStorage.getItem('captain'); const i = SQ.findIndex((q) => q.num === v); if (i >= 0) sel = i; } catch (e) {}
     const kids = [...document.querySelectorAll('#szatnia .kid')];
-    const mark = () => { const q = SQ[sel]; kids.forEach((k, i) => k.classList.toggle('sel', i === sel));
+    const mark = () => { const q = SQ[sel]; window.CAPTAIN = q.num; kids.forEach((k, i) => k.classList.toggle('sel', i === sel));
       $('spick').style.left = (parseFloat(kids[sel].style.left) + parseFloat(kids[sel].style.width) / 2) + '%';
       $('sname').textContent = `${q.num} ${q.name}`; $('spos').textContent = q.pos; $('ssup').textContent = '★ ' + q.sup;
       const [fx, fy] = FACE[q.face]; $('sface').style.backgroundPosition = `${(fx - 5.6) / (100 - 11.1) * 100}% ${(fy - 9.9) / (100 - 19.8) * 100}%`;
@@ -1090,13 +1146,15 @@
         () => { [0, 0.13, 0.26].forEach((t, i) => n(260 + i * 40, t, 0.1, 'triangle', 0.12, 520 + i * 60)); n(220, 0.42, 0.16, 'triangle', 0.1, 160); },
         () => { [784, 988, 1175, 1568].forEach((f, i) => n(f, i * 0.11, 0.5, 'triangle', 0.06)); }];
       return { kid: (i) => KID[i](), coin: () => { n(988, 0, 0.08, 'square', 0.07); n(1319, 0.08, 0.32, 'square', 0.07); },
-        shop: () => { n(523, 0, 0.06); n(659, 0.06, 0.06); n(784, 0.12, 0.12); } }; })();
+        shop: () => { n(523, 0, 0.06); n(659, 0.06, 0.06); n(784, 0.12, 0.12); }, drip: () => n(900 + Math.random() * 500, 0, 0.05, 'sine', 0.06, 400) }; })();
     window.SZFX = FX;
     const KTXT = [['♪ BIP BIP!', '♪ BEEP BEEP!'], ['ZZZIP!', 'ZZZIP!'], ['GUL GUL!', 'GLUG GLUG!'], ['OMMM…', 'OMMM…']];
     const pop = (i) => { const k = kids[i], d = document.createElement('div'); d.className = 'kidpop'; d.textContent = KTXT[SQ[i].face][window.LANG === 'en' ? 1 : 0];
       d.style.left = (parseFloat(k.style.left) + parseFloat(k.style.width) / 2) + '%'; d.style.top = '27%'; k.parentNode.appendChild(d);
       d.animate([{ opacity: 0, transform: 'translate(-50%, 10px)' }, { opacity: 1, transform: 'translate(-50%, 0)', offset: .2 }, { opacity: 1, transform: 'translate(-50%, -14px)', offset: .75 }, { opacity: 0, transform: 'translate(-50%, -22px)' }], { duration: 1000, easing: 'steps(10)' }).onfinish = () => d.remove();
       $('spick').animate([{ marginTop: '0px' }, { marginTop: '-10px' }, { marginTop: '0px' }, { marginTop: '-4px' }, { marginTop: '0px' }], { duration: 420, easing: 'steps(6)' }); };
+    window.SZ_REFRESH = () => { mark(); window.BIDON?.mini(); };
+    $('spanel').addEventListener('click', () => window.BIDON.open()); $('sbidon').addEventListener('click', (e) => { e.stopPropagation(); window.BIDON.open(); });
     const choose = (i) => { FX.kid(SQ[i].face); pop(i); if (i === sel) return; sel = i; mark(); };
     kids.forEach((k, i) => k.addEventListener('click', () => choose(i)));
     // the coin box: a ding and a few coins jumping out of it
@@ -1114,7 +1172,7 @@
     const play = () => { const q = SQ[sel]; try { localStorage.setItem('captain', q.num); } catch (e) {} $('szatnia').hidden = true; musOff(); window.GAME.setCaptain(q.num); window.CAPTAIN = q.num; showModes(); };
     const back = () => {};
     $('sgo').addEventListener('click', play); $('sback').style.display = 'none';
-    return { show() { $('szatnia').hidden = false; mark(); MUS.currentTime = 0; MUS.play().catch(() => {}); }, key(e) { if (e.code === 'ArrowLeft' || e.code === 'KeyA') choose((sel + 3) % 4); else if (e.code === 'ArrowRight' || e.code === 'KeyD') choose((sel + 1) % 4);
+    return { show() { $('szatnia').hidden = false; mark(); window.BIDON?.mini(); MUS.currentTime = 0; MUS.play().catch(() => {}); }, key(e) { if (e.code === 'ArrowLeft' || e.code === 'KeyA') choose((sel + 3) % 4); else if (e.code === 'ArrowRight' || e.code === 'KeyD') choose((sel + 1) % 4);
       else if (e.code === 'Enter' || e.code === 'Space') play(); else if (e.code === 'Escape' || e.code === 'Backspace') back(); } };
   })();
   document.querySelectorAll('#modes .mb, #modes .mback').forEach((b) => b.addEventListener('click', () => pickMode(b.dataset.m)));
