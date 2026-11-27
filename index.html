@@ -139,22 +139,20 @@
   #penHint.on { display: block; }
   @media (orientation: portrait) { #btns { transform: scale(.8); transform-origin: bottom right; } #joy { transform: scale(.8); transform-origin: bottom left; } body.touch #me { display: none !important; } body.touch #minibox { top: calc(max(10px, env(safe-area-inset-top)) + 52px); } body.touch #mini { width: 116px; height: 70px; }
     body.touch #score { transform: scale(.72); } body.touch #wx { display: none; } body.playing.touch #mute { top: calc(max(10px, env(safe-area-inset-top)) + 148px) !important; right: max(8px, env(safe-area-inset-right)) !important; } }
-  /* the intro: two films, an 8-bit flash between them, then PRESS START over the title */
+  /* the intro: one film (skippable), then a seamless loop of the two boys in the wind with 27FOOTBALL and PRESS START baked in */
   #intro { position: fixed; inset: 0; z-index: 20; background: #000; overflow: hidden; cursor: pointer; }
   #intro[hidden] { display: none; }
   #intro .f169 { position: absolute; left: 50%; top: 50%; width: max(100vw, 177.78vh); height: max(56.25vw, 100vh); transform: translate(-50%, -50%); }
   #intro video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
   #v2 { visibility: hidden; } #intro.two #v2 { visibility: visible; } #intro.two #v1 { visibility: hidden; }
-  #still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; } #intro.still #still { display: block; }
-  #flash { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
   #pressStart { position: absolute; left: 50%; top: 35.2%; transform: translate(-50%, -50%); width: 27%; height: 10.5%; display: none; place-items: center; background: #030b19; box-shadow: 0 0 1.2vw 1vw #030b19;
                 font-weight: 700; font-size: min(3.4vw, 6vh); letter-spacing: .06em; color: #f4f1e8; white-space: nowrap; text-shadow: .25vw .25vw 0 #0d3a14; }
   #pressStart b { color: #ffe14a; font-weight: 700; } #pressStart.on { display: grid; } #pressStart.blink span { animation: blink .9s steps(2, jump-none) infinite; }
   #pressStart small { display: block; text-align: center; font-size: .42em; letter-spacing: .14em; color: #8fd99a; margin-top: .2em; text-shadow: none; }
   @keyframes blink { 50% { opacity: 0; } }
   .ibtn { position: absolute; z-index: 2; font: 700 13px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.55); border: 2px solid #8a8a8a; padding: 5px 9px; cursor: pointer; }
-  #skip { right: max(10px, env(safe-area-inset-right)); bottom: max(10px, env(safe-area-inset-bottom)); }
-  #snd { left: max(10px, env(safe-area-inset-left)); bottom: max(10px, env(safe-area-inset-bottom)); display: none; } #intro.muted #snd { display: block; }
+  #skip { left: max(8px, env(safe-area-inset-left)); bottom: max(8px, env(safe-area-inset-bottom)); font-size: 10px; padding: 3px 7px; border-width: 1px; opacity: .7; } #skip:hover { opacity: 1; }
+  #snd { right: max(10px, env(safe-area-inset-right)); bottom: max(10px, env(safe-area-inset-bottom)); display: none; } #intro.muted #snd { display: block; }
   #intro.done #skip { display: none; }
   /* keycaps on the controls screen */
   .kc { display: inline-block; min-width: 26px; padding: 1px 6px 3px; margin: 0 2px 3px 0; text-align: center; font: 700 14px "Pixelify Sans", monospace; color: #000; background: #e9e6dc; border: 2px solid #fff; border-bottom-color: #8b877c; border-right-color: #b7b3a7; box-shadow: 0 2px 0 #4a4840; }
@@ -527,9 +525,9 @@
 <div id="toast"></div>
 <div id="stage"></div>
 <div id="rot"><div class="ph">📱</div><b>OBRÓĆ TELEFON POZIOMO</b><span>Gra działa tylko w poziomie</span></div>
-<div id="intro"><div class="f169"><video id="v1" src="intro1.mp4" playsinline preload="auto" poster="intro1_first.jpg"></video><video id="v2" src="intro2.mp4" playsinline preload="auto" poster="intro2_last.jpg"></video>
-  <img id="still" src="intro2_last.jpg" alt=""><div id="pressStart"><span><b>▶</b> PRESS START <b>◀</b></span></div></div>
-  <canvas id="flash" width="96" height="54"></canvas><button class="ibtn" id="skip">POMIŃ ▶▶</button><button class="ibtn" id="snd">🔊 WŁĄCZ DŹWIĘK</button></div>
+<div id="intro"><div class="f169"><video id="v1" src="intro.mp4" muted playsinline preload="auto" poster="intro_first.jpg"></video><video id="v2" src="intro_loop.mp4" muted loop playsinline preload="auto" poster="intro_loop.jpg"></video>
+  <div id="pressStart"><span><b>▶</b> PRESS START <b>◀</b></span></div></div>
+  <button class="ibtn" id="skip">POMIŃ ▶▶</button><button class="ibtn" id="snd">🔊 WŁĄCZ DŹWIĘK</button></div>
 <div id="score" class="hud"><div class="plate"><svg class="crest" viewBox="0 0 34 38"><path d="M17 1 L32 6 V18 C32 28 25 34 17 37 C9 34 2 28 2 18 V6 Z" fill="#1d1f22" stroke="#e9e9ee" stroke-width="2"/><path d="M17 6 L27 9.5 V18 C27 25 22.5 29.5 17 32 Z" fill="#3fbf55"/><text x="17" y="23" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="11" font-weight="700" fill="#f4f1e8">P</text></svg><span class="tn" style="color:var(--g)">PIX</span><span class="num" id="sc">0 - 0</span><span class="tn" style="color:var(--p)">FIO</span><svg class="crest" viewBox="0 0 34 38"><path d="M17 1 L32 6 V18 C32 28 25 34 17 37 C9 34 2 28 2 18 V6 Z" fill="#4a2a78" stroke="#e9e9ee" stroke-width="2"/><path d="M17 6 L27 9.5 V18 C27 25 22.5 29.5 17 32 Z" fill="#a46ee8"/><text x="17" y="23" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="11" font-weight="700" fill="#f4f1e8">F</text></svg></div><div class="clockp"><span id="clock">2:00</span><span id="half">1P</span><span id="wx"></span></div></div>
 <div id="me" class="hud card"><canvas class="px" id="fMe" width="40" height="40"></canvas><div class="info"><div class="row1"><span class="n" id="nMe">10</span><span class="lbl" id="lMe">FW · TY</span></div><div class="meter"><i id="mMe"></i></div><div class="say" id="sayMe"></div></div></div>
 <div id="them" class="hud card"><canvas class="px" id="fThem" width="40" height="40"></canvas><div class="info"><div class="row1"><span class="n" id="nThem">11</span><span class="lbl" id="lThem">FW</span></div><div class="meter"><i id="mThem"></i></div><div class="say" id="sayThem"></div></div></div>
@@ -748,7 +746,7 @@
   $('tip').addEventListener('pointerdown', (e) => { e.preventDefault(); unTip(); });
   $('play').addEventListener('click', go); $('again').addEventListener('click', go);
   // after PRESS START: a phone goes straight onto the pitch (the pad is on screen), a desktop first shows the keys
-  const afterIntro = () => { if (!ready) { wantStart = true; $('pressStart').firstChild.innerHTML = 'WCZYTUJĘ…'; return; }
+  const afterIntro = () => { if (!ready) { wantStart = true; $('pressStart').firstChild.innerHTML = 'WCZYTUJĘ…'; $('pressStart').classList.add('on'); return; }
     $('intro').hidden = true; for (const v of [$('v1'), $('v2')]) { v.pause(); v.removeAttribute('src'); v.load(); }
     SZ.show(); };
   // ---- the mode screen: a match, or keepy-uppy on the stadium from the intro ----
@@ -1072,36 +1070,33 @@
     return { start, stop };
   })();
   // ---- the intro ----
-  { const I = $('intro'), v1 = $('v1'), v2 = $('v2'), ps = $('pressStart'), fc = $('flash'), fg = fc.getContext('2d');
-    let stage = 1, flashing = false, AC = null;
+  // intro.mp4 plays once (muted: the tune is intro.mp3 on the shared music player), then intro_loop.mp4 loops for ever:
+  // the two boys in the wind under 27FOOTBALL, PRESS | START blinking (both baked into the film). POMIŃ jumps straight
+  // to the loop. The tune starts from the beginning with the intro, and again from the beginning on POMIŃ.
+  { const I = $('intro'), v1 = $('v1'), v2 = $('v2');
+    const IMUS = MV.reg(new Audio('intro.mp3?v=1'), 0.7); IMUS.loop = true;
+    let stage = 1, AC = null;
     const blip = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); const t = AC.currentTime;
       for (const [f, d] of [[880, 0], [1320, .07], [1760, .14]]) { const o = AC.createOscillator(), g = AC.createGain(); o.type = 'square'; o.frequency.value = f; g.gain.setValueAtTime(.06, t + d); g.gain.exponentialRampToValueAtTime(.001, t + d + .16); o.connect(g).connect(AC.destination); o.start(t + d); o.stop(t + d + .18); } } catch (e) {} };
-    const play = (v) => { v.muted = I.classList.contains('muted'); return v.play().catch(() => { I.classList.add('muted'); v.muted = true; return v.play().catch(() => {}); }); };
-    const showStart = () => { if (stage === 3) return; stage = 3; I.classList.add('done', 'two'); ps.classList.add('on', 'blink'); };
-    // the flash: a white frame that breaks up into big pixels, in steps, revealing the second film
-    const flash = () => { if (flashing) return; flashing = true; blip(); const order = [], N = 16 * 9; for (let i = 0; i < N; i++) order.push(i); order.sort(() => Math.random() - .5);
-      let f = 0; const tick = () => { fg.clearRect(0, 0, 96, 54); const keep = f < 2 ? N : Math.max(0, Math.round(N * (1 - (f - 2) / 7)));
-        fg.fillStyle = f === 1 ? '#fff6b0' : '#ffffff'; for (let k = 0; k < keep; k++) { const i = order[k]; fg.fillRect((i % 16) * 6, Math.floor(i / 16) * 6, 6, 6); }
-        if (f === 1) { I.classList.add('two'); stage = 2; v1.pause(); play(v2); }
-        if (f >= 2 && f < 6) { fg.globalCompositeOperation = 'source-atop'; fg.fillStyle = f % 2 ? 'rgba(255,60,120,.35)' : 'rgba(60,220,255,.35)'; fg.fillRect(0, 0, 96, 54); fg.globalCompositeOperation = 'source-over'; }
-        if (++f < 10) setTimeout(tick, 1000 / 15); else fg.clearRect(0, 0, 96, 54); }; tick(); };
-    v1.addEventListener('timeupdate', () => { if (stage === 1 && v1.duration && v1.currentTime > v1.duration - 0.2) flash(); });
-    v1.addEventListener('ended', flash); v1.addEventListener('error', () => { if (stage === 1) flash(); });
-    v2.addEventListener('timeupdate', () => { if (stage === 2 && v2.currentTime > 4.75) showStart(); });
-    v2.addEventListener('ended', showStart); v2.addEventListener('error', showStart);
-    const skip = () => { if (stage === 3) return; v1.pause(); I.classList.add('two'); stage = 2; v2.pause(); I.classList.add('still'); showStart(); };
+    // the tune from the top; a browser that has had no tap yet refuses, then the 🔊 button asks for one
+    const tune = () => { I.classList.remove('muted'); const p = IMUS.play(); if (p && p.catch) p.catch(() => I.classList.add('muted')); };
+    const vplay = (v) => v.play().catch(() => {});
+    const toLoop = () => { if (stage === 3) return; stage = 3; I.classList.add('done', 'two'); v2.currentTime = 0; vplay(v2); v1.pause(); };
+    v1.addEventListener('timeupdate', () => { if (stage === 1 && v1.duration && v1.duration - v1.currentTime < 0.07) toLoop(); });
+    v1.addEventListener('ended', toLoop); v1.addEventListener('error', toLoop);
+    const skip = () => { if (stage === 3) return; toLoop(); tune(); };
     $('skip').addEventListener('click', (e) => { e.stopPropagation(); skip(); });
-    $('snd').addEventListener('click', (e) => { e.stopPropagation(); I.classList.remove('muted'); v1.muted = v2.muted = false; });
-    I.addEventListener('click', () => { if (stage === 3) { blip(); afterIntro(); } else if (I.classList.contains('muted')) { I.classList.remove('muted'); v1.muted = v2.muted = false; } });
+    $('snd').addEventListener('click', (e) => { e.stopPropagation(); tune(); });
+    I.addEventListener('click', () => { if (stage === 3) { blip(); afterIntro(); } else if (I.classList.contains('muted')) tune(); });
     // keys belong to the intro and the controls screen while they are up, not to the game behind them
     document.addEventListener('keydown', (e) => {
-      if (!I.hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (stage === 3) { blip(); afterIntro(); } else if (['Enter', 'Escape', 'Space'].includes(e.code)) skip(); return; }
+      if (!I.hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (stage === 3) { blip(); afterIntro(); } else if (['Enter', 'Escape', 'Space'].includes(e.code)) skip(); else if (I.classList.contains('muted')) tune(); return; }
       if (!$('modes').hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'KeyA' || e.code === 'KeyD') { modeSel = (modeSel + (e.code === 'ArrowLeft' || e.code === 'KeyA' ? 4 : 1)) % 5; markMode(); } else if (e.code === 'Digit1') pickMode('match'); else if (e.code === 'Digit2') pickMode('karne'); else if (e.code === 'Digit3') pickMode('kapki'); else if (e.code === 'Digit4') pickMode('but'); else if (e.code === 'Digit5') pickMode('kapsle'); else if (e.code === 'Escape' || e.code === 'Backspace') pickMode('back'); else if (e.code === 'Enter' || e.code === 'Space') pickMode(['match', 'karne', 'kapki', 'but', 'kapsle'][modeSel]); return; }
       if (!$('szatnia').hidden) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) SZ.key(e); return; }
       if (!$('kapki').hidden) { e.preventDefault(); e.stopPropagation(); if (e.code === 'Escape') K.stop(); else if (!$('kend').hidden && (e.code === 'Enter' || e.code === 'Space') && !e.repeat) K.start(); return; }
       if (!$('tip').hidden) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) unTip(); return; }
       if (!$('menu').hidden && !$('play').disabled && (e.code === 'Enter' || e.code === 'Space')) { e.preventDefault(); e.stopPropagation(); go(); } }, true);
-    play(v1); }
+    vplay(v1); tune(); }
   $('mute').addEventListener('click', () => { $('mute').textContent = window.GAME.mute() ? 'DŹWIĘK: NIE' : 'DŹWIĘK: TAK'; });
   // the 8-bit pad: a cross (8 ways; the same way twice quickly = sprint) and four buttons
   // the analog stick: the knob follows the thumb inside the well; how far it goes is how fast you run (sprint is its own button)
