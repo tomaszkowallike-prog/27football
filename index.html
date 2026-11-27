@@ -718,7 +718,7 @@
 <div id="jshop" hidden><div class="side90 l dark"></div><div class="side90 r dark"></div><div class="jbox">
   <div class="jtop"><b class="jtitle">SKLEP · KOSZULKI</b><span class="coin" id="coinJ">0</span><button class="x" id="jx" aria-label="Zamknij">X</button></div>
   <div class="jstage"><button class="jarrow l" id="jprev" aria-label="Poprzednia"></button><img id="jimg" alt="Koszulka"><button class="jarrow r" id="jnext" aria-label="Następna"></button></div>
-  <div class="jbar"><span class="jnum" id="jnum">1/38</span><b class="jname" id="jname"></b><button class="jbuy" id="jbuy">KUP</button></div></div></div>
+  <div class="jbar"><span class="jnum" id="jnum">1/37</span><b class="jname" id="jname"></b><button class="jbuy" id="jbuy">KUP</button></div></div></div>
 <div id="szatnia" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg"></div><div class="sbox"><img src="szatnia_base.jpg?v=2" alt="">
   <div class="sanim" aria-hidden="true"><div class="lamp a" style="left:18.541%;top:12.965%;width:12.739%;height:2.657%"><i></i></div><div class="lamp b" style="left:43.182%;top:12.965%;width:12.799%;height:2.657%"><i></i></div><div class="lamp c" style="left:68.600%;top:13.177%;width:12.380%;height:2.550%"><i></i></div><div class="lev" style="left:74.522%;top:42.402%;width:9.988%;height:21.679%"><div class="aura"></div><div class="orb back"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div><img src="kid27.png" alt=""><div class="orb front"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div></div><img class="tie" src="kid10.png" alt="" style="left:36.244%;top:41.445%;width:8.134%;height:23.061%"><img class="sip" src="kid7h.png" alt="" style="left:56.998%;top:40.701%;width:6.220%;height:13.603%"><div class="phone" style="left:19.258%;top:53.879%;width:2.093%;height:1.913%"></div></div>
   <div class="kid" data-i="0" style="left:14.5%;width:12.5%"></div><div class="kid" data-i="1" style="left:34.5%;width:12.5%"></div>
@@ -1044,13 +1044,13 @@
       d.appendChild(b); gr.appendChild(d); }); };
   // the shop is closed for now: a COMING SOON sign instead
   const openShop = () => { $('soon').hidden = false; }; $('soonx').onclick = $('soon').onclick = () => { $('soon').hidden = true; }; window.OPENSHOP = openShop; window.ITEMS = ITEMS;
-  // ---- the jersey shop (38 shirts); for now it opens only with the test code 4545
-  const SHIRTS = [['PIXELS PINK', 300], ['AQUA KNIGHTS', 150], ['SUN JAGUARS', 250], ['CYBER STRIKERS', 350], ['ROYAL GRIFFINS', 250], ['IRON FOREST', 200], ['ETERNAL SAKURA', 300], ['MAYAN JAGUARS', 350], ['MAROON LIONS', 150], ['EMERALD GRIFFINS', 150],
+  // ---- the jersey shop (37 shirts; picture n+2 for entry n, the pink one was taken out); for now it opens only with the test code 4545
+  const SHIRTS = [['AQUA KNIGHTS', 150], ['SUN JAGUARS', 250], ['CYBER STRIKERS', 350], ['ROYAL GRIFFINS', 250], ['IRON FOREST', 200], ['ETERNAL SAKURA', 300], ['MAYAN JAGUARS', 350], ['MAROON LIONS', 150], ['EMERALD GRIFFINS', 150],
     ['BLUE DIAMONDS', 200], ['FOREST LIONS', 150], ['ROYAL GRIFFINS II', 200], ['SKY LIONS', 100], ['PEACOCK PALACE', 300], ['BADGER WORKS', 250], ['AURORA FC', 200], ['SUNRISE STRIKERS', 150], ['RED DRAGONS', 200], ['FOREST GRIFFINS', 150],
     ['BEAR VALLEY', 150], ['UNICORN CITY', 200], ['ROYAL CITY', 200], ['TRI-COLOR FC', 150], ['BLUE ZAG', 200], ['RED ZAG', 250], ['TRI-COLOR UNITED', 150], ['TRI-COLOR ASCENT', 150], ['NEON UNITY', 250], ['TRI-COLOR DYNAMICS', 300],
     ['TRI-COLOR LEAGUE', 150], ['UNITY CROSS', 200], ['TIGER TRIBE', 350], ['PALM CITY', 250], ['CHECK CITY', 150], ['BLACK STARS', 300], ['WHITE LIONS', 200], ['BLACK STARS II', 300]];
   window.JSHOP = (() => { let i = 0; const EN = () => window.LANG === 'en';
-    const id = (k) => 'shirt' + (k + 1), img = (k) => `koszulka_${String(k + 1).padStart(2, '0')}.jpg?v=2`;
+    const id = (k) => 'shirt' + (k + 2), img = (k) => `koszulka_${String(k + 2).padStart(2, '0')}.jpg?v=${k === 12 ? 3 : 2}`;
     const draw = () => { const P = PROG.get(), [name, price] = SHIRTS[i], own = P.owned.includes(id(i)), on = P.shirt === id(i), b = $('jbuy');
       $('jimg').src = img(i); $('jname').textContent = name; $('jnum').textContent = `${i + 1}/${SHIRTS.length}`; $('coinJ').textContent = P.coins;
       b.className = 'jbuy' + (on ? ' eq' : !own && P.coins < price ? ' no' : '');
