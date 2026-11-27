@@ -399,7 +399,8 @@
   /* phones wider than 16:9: plain dark sides, the picture fades into them from the shadow */
   @media (min-aspect-ratio: 17/9) {
     #szatnia, #modes { background: #0a0614; } #szatnia .sbg, #modes .sbg.tb, #modes .logo { display: none; }
-    #szatnia .sbox > img, #modes .tbox2 > img { -webkit-mask-image: linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%); mask-image: linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%); }
+    #trofea .tbox::before { content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none; background: linear-gradient(to right, rgba(10,6,20,.95) 0, rgba(10,6,20,.55) 4%, transparent 11%, transparent 89%, rgba(10,6,20,.55) 96%, rgba(10,6,20,.95) 100%); }
+    #szatnia .sbox > img, #modes .tbox2 > img, #trofea .tbox > img { -webkit-mask-image: linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%); mask-image: linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%); }
   }
   #szatnia .kid { position: absolute; top: 31%; height: 42%; cursor: pointer; border-radius: 8px; }
   #szatnia .kid.sel { box-shadow: 0 0 0 3px #ffe14a, 0 0 22px 6px rgba(255,225,74,.55); background: rgba(255,225,74,.08); }
@@ -428,6 +429,7 @@
   #trofea .lamp::after { content: ''; position: absolute; left: -10%; right: -10%; top: 60%; height: 900%; background: radial-gradient(ellipse at 50% 0%, rgba(255,220,230,.18), rgba(255,220,230,0) 70%); }
   #trofea .lamp.b { animation-duration: 5.3s; animation-delay: -1.7s; } #trofea .lamp.c { animation-duration: 3.7s; animation-delay: -2.9s; }
   @keyframes tlamp { 0%, 100% { opacity: .9; } 8% { opacity: .55; } 9% { opacity: .95; } 41% { opacity: .8; } 42% { opacity: .35; } 43% { opacity: .9; } 44% { opacity: .5; } 45% { opacity: .95; } 77% { opacity: .85; } }
+  #trofea .tarrow, #trofea .texit, #trofea .tcount, #trofea .tinfo { z-index: 4; }
   #trofea .tarrow { position: absolute; top: 44%; width: 7.5%; aspect-ratio: 133 / 122; padding: 0; font-size: 0; color: transparent; background: url(arrow_l.png?v=1) center / 100% 100% no-repeat; border: 0; image-rendering: pixelated; filter: drop-shadow(0 4px 0 rgba(0,0,0,.5)); cursor: pointer; animation: tarr 0.9s steps(2) infinite; }
   #trofea .tarrow.r { background-image: url(arrow_r.png?v=1); }
   #trofea .tarrow.l { left: 1.5%; } #trofea .tarrow.r { right: 1.5%; } #trofea .tarrow[hidden] { display: none; }
