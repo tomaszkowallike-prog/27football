@@ -151,8 +151,8 @@
   #pressStart small { display: block; text-align: center; font-size: .42em; letter-spacing: .14em; color: #8fd99a; margin-top: .2em; text-shadow: none; }
   @keyframes blink { 50% { opacity: 0; } }
   .ibtn { position: absolute; z-index: 2; font: 700 13px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.55); border: 2px solid #8a8a8a; padding: 5px 9px; cursor: pointer; }
-  #skip { left: max(8px, env(safe-area-inset-left)); bottom: max(8px, env(safe-area-inset-bottom)); font-size: 10px; padding: 3px 7px; border-width: 1px; opacity: .7; } #skip:hover { opacity: 1; }
-  #snd { right: max(10px, env(safe-area-inset-right)); bottom: max(10px, env(safe-area-inset-bottom)); display: none; } #intro.muted #snd { display: block; }
+  #skip { left: 1.2%; bottom: 2.2%; font-size: 10px; padding: 3px 7px; border-width: 1px; opacity: .7; } #skip:hover { opacity: 1; }
+  #snd { right: 1.2%; bottom: 2.2%; display: none; } #intro.muted #snd { display: block; }
   #intro.done #skip { display: none; }
   /* keycaps on the controls screen */
   .kc { display: inline-block; min-width: 26px; padding: 1px 6px 3px; margin: 0 2px 3px 0; text-align: center; font: 700 14px "Pixelify Sans", monospace; color: #000; background: #e9e6dc; border: 2px solid #fff; border-bottom-color: #8b877c; border-right-color: #b7b3a7; box-shadow: 0 2px 0 #4a4840; }
@@ -475,7 +475,7 @@
   #szatnia .hot { position: absolute; background: transparent; border: 0; cursor: pointer; }
   #szatnia .hot:hover, #szatnia .hot:focus-visible { outline: 3px solid #ffe14a; border-radius: 10px; }
   #mvol { position: fixed; z-index: 40; left: 50%; top: max(4px, env(safe-area-inset-top)); transform: translateX(-50%); font: 700 13px "Pixelify Sans", monospace; color: #fff; background: rgba(0,0,0,.6); border: 2px solid #8a8a8a; border-radius: 6px; padding: 2px 9px; cursor: pointer; }
-  body:has(#intro:not([hidden])) #mvol { left: auto; right: max(8px, env(safe-area-inset-right)); transform: none; opacity: .75; }
+  body:has(#intro:not([hidden])) #mvol { left: auto; right: calc((100vw - min(100vw, 177.78vh)) / 2 + 1.2 * min(100vw, 177.78vh) / 100); top: calc((100vh - min(56.25vw, 100vh)) / 2 + 6px); transform: none; opacity: .75; }
   body.playing #mvol { left: auto; right: max(8px, env(safe-area-inset-right)); top: calc(max(10px, env(safe-area-inset-top)) + 150px); transform: none; }
   /* the whole game is landscape: a phone held upright gets one screen asking to turn it */
   #rot { display: none; position: fixed; inset: 0; z-index: 100; background: #02070f; color: #fff; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 20px; }
@@ -532,8 +532,8 @@
 <div id="stage"></div>
 <div id="rot"><div class="ph">📱</div><b>OBRÓĆ TELEFON POZIOMO</b><span>Gra działa tylko w poziomie</span></div>
 <div id="intro"><div class="f169"><video id="v1" src="intro.mp4" muted playsinline preload="auto" poster="intro_first.jpg"></video><video id="v2" src="intro_loop.mp4" muted loop playsinline preload="auto" poster="intro_loop.jpg"></video>
-  <div id="pressStart"><span><b>▶</b> PRESS START <b>◀</b></span></div></div>
-  <button class="ibtn" id="skip">POMIŃ ▶▶</button><button class="ibtn" id="snd">🔊 WŁĄCZ DŹWIĘK</button></div>
+  <div id="pressStart"><span><b>▶</b> PRESS START <b>◀</b></span></div>
+  <button class="ibtn" id="skip">POMIŃ ▶▶</button><button class="ibtn" id="snd">🔊 WŁĄCZ DŹWIĘK</button></div></div>
 <div id="score" class="hud"><div class="plate"><svg class="crest" viewBox="0 0 34 38"><path d="M17 1 L32 6 V18 C32 28 25 34 17 37 C9 34 2 28 2 18 V6 Z" fill="#1d1f22" stroke="#e9e9ee" stroke-width="2"/><path d="M17 6 L27 9.5 V18 C27 25 22.5 29.5 17 32 Z" fill="#3fbf55"/><text x="17" y="23" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="11" font-weight="700" fill="#f4f1e8">P</text></svg><span class="tn" style="color:var(--g)">PIX</span><span class="num" id="sc">0 - 0</span><span class="tn" style="color:var(--p)">FIO</span><svg class="crest" viewBox="0 0 34 38"><path d="M17 1 L32 6 V18 C32 28 25 34 17 37 C9 34 2 28 2 18 V6 Z" fill="#4a2a78" stroke="#e9e9ee" stroke-width="2"/><path d="M17 6 L27 9.5 V18 C27 25 22.5 29.5 17 32 Z" fill="#a46ee8"/><text x="17" y="23" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="11" font-weight="700" fill="#f4f1e8">F</text></svg></div><div class="clockp"><span id="clock">2:00</span><span id="half">1P</span><span id="wx"></span></div></div>
 <div id="me" class="hud card"><canvas class="px" id="fMe" width="40" height="40"></canvas><div class="info"><div class="row1"><span class="n" id="nMe">10</span><span class="lbl" id="lMe">FW · TY</span></div><div class="meter"><i id="mMe"></i></div><div class="say" id="sayMe"></div></div></div>
 <div id="them" class="hud card"><canvas class="px" id="fThem" width="40" height="40"></canvas><div class="info"><div class="row1"><span class="n" id="nThem">11</span><span class="lbl" id="lThem">FW</span></div><div class="meter"><i id="mThem"></i></div><div class="say" id="sayThem"></div></div></div>
