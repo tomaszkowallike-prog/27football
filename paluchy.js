@@ -14,6 +14,13 @@
   document.head.appendChild(st);
   const cv = $('palCv'), g = cv.getContext('2d');
   const BG = new Image(); BG.src = 'paluchy_bg.jpg?v=1';
+  // tilt-shift: the legs and bodies round the edge are softly blurred, the toes in the ring stay sharp
+  let BGT = null; BG.onload = () => { try { const c = document.createElement('canvas'); c.width = BG.width; c.height = BG.height; const x = c.getContext('2d');
+    const b = document.createElement('canvas'); b.width = c.width; b.height = c.height; const bx = b.getContext('2d'); bx.filter = 'blur(7px)'; bx.drawImage(BG, 0, 0); bx.filter = 'none';
+    const k = BG.width / 1672; bx.globalCompositeOperation = 'destination-in'; bx.save(); bx.translate(836 * k, 500 * k); bx.scale(1, 290 / 445);
+    const gr = bx.createRadialGradient(0, 0, 445 * 1.12 * k, 0, 0, 445 * 1.55 * k); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,1)');
+    bx.fillStyle = gr; bx.fillRect(-3000, -3000, 6000, 6000); bx.restore();
+    x.drawImage(BG, 0, 0); x.drawImage(b, 0, 0); BGT = c; } catch (e) { BGT = null; } };
   const TOES = new Image(); TOES.src = 'paluchy_toes.png?v=1';
   const BW = 1672, BH = 941, CX = 836, CY = 500, CELL = 80;
   // where each big toe comes out (picture units), in the order of the sprite sheet: red, yellow, green, orange, blue, white, purple pairs
@@ -118,7 +125,7 @@
       g.fillStyle = '#7ad04a'; for (const [a2, b2, rr] of [[0, 0, 1], [-0.8, 0.3, 0.7], [0.8, 0.3, 0.7], [0, -0.7, 0.6]]) { const s = Math.round(r * rr); g.fillRect(Math.round(x + a2 * r - s / 2), Math.round(y + b2 * r - s / 2), s, s); }
       g.fillStyle = '#3a7a1a'; g.fillRect(Math.round(x - r * 0.2), Math.round(y - r * 0.1), Math.max(3, r * 0.15), Math.max(3, r * 0.15)); } g.restore(); };
   const draw = () => { g.imageSmoothingEnabled = false; g.fillStyle = '#2a0f55'; g.fillRect(0, 0, W, H);
-    if (BG.complete) g.drawImage(BG, ox, oy, BW * sc, BH * sc);
+    if (BG.complete) g.drawImage(BGT || BG, ox, oy, BW * sc, BH * sc);
     for (const k in S.out) { const o = S.out[k]; drawToe(+k, Math.min(1, o.a / 0.08, o.l / 0.1)); }
     if (S.phase === 'show' && S.arrow >= 0) drawArrow(S.arrow);
     if (S.phase === 'bad' && S.right != null && Math.floor(S.t * 5) % 2) drawArrow(S.right);
