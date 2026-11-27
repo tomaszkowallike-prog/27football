@@ -436,7 +436,7 @@ TEAMS.forEach((T, ti) => T.squad.forEach((def0) => {
   const p = { ...def, team: ti, T, anim: FR[def.sheet], pose: { ...FR.poses, ...(FR['poses_' + def.sheet] || {}) }, id: players.length, x: 0, z: 0, y: 0, vx: 0, vz: 0, vy: 0, face: T.dir,
     st: 'run', t: 0, act: null, lie: 'lieBack', dizzy: false, walked: 0, hold: 0, dash: false, cool: 0, order: null, autoSuper: false, sta: 1 };
   if (p.keeper) p.home = [1.6, 0];
-  p.spr = hs ? makeSprite(ti === 0 ? IMG_HG : IMG_HR, { unit: 2.55 / 128 }) : makeSprite(T.img); p.hd = !!hs;
+  p.img = hs ? (ti === 0 ? IMG_HG : IMG_HR) : T.img; p.spr = makeSprite(p.img, hs ? { unit: 2.55 / 128 } : undefined); p.hd = !!hs;
   p.stars = [0, 1, 2].map(() => { const m = label(STAR, 0.34, 0.34); m.visible = false; return m; });
   players.push(p);
 }));
