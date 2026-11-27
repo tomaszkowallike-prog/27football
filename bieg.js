@@ -123,6 +123,7 @@
         if (r.sta <= 0 && !r.tired) { r.tired = true; if (r.me) { tone(220, 110, 0.4, 'sawtooth', 0.04); try { if (!window.CFG || window.CFG.vib !== false) navigator.vibrate?.([60, 60, 60]); } catch (e) {} } }
         if (r.tired && r.sta > 0.65) r.tired = false;
         r.d += r.v * dt; r.ft += dt * (2 + r.v / 22); r.lap = Math.min(LAPS, Math.floor(r.d / perim(r.lane)) + 1);
+        if (r.me && !r.done) { const k = Math.floor(4 * Math.min(1, r.d / r.dist)) * 3; if (k !== S.bpend) { S.bpend = k; window.BIDON?.pend(k); } }   // the bottle fills as you run: 3 points a quarter
         if (r.d >= r.dist) { r.done = true; r.time = S.t; r.place = S.runners.filter((q) => q.done).length;
           if (r.me) { tone(523, 1046, 0.4); S.phase = 'finish'; S.fin = S.t; let rec = false; if (r.place === 1 && (!S.best || r.time < S.best)) { rec = true; S.best = r.time; try { localStorage.setItem(bestKey(), S.best.toFixed(2)); } catch (e) {} } window.TRAIN?.('bieg', { place: r.place, record: rec }); } } }
       if (S.phase === 'finish' && (S.runners.every((r) => r.done) || S.t - S.fin > 3)) { S.phase = 'over'; S.t = 0; } } };
@@ -206,7 +207,7 @@
         txt('DOTKNIJ, ŻEBY WRÓCIĆ', W / 2, H * 0.82, 14, '#9fd8ff'); } } };
   let lastT = 0, raf = 0;
   const loop = (now) => { if (!S.on) return; raf = requestAnimationFrame(loop); const dt = Math.min(0.04, (now - (lastT || now)) / 1000); lastT = now; update(dt); draw(); };
-  const close = () => { S.on = false; cancelAnimationFrame(raf); root.hidden = true; if (S.onExit) S.onExit(); };
-  window.BIEG = { start(onExit) { S.onExit = onExit; root.hidden = false; layout(); S.phase = 'intro'; S.runners = []; reset(); S.phase = 'intro'; S.on = true; lastT = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); },
+  const close = () => { window.BIDON?.hud(false); S.on = false; cancelAnimationFrame(raf); root.hidden = true; if (S.onExit) S.onExit(); };
+  window.BIEG = { start(onExit) { S.onExit = onExit; root.hidden = false; window.BIDON?.hud(true); S.bpend = 0; layout(); S.phase = 'intro'; S.runners = []; reset(); S.phase = 'intro'; S.on = true; lastT = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); },
     get _S() { return S; } };
 })();

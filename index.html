@@ -426,6 +426,14 @@
   #szatnia .sbidon .bbox { height: 82%; } #szatnia .sbidon .bpts { font: clamp(6px, .9vw, 11px) "Press Start 2P", monospace; color: #fff; background: rgba(0,0,0,.7); padding: 2px 4px; margin-top: 2px; white-space: nowrap; }
   #szatnia .sbidon.full .bbox { animation: bfull .7s steps(2) infinite; } #szatnia .sbidon.full .bpts { color: #6ee05a; } @keyframes bfull { 50% { filter: drop-shadow(0 0 6px #8ae0ff) brightness(1.2); } }
   #szatnia .spanel { cursor: pointer; }
+  /* the bottle in the corner while training: it flickers (red/blue split) when it fills, a tap tells how much is in it */
+  #bhud { position: fixed; z-index: 45; left: max(6px, env(safe-area-inset-left)); top: 34%; width: clamp(34px, 5vw, 56px); padding: 0; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; }
+  #bhud[hidden] { display: none; } #bhud .bbox { width: 100%; } #bhud .bpts { font: clamp(6px, .8vw, 9px) "Press Start 2P", monospace; color: #fff; background: rgba(0,0,0,.72); padding: 2px 3px; margin-top: 2px; white-space: nowrap; }
+  #bhud .bpts b { color: #8ae0ff; font-weight: 400; }
+  .bbox .bpend { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: repeating-linear-gradient(0deg, rgba(190,240,255,.75) 0 3px, rgba(120,210,255,.45) 3px 6px); transition: height .3s steps(6), bottom .3s steps(6); }
+  #bhud.ping .bbox { animation: bping .55s steps(1); } @keyframes bping { 0% { filter: drop-shadow(-3px 0 0 rgba(255,40,80,.9)) drop-shadow(3px 0 0 rgba(40,220,255,.9)); transform: translateX(1px); } 25% { filter: drop-shadow(2px 0 0 rgba(255,40,80,.9)) drop-shadow(-2px 0 0 rgba(40,220,255,.9)); transform: translateX(-1px); } 50% { filter: drop-shadow(-1px 0 0 rgba(255,40,80,.8)) drop-shadow(1px 0 0 rgba(40,220,255,.8)) brightness(1.3); transform: none; } 100% { filter: none; } }
+  #bhud.full .bbox { animation: bfull .7s steps(2) infinite; }
+  #bhud .btip { position: absolute; left: 110%; top: 10%; width: max-content; max-width: 46vw; font: 8px "Press Start 2P", monospace; line-height: 1.7; color: #fff; background: #1a1540; border: 3px solid #8ae0ff; box-shadow: 0 4px 0 #000; padding: 6px 9px; text-align: left; white-space: pre-line; }
   #staty .setp { width: min(94vw, 640px); } #staty h2 small { font-size: .6em; color: #b8b0e8; margin-left: 8px; }
   #staty .stbody { display: flex; gap: 14px; align-items: stretch; } #staty .bbox { height: min(52vh, 280px); flex: none; } #staty .bbox .bpts { position: absolute; left: 100%; top: 40%; margin-left: -6px; font: 11px "Press Start 2P", monospace; color: #8ae0ff; text-shadow: 2px 2px 0 #000; white-space: nowrap; }
   #staty .stcol { flex: 1; display: flex; flex-direction: column; gap: 6px; padding-left: 40px; min-width: 0; }
@@ -574,7 +582,7 @@
   body.playing #mute { display: block; } body.playing.touch #mute { top: max(10px, env(safe-area-inset-top)); right: calc(max(10px, env(safe-area-inset-right)) + 156px); bottom: auto; }
   @media (max-width: 700px) { #score .tn { font-size: 16px; } #score .num { font-size: 24px; min-width: 50px; } #score .clockp { font-size: 18px; } #score .crest { width: 26px; height: 30px; } #score .plate, #score .clockp { height: 38px; } }
 </style>
-<script src="./lang.js?v=6"></script>
+<script src="./lang.js?v=7"></script>
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
 <script>
   // music volume for every track (match, locker room, penalties, keepy-uppy): 100 / 60 / 30 / off, remembered
@@ -689,6 +697,7 @@
 <div class="ov" id="end" hidden><div class="panel"><h1 id="endT">KONIEC</h1><div id="final">0 : 0</div><div id="reward"></div><div class="row"><button class="btn" id="again">REWANŻ</button><button class="btn" id="tnext" hidden>DALEJ</button><button class="btn" id="tmenu">BOISKA</button></div></div></div>
 <div id="penHint"></div>
 <div id="bag" class="hud"></div>
+<button id="bhud" hidden aria-label="Bidon"><div class="bbox"><div class="bwin"><div class="bwater"><i></i></div><div class="bpend"></div></div><img src="bidon.png?v=1" alt=""></div><span class="bpts">0/100</span><span class="btip" hidden></span></button>
 <div class="setov" id="staty" hidden><div class="setp" role="dialog" aria-label="Statystyki"><h2>STATYSTYKI <small id="stwho"></small><button class="x" id="stx" aria-label="Zamknij">X</button></h2>
   <div class="stbody"><div class="bbox"><div class="bwin"><div class="bwater"><i></i></div></div><img src="bidon.png?v=1" alt="Bidon"><div class="bpts">0/100</div></div>
     <div class="stcol"><div id="strows"></div><p class="sthint" id="sthint"></p><button class="stok" id="stok">WLEJ ▶</button></div></div></div></div>
@@ -975,7 +984,20 @@
     const open = () => { pour = [0, 0, 0, 0, 0]; el.hidden = false; draw(); };
     $('stx').onclick = () => { el.hidden = true; pour = [0, 0, 0, 0, 0]; window.SZ_REFRESH?.(); };
     $('stok').onclick = commit;
-    const B = { CAP, get, fill, open, mini() { const m = $('sbidon'); if (!m) return; const p = get(); m.querySelector('.bwater').style.height = Math.min(100, p / CAP * 100) + '%'; m.querySelector('.bpts').textContent = p >= CAP ? L2('PEŁNY!') : `${p}/${CAP}`; m.classList.toggle('full', p >= CAP); } };
+    const H = $('bhud'); let pend = 0, hudT = 0, tipT = 0;
+    const ping = () => { H.classList.remove('ping'); void H.offsetWidth; H.classList.add('ping'); };
+    const hudDraw = () => { const p = get(), q = Math.max(0, Math.min(CAP - p, pend)); H.querySelector('.bwater').style.height = (p / CAP * 100) + '%';
+      const pe = H.querySelector('.bpend'); pe.style.bottom = (p / CAP * 100) + '%'; pe.style.height = (q / CAP * 100) + '%';
+      H.querySelector('.bpts').innerHTML = p >= CAP ? L2('PEŁNY!') : `${p}${q ? `<b>+${q}</b>` : ''}/${CAP}`; H.classList.toggle('full', p >= CAP); };
+    const tip = () => { const p = get(), q = Math.max(0, Math.min(CAP - p, pend)), t = H.querySelector('.btip');
+      t.textContent = p >= CAP ? L2('BIDON PEŁNY!') + '\n' + L2('Rozlej punkty w szatni: STATYSTYKI') : `${L2('BIDON')} ${p}/${CAP}` + (q ? `\n${L2('Ten trening')}: +${q}` : '') + `\n${L2('Brakuje do pełnego')}: ${Math.max(0, CAP - p - q)}` + `\n${L2('Pełny rozlejesz w szatni')}`;
+      t.hidden = false; clearTimeout(tipT); tipT = setTimeout(() => { t.hidden = true; }, 3200); window.SZFX?.drip?.(); };
+    H.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); tip(); }); H.addEventListener('click', (e) => e.stopPropagation());
+    const B = { CAP, get, fill, open,
+      // while a training is on: the bottle in the corner; pend(n) = what this training will pour in so far
+      hud(on) { H.hidden = !on; pend = 0; H.querySelector('.btip').hidden = true; clearInterval(hudT); if (on) { hudDraw(); hudT = setInterval(() => { if (get() < CAP && pend > 0) ping(); }, 5000); } },
+      pend(n) { n = Math.max(0, Math.round(n)); if (n > pend && get() < CAP) { pend = n; ping(); window.SZFX?.drip?.(); } else pend = n; hudDraw(); },
+      mini() { if (!H.hidden) { pend = 0; hudDraw(); ping(); } const m = $('sbidon'); if (!m) return; const p = get(); m.querySelector('.bwater').style.height = Math.min(100, p / CAP * 100) + '%'; m.querySelector('.bpts').textContent = p >= CAP ? L2('PEŁNY!') : `${p}/${CAP}`; m.classList.toggle('full', p >= CAP); } };
     setTimeout(() => B.mini(), 0); return B; })();
   const itemIcon = (it) => { const c = document.createElement('canvas'); c.width = c.height = 16; const g = c.getContext('2d'), r = (col, x, y, w, h) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
     if (it.slot === 'boots') { const [a, b] = it.col; r('#000', 2, 6, 7, 6); r('#000', 2, 10, 13, 4); r(a, 3, 7, 5, 5); r(a, 3, 11, 11, 2); r(b, 5, 8, 2, 1); r(b, 9, 11, 3, 1); r('#222', 3, 13, 11, 1); }
@@ -1222,7 +1244,7 @@
       d.style.left = x + 'px'; d.style.top = y + 'px';
       d.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); hit(d, x, y); });
       dots.appendChild(d); clearTimeout(timer); timer = setTimeout(miss, t * 1000); };
-    const hit = (d, x, y) => { if (!alive) return; clearTimeout(timer); d.remove(); score++; $('kscore').textContent = score; $('kmsg').hidden = true;
+    const hit = (d, x, y) => { if (!alive) return; clearTimeout(timer); d.remove(); score++; $('kscore').textContent = score; $('kmsg').hidden = true; window.BIDON?.pend(Math.min(30, Math.round(score / 2)));
       if (J) { clearInterval(seqT); let k = 0; seqT = setInterval(() => { cur = (cur + 1) % J.n; frame(cur); if (++k >= J.step) clearInterval(seqT); }, 65); } else { const pr = PAIRS[pairI++ % PAIRS.length]; frame(pr[0]); clearTimeout(airT); airT = setTimeout(() => frame(pr[1]), 140); }
       jug.classList.remove('bump'); void jug.offsetWidth; jug.classList.add('bump');
       tone(520 + Math.min(score, 40) * 18, 0.08); if (score % 10 === 0) { tone(1320, 0.25, 'square', 0.05); shout(); }
@@ -1233,8 +1255,8 @@
       $('kbest').textContent = best; $('kres').textContent = score; { window.TRAIN?.('kapki', { score, record: rec && score > 0 }); const kc = window.KAPKI_COINS?.(score) || 0; $('knew').textContent = (rec && score ? 'NOWY REKORD!' : best ? `Rekord: ${best}` : '') + (kc ? ` +${kc} monet` : ''); }
       setTimeout(() => { $('kend').hidden = false; }, 700); };
     const start = () => { const cap = window.CAPTAIN || 27; J = HDJ[cap] || null; FW = J ? J.n : 16; cur = 0; clearInterval(seqT);
-      jug.style.backgroundImage = J ? `url(juggle_hd_${cap}.png)` : `url(juggle_${cap}.png)`; jug.style.backgroundSize = `${FW * 100}% 100%`; jug.style.aspectRatio = J ? J.ar : ''; MUS.start(actx()); $('kapki').hidden = false; $('kend').hidden = true; $('kmsg').hidden = false; score = 0; pairI = (Math.random() * 8) | 0; $('kscore').textContent = 0; $('kbest').textContent = best; frame(0); alive = true; setTimeout(() => alive && spawn(), 900); };
-    const stop = () => { MUS.stop(); alive = false; clearTimeout(timer); dots.innerHTML = ''; $('kapki').hidden = true; showModes(); };
+      jug.style.backgroundImage = J ? `url(juggle_hd_${cap}.png)` : `url(juggle_${cap}.png)`; jug.style.backgroundSize = `${FW * 100}% 100%`; jug.style.aspectRatio = J ? J.ar : ''; MUS.start(actx()); $('kapki').hidden = false; window.BIDON?.hud(true); $('kend').hidden = true; $('kmsg').hidden = false; score = 0; pairI = (Math.random() * 8) | 0; $('kscore').textContent = 0; $('kbest').textContent = best; frame(0); alive = true; setTimeout(() => alive && spawn(), 900); };
+    const stop = () => { window.BIDON?.hud(false); MUS.stop(); alive = false; clearTimeout(timer); dots.innerHTML = ''; $('kapki').hidden = true; showModes(); };
     $('kagain').addEventListener('click', start); $('kmenu').addEventListener('click', stop); $('kback').addEventListener('click', stop);
     return { start, stop };
   })();
@@ -1306,11 +1328,11 @@
 </script>
 <script src="./warsztat.js?v=8"></script>
 <script src="./room.js?v=3"></script>
-<script src="./pen.js?v=4"></script>
+<script src="./pen.js?v=5"></script>
 <script src="./lace.js"></script>
 <script src="./caps.js"></script>
 <script src="./flip.js"></script>
-<script src="./bieg.js?v=1795689645"></script>
+<script src="./bieg.js?v=1795689646"></script>
 <script type="module" src="./game.js?v=4"></script>
 </body>
 </html>

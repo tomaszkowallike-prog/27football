@@ -240,7 +240,7 @@
   // after a kick: the CPU answers (simulated), then the next round or the end
   const next = () => {
     if (S.mode === 'single') { const goal = S.result === 'goal'; close(); S.done && S.done(goal); return; }
-    S.us.push(S.result === 'goal'); const cpu = Math.random() < 0.7; S.them.push(cpu); S.cpuT = 1.6; S.cpuGoal = cpu;
+    S.us.push(S.result === 'goal'); if (S.result === 'goal') window.BIDON?.pend(4 * S.us.filter(Boolean).length); const cpu = Math.random() < 0.7; S.them.push(cpu); S.cpuT = 1.6; S.cpuGoal = cpu;
     const a = S.us.filter(Boolean).length, b = S.them.filter(Boolean).length, n = S.us.length;
     const left = Math.max(0, KICKS - n), decided = n <= KICKS ? (a + left < b || b + left < a) : a !== b;
     if (decided || (n >= KICKS && a !== b)) { S.phase = 'end'; S.t = 0; S.win = a > b; { let best = 0; try { best = +localStorage.getItem('pen_best') || 0; } catch (e) {} const rec = a > best; if (rec) try { localStorage.setItem('pen_best', a); } catch (e) {} window.TRAIN?.('karne', { goals: a, win: a > b, record: rec }); } setTimeout(() => (S.win ? SND.crowd() : SND.groan()), 900); return; }
@@ -356,8 +356,8 @@
   };
   let last = 0, raf = 0;
   const loop = (now) => { if (!S.on) return; const dt = Math.min(0.05, (now - (last || now)) / 1000); last = now; update(dt); draw(); raf = requestAnimationFrame(loop); };
-  const open = (mode, done) => { S.mode = mode; S.done = done; root.hidden = false; root.classList.toggle('single', mode === 'single'); layout(); reset(); newKick(); S.on = true; last = 0; try { window.MATCH_MUSIC && window.MATCH_MUSIC.stop(); } catch (e) {} MUS.currentTime = 0; MUS.play().catch(() => {}); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); };
-  const close = () => { MUS.pause(); if (S.mode === 'single') { try { window.MATCH_MUSIC && window.MATCH_MUSIC.start(); } catch (e) {} } S.on = false; cancelAnimationFrame(raf); root.hidden = true; if (S.mode === 'shootout' && S.onExit) S.onExit(); };
+  const open = (mode, done) => { S.mode = mode; S.done = done; root.hidden = false; if (mode === 'shootout') window.BIDON?.hud(true); root.classList.toggle('single', mode === 'single'); layout(); reset(); newKick(); S.on = true; last = 0; try { window.MATCH_MUSIC && window.MATCH_MUSIC.stop(); } catch (e) {} MUS.currentTime = 0; MUS.play().catch(() => {}); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); };
+  const close = () => { window.BIDON?.hud(false); MUS.pause(); if (S.mode === 'single') { try { window.MATCH_MUSIC && window.MATCH_MUSIC.start(); } catch (e) {} } S.on = false; cancelAnimationFrame(raf); root.hidden = true; if (S.mode === 'shootout' && S.onExit) S.onExit(); };
   const kickSheet = (n) => ({ 14: 'kick14', 10: 'kick10', 7: 'kick7' }[n] || 'kick');
   window.PEN = { get _S() { return S; }, start(onExit, num) { S.kick = kickSheet(num); S.onExit = onExit; open('shootout', null); }, single(done, num) { S.kick = kickSheet(num || window.CAPTAIN); S.onExit = null; open('single', done); }, get open() { return !root.hidden; },
     _S: S };
