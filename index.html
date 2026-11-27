@@ -454,7 +454,7 @@
   /* phones wider than 16:9: plain dark sides, the picture fades into them from the shadow */
   @media (min-aspect-ratio: 17/9) {
     #szatnia, #modes { background: #0a0614; } #szatnia .sbg, #modes .sbg.tb, #modes .logo { display: none; }
-    #sfront .fbox::after, #jshop .jbox::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(to right, rgba(10,6,20,.95) 0, rgba(10,6,20,.55) 4%, transparent 11%, transparent 89%, rgba(10,6,20,.55) 96%, rgba(10,6,20,.95) 100%); }
+    #sfront .fbox::after, #jshop .jbox::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(to right, rgba(10,6,20,1) 0, rgba(10,6,20,0) 7%, rgba(10,6,20,0) 93%, rgba(10,6,20,1) 100%); }   /* the same soft fade as the locker room's mask */
     #sfront .fbox .fx { z-index: 3; } #jshop .jtop, #jshop .jbar { position: relative; z-index: 3; }
     #trofea .tbox::before { content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none; background: linear-gradient(to right, rgba(10,6,20,.95) 0, rgba(10,6,20,.55) 4%, transparent 11%, transparent 89%, rgba(10,6,20,.55) 96%, rgba(10,6,20,.95) 100%); }
     #szatnia .sbox > img, #modes .tbox2 > img, #trofea .tbox > img { -webkit-mask-image: linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%); mask-image: linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%); }
