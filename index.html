@@ -1122,59 +1122,62 @@
   // the shop is closed for now: a COMING SOON sign instead
   const openShop = () => { $('soon').hidden = false; }; $('soonx').onclick = $('soon').onclick = () => { $('soon').hidden = true; }; window.OPENSHOP = openShop; window.ITEMS = ITEMS;
   // ---- the jersey shop (37 shirts; picture n+2 for entry n, the pink one was taken out); for now it opens only with the test code 4545
-  const SHIRTS = [['AQUA KNIGHTS', 150], ['SUN JAGUARS', 250], ['CYBER STRIKERS', 350], ['ROYAL GRIFFINS', 250], ['IRON FOREST', 200], ['ETERNAL SAKURA', 300], ['MAYAN JAGUARS', 350], ['MAROON LIONS', 150], ['EMERALD GRIFFINS', 150],
-    ['BLUE DIAMONDS', 200], ['FOREST LIONS', 150], ['ROYAL GRIFFINS II', 200], ['SKY LIONS', 100], ['PEACOCK PALACE', 300], ['BADGER WORKS', 250], ['AURORA FC', 200], ['SUNRISE STRIKERS', 150], ['RED DRAGONS', 200], ['FOREST GRIFFINS', 150],
-    ['BEAR VALLEY', 150], ['UNICORN CITY', 200], ['ROYAL CITY', 200], ['TRI-COLOR FC', 150], ['BLUE ZAG', 200], ['RED ZAG', 250], ['TRI-COLOR UNITED', 150], ['TRI-COLOR ASCENT', 150], ['NEON UNITY', 250], ['TRI-COLOR DYNAMICS', 300],
-    ['TRI-COLOR LEAGUE', 150], ['UNITY CROSS', 200], ['TIGER TRIBE', 350], ['PALM CITY', 250], ['CHECK CITY', 150], ['BLACK STARS', 300], ['WHITE LIONS', 200], ['BLACK STARS II', 300]];
-  // shown mixed, so that similar shirts are not next to each other; ORDER lists picture numbers (SHIRTS[n - 2] is picture n)
-  const ORDER = [4, 18, 7, 26, 33, 2, 29, 22, 16, 25, 3, 35, 20, 15, 37, 12, 30, 13, 36, 34, 8, 23, 28, 9, 11, 31, 19, 6, 14, 32, 21, 5, 27, 17, 24, 10, 38];
-  window.JSHOP = (() => { let i = 0; const EN = () => window.LANG === 'en', F = (k) => ORDER[k];
-    const id = (k) => 'shirt' + F(k), img = (k) => `koszulka_${String(F(k)).padStart(2, '0')}.jpg?v=5`;
-    // all pictures are fetched and decoded once, when the shop first opens, so flipping through is instant
-    let cache = null; const preload = () => { if (cache) return; cache = ORDER.map((_, k) => { const im = new Image(); im.decoding = 'async'; im.src = img(k); im.decode?.().catch(() => {}); return im; }); };
-    const draw = () => { const P = PROG.get(), [name, price] = SHIRTS[F(i) - 2], own = P.owned.includes(id(i)), on = P.shirt === id(i), b = $('jbuy');
-      $('jimg').src = img(i); $('jname').textContent = name; $('jnum').textContent = `${i + 1}/${SHIRTS.length}`; $('coinJ').textContent = P.coins;
+  // shop items per category; prices are high on purpose (a training pays ~3-10 coins), so the wardrobe fills slowly
+  const CATS = {
+    shirt: { list: [['AQUA KNIGHTS', 800], ['SUN JAGUARS', 1300], ['CYBER STRIKERS', 1800], ['ROYAL GRIFFINS', 1300], ['IRON FOREST', 1050], ['ETERNAL SAKURA', 1550], ['MAYAN JAGUARS', 1800], ['MAROON LIONS', 800], ['EMERALD GRIFFINS', 800], ['BLUE DIAMONDS', 1050], ['FOREST LIONS', 800], ['ROYAL GRIFFINS II', 1050], ['SKY LIONS', 500], ['PEACOCK PALACE', 1550], ['BADGER WORKS', 1300], ['AURORA FC', 1050], ['SUNRISE STRIKERS', 800], ['RED DRAGONS', 1050], ['FOREST GRIFFINS', 800], ['BEAR VALLEY', 800], ['UNICORN CITY', 1050], ['ROYAL CITY', 1050], ['TRI-COLOR FC', 800], ['BLUE ZAG', 1050], ['RED ZAG', 1300], ['TRI-COLOR UNITED', 800], ['TRI-COLOR ASCENT', 800], ['NEON UNITY', 1300], ['TRI-COLOR DYNAMICS', 1550], ['TRI-COLOR LEAGUE', 800], ['UNITY CROSS', 1050], ['TIGER TRIBE', 1800], ['PALM CITY', 1300], ['CHECK CITY', 800], ['BLACK STARS', 1550], ['WHITE LIONS', 1050], ['BLACK STARS II', 1550]],
+      order: [4, 18, 7, 26, 33, 2, 29, 22, 16, 25, 3, 35, 20, 15, 37, 12, 30, 13, 36, 34, 8, 23, 28, 9, 11, 31, 19, 6, 14, 32, 21, 5, 27, 17, 24, 10, 38], pre: 'shirt', img: (n) => `koszulka_${String(n).padStart(2, '0')}.jpg?v=5`, off: 2, wear: 'shirt', t: ['SKLEP · KOSZULKI', 'SHOP · JERSEYS'], w: ['ZAŁOŻONA', 'WEARING'] },
+    boot: { list: [['JUNGLE GOLD', 3200], ['SWEET CANDY', 2400], ['SUNSET STRIPES', 2200], ['RED ZIGZAG', 2600], ['RAINBOW BLOCK', 2800], ['BLACK LION', 3600], ['GREEN GOTHIC', 3000], ['NAVY GRIFFIN', 3400], ['PHOENIX FIRE', 4500], ['OCEAN FADE', 1800], ['RUBY COMET', 2000], ['DOT STORM', 1600], ['PINK SUNRISE', 1800], ['GOLD WAVE', 2400], ['STAR DUST', 2600], ['ROYAL LEMON', 1900], ['FOREST FLAME', 2100], ['RED RAZOR', 2200], ['INFERNO', 4200], ['DEEP OCEAN', 2000], ['JADE DRAGON', 4800], ['RED STAR', 2700], ['ICE BLUE', 1500], ['FLOWER GARDEN', 2300], ['CHEESE BLAST', 1700], ['LAVA RUSH', 2500], ['PALM BEACH', 2900], ['CRIMSON SCRIPT', 3300], ['MANGO STRIPES', 2100], ['AUTUMN PIXEL', 1900], ['PINK SKULL', 3800]],
+      order: [24, 5, 20, 17, 1, 14, 22, 26, 19, 27, 31, 2, 30, 4, 15, 8, 6, 13, 12, 29, 11, 18, 28, 25, 3, 7, 10, 9, 23, 16, 21], pre: 'boot', img: (n) => `buty_${String(n).padStart(2, '0')}.jpg?v=1`, off: 1, wear: 'kboots', t: ['SKLEP · BUTY', 'SHOP · BOOTS'], w: ['ZAŁOŻONE', 'WEARING'] } };
+  window.JSHOP = (() => { let i = 0, cat = 'shirt'; const EN = () => window.LANG === 'en', C = () => CATS[cat], F = (k) => C().order[k];
+    const id = (k) => C().pre + F(k), img = (k) => C().img(F(k)), item = (k) => C().list[F(k) - C().off];
+    // all pictures of a category are fetched and decoded once, so flipping through is instant
+    const cache = {}; const preload = (c = cat) => { if (cache[c]) return; const D = CATS[c]; cache[c] = D.order.map((n) => { const im = new Image(); im.decoding = 'async'; im.src = D.img(n); im.decode?.().catch(() => {}); return im; }); };
+    const draw = () => { const P = PROG.get(), [name, price] = item(i), own = P.owned.includes(id(i)), on = P[C().wear] === id(i), b = $('jbuy');
+      $('jimg').src = img(i); $('jname').textContent = name; $('jnum').textContent = `${i + 1}/${C().order.length}`; $('coinJ').textContent = P.coins;
       const inCart = (P.cart || []).includes(id(i)), fav = (P.fav || []).includes(id(i));
       b.className = 'jbuy' + (on || inCart ? ' eq' : '');
-      b.textContent = on ? (EN() ? 'WEARING' : 'ZAŁOŻONA') : own ? (EN() ? 'WEAR' : 'ZAŁÓŻ') : inCart ? (EN() ? 'IN CART ✓' : 'W KOSZYKU ✓') : (EN() ? 'ADD TO CART ' : 'DO KOSZYKA ') + price;
+      b.textContent = on ? C().w[EN() ? 1 : 0] : own ? (EN() ? 'WEAR' : 'ZAŁÓŻ') : inCart ? (EN() ? 'IN CART ✓' : 'W KOSZYKU ✓') : (EN() ? 'ADD TO CART ' : 'DO KOSZYKA ') + price;
       $('jheart').classList.toggle('on', fav);
       };
-    const go = (d) => { i = (i + d + SHIRTS.length) % SHIRTS.length; window.SZFX?.drip?.(); draw(); $('jimg').animate([{ transform: `translateX(${d * 24}px)`, opacity: .3 }, { transform: 'none', opacity: 1 }], { duration: 180, easing: 'steps(4)' }); };
+    const go = (d) => { const N = C().order.length; i = (i + d + N) % N; window.SZFX?.drip?.(); draw(); $('jimg').animate([{ transform: `translateX(${d * 24}px)`, opacity: .3 }, { transform: 'none', opacity: 1 }], { duration: 180, easing: 'steps(4)' }); };
     $('jprev').onclick = () => go(-1); $('jnext').onclick = () => go(1);
-    $('jbuy').onclick = () => { const P = PROG.get(), [, price] = SHIRTS[F(i) - 2], k = id(i);
+    $('jbuy').onclick = () => { const P = PROG.get(), k = id(i), w = C().wear;
       if (!P.owned.includes(k)) { P.cart = P.cart || []; const at = P.cart.indexOf(k); if (at < 0) { P.cart.push(k); window.SZFX?.coin?.(); } else P.cart.splice(at, 1); }
-      else P.shirt = P.shirt === k ? null : k;
+      else P[w] = P[w] === k ? null : k;
       PROG.save(); draw(); window.SZ_REFRESH?.(); };
     $('jheart').onclick = () => { const P = PROG.get(), k = id(i); P.fav = P.fav || []; const at = P.fav.indexOf(k); if (at < 0) { P.fav.push(k); window.SZFX?.drip?.(); } else P.fav.splice(at, 1); PROG.save(); draw(); window.SFRONT?.badges(); };
     let sx = null; $('jimg').addEventListener('pointerdown', (e) => { sx = e.clientX; }); $('jimg').addEventListener('pointerup', (e) => { if (sx != null && Math.abs(e.clientX - sx) > 40) go(e.clientX < sx ? 1 : -1); sx = null; });
     addEventListener('keydown', (e) => { if ($('jshop').hidden) return; if (e.key === 'ArrowLeft') go(-1); else if (e.key === 'ArrowRight') go(1); else if (e.key === 'Escape') $('jback').click(); });
     const back = () => { $('jshop').hidden = true; window.SFRONT.badges(); $('coinF').textContent = PROG.get().coins; $('sfront').querySelectorAll('.fcard').forEach((c) => c.classList.remove('sel')); };
     $('jback').onclick = back; $('jx').onclick = () => { $('jshop').hidden = true; $('sfront').hidden = true; window.SZ_REFRESH?.(); };
-    const info = (k) => { const n = +String(k).replace('shirt', ''); return { name: SHIRTS[n - 2][0], price: SHIRTS[n - 2][1], img: `koszulka_${String(n).padStart(2, '0')}.jpg?v=5` }; };
-    return { preload, info, redraw: () => { if (!$('jshop').hidden) draw(); }, openAt(k) { this.open(); const n = ORDER.findIndex((_, m) => id(m) === k); if (n >= 0) { i = n; draw(); } }, open() { preload(); $('jtitle').textContent = EN() ? 'SHOP · JERSEYS' : 'SKLEP · KOSZULKI'; $('jxt').textContent = EN() ? 'EXIT' : 'WYJDŹ'; const P = PROG.get(), k = ORDER.findIndex((_, n) => id(n) === P.shirt); if (k >= 0) i = k; $('jshop').hidden = false; draw(); } }; })();
+    const catOf = (k) => Object.keys(CATS).find((c) => new RegExp('^' + CATS[c].pre + '\\d+$').test(k));
+    const info = (k) => { const c = catOf(String(k)); if (!c) return null; const D = CATS[c], n = +String(k).slice(D.pre.length), it = D.list[n - D.off]; return it && { name: it[0], price: it[1], img: D.img(n), cat: c, wear: D.wear }; };
+    return { preload, info, catOf, redraw: () => { if (!$('jshop').hidden) draw(); },
+      openAt(k) { this.open(catOf(k) || cat); const n = C().order.findIndex((_, m) => id(m) === k); if (n >= 0) { i = n; draw(); } },
+      open(c = 'shirt') { if (c !== cat) { cat = c; i = 0; } preload(); $('jtitle').textContent = C().t[EN() ? 1 : 0]; $('jxt').textContent = EN() ? 'EXIT' : 'WYJDŹ'; const P = PROG.get(), k = C().order.findIndex((_, n) => id(n) === P[C().wear]); if (k >= 0) i = k; $('jshop').hidden = false; draw(); } }; })();
   window.SFRONT = (() => { const F = $('sfront'), EN = () => window.LANG === 'en';
     const soon = () => { $('soont').textContent = EN() ? 'COMING SOON' : 'WKRÓTCE'; $('soons').textContent = EN() ? 'This part of the shop is still being built.' : 'Ta część sklepu jeszcze się buduje.'; $('soon').hidden = false; };
     F.querySelectorAll('.fcard').forEach((b) => (b.onclick = () => { F.querySelectorAll('.fcard').forEach((c) => c.classList.toggle('sel', c === b)); window.SZFX?.drip?.();
-      setTimeout(() => { if (b.dataset.k === 'shirts') window.JSHOP.open(); else soon(); }, 260); }));
+      setTimeout(() => { if (b.dataset.k === 'shirts') window.JSHOP.open('shirt'); else if (b.dataset.k === 'boots') window.JSHOP.open('boot'); else soon(); }, 260); }));
     $('fx').onclick = () => { F.hidden = true; window.SZ_REFRESH?.(); };
     const L2 = (pl, en) => (EN() ? en : pl), J = () => window.JSHOP;
     const badges = () => { const P = PROG.get(), c = (P.cart || []).length; $('fcartn').hidden = !c; $('fcartn').textContent = c; $('ffavdot').hidden = !(P.fav || []).length; $('coinF').textContent = P.coins; };
     const cart = () => { const P = PROG.get(), list = (P.cart = (P.cart || []).filter((k) => !P.owned.includes(k)));
       $('cartt').textContent = L2('KOSZYK', 'CART');
       $('cartrows').innerHTML = list.length ? list.map((k) => { const it = J().info(k); return `<div class="crow"><img src="${it.img}" alt="" data-k="${k}"><span>${it.name}</span><span class="pr">${it.price} ◆</span><button data-rm="${k}">✕</button></div>`; }).join('')
-        : `<p class="cempty">${L2('Koszyk jest pusty.<br>Dodaj coś z koszulek.', 'Your cart is empty.<br>Add something from the jerseys.')}</p>`;
-      const sum = list.reduce((a, k) => a + J().info(k).price, 0), after = P.coins - sum;
+        : `<p class="cempty">${L2('Koszyk jest pusty.<br>Dodaj coś ze sklepu.', 'Your cart is empty.<br>Add something from the shop.')}</p>`;
+      const sum = list.reduce((a, k) => a + (J().info(k)?.price || 0), 0), after = P.coins - sum;
       $('cartsum').innerHTML = `<div>${L2('Rzeczy', 'Items')}: <b>${list.length}</b></div><div class="tot">${L2('Razem', 'Total')}: <b>${sum} ◆</b></div><div>${L2('Twoje monety', 'Your coins')}: <b>${P.coins} ◆</b></div><div class="${after < 0 ? 'bad' : ''}">${L2('Po zakupie', 'After paying')}: <b>${after < 0 ? L2('brakuje ', 'missing ') + -after : after} ◆</b></div>`;
       const pay = $('cartpay'); pay.textContent = L2('ZAPŁAĆ', 'PAY'); pay.disabled = !list.length || after < 0;
       $('cartrows').querySelectorAll('[data-rm]').forEach((b) => (b.onclick = () => { const P2 = PROG.get(); P2.cart = P2.cart.filter((x) => x !== b.dataset.rm); PROG.save(); cart(); badges(); J().redraw(); }));
       $('cartrows').querySelectorAll('img[data-k]').forEach((im) => (im.onclick = () => { $('cartov').hidden = true; J().openAt(im.dataset.k); }));
       $('cartov').hidden = false; badges(); };
-    $('cartpay').onclick = () => { const P = PROG.get(), list = P.cart || [], sum = list.reduce((a, k) => a + J().info(k).price, 0); if (!list.length || sum > P.coins) return;
-      P.coins -= sum; list.forEach((k) => P.owned.includes(k) || P.owned.push(k)); if (!P.shirt) P.shirt = list[list.length - 1]; P.cart = []; PROG.save(); window.SZFX?.coin?.(); window.TOAST?.(L2('Kupione! Koszulki są twoje.', 'Bought! The jerseys are yours.')); cart(); J().redraw(); window.SZ_REFRESH?.(); };
+    $('cartpay').onclick = () => { const P = PROG.get(), list = P.cart || [], sum = list.reduce((a, k) => a + (J().info(k)?.price || 0), 0); if (!list.length || sum > P.coins) return;
+      P.coins -= sum; list.forEach((k) => P.owned.includes(k) || P.owned.push(k)); list.forEach((k) => { const it = J().info(k); if (it && !P[it.wear]) P[it.wear] = k; }); P.cart = []; PROG.save(); window.SZFX?.coin?.(); window.TOAST?.(L2('Kupione! Rzeczy są twoje.', 'Bought! The items are yours.')); cart(); J().redraw(); window.SZ_REFRESH?.(); };
     const favs = () => { const P = PROG.get(), list = P.fav || []; $('favt').textContent = L2('ULUBIONE', 'FAVOURITES');
       $('favrows').innerHTML = list.length ? list.map((k) => { const it = J().info(k), own = P.owned.includes(k), inC = (P.cart || []).includes(k);
         return `<div class="crow"><img src="${it.img}" alt="" data-k="${k}"><span>${it.name}</span><span class="pr">${it.price} ◆</span><span><button class="${own || inC ? 'has' : 'add'}" data-add="${k}" ${own ? 'disabled' : ''}>${own ? L2('MASZ', 'OWNED') : inC ? L2('W KOSZYKU', 'IN CART') : L2('DO KOSZYKA', 'TO CART')}</button> <button data-rm="${k}">♥✕</button></span></div>`; }).join('')
-        : `<p class="cempty">${L2('Nie masz jeszcze ulubionych.<br>Kliknij serduszko przy koszulce.', 'No favourites yet.<br>Tap the heart by a jersey.')}</p>`;
+        : `<p class="cempty">${L2('Nie masz jeszcze ulubionych.<br>Kliknij serduszko przy rzeczy.', 'No favourites yet.<br>Tap the heart by an item.')}</p>`;
       $('favrows').querySelectorAll('[data-add]').forEach((b) => (b.onclick = () => { const P2 = PROG.get(), k = b.dataset.add; P2.cart = P2.cart || []; if (!P2.owned.includes(k) && !P2.cart.includes(k)) P2.cart.push(k); PROG.save(); favs(); badges(); }));
       $('favrows').querySelectorAll('[data-rm]').forEach((b) => (b.onclick = () => { const P2 = PROG.get(); P2.fav = (P2.fav || []).filter((x) => x !== b.dataset.rm); PROG.save(); favs(); badges(); J().redraw(); }));
       $('favrows').querySelectorAll('img[data-k]').forEach((im) => (im.onclick = () => { $('favov').hidden = true; J().openAt(im.dataset.k); }));
@@ -1505,7 +1508,7 @@
   document.getElementById('mvol').addEventListener('click', (e) => { e.stopPropagation(); MV.next(); }); MV.lbl();
 </script>
 <script src="./warsztat.js?v=8"></script>
-<script src="./room.js?v=4"></script>
+<script src="./room.js?v=5"></script>
 <script src="./pen.js?v=5"></script>
 <script src="./lace.js"></script>
 <script src="./caps.js"></script>

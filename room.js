@@ -59,11 +59,11 @@
         b.innerHTML = `<img src="${it.img}" alt=""><span>${it.name}</span><em>${on ? T('ZAŁOŻONA', 'WEARING') : T('ZAŁÓŻ', 'WEAR')}</em>`;
         b.onclick = () => { const P2 = window.PROG.get(); P2.shirt = P2.shirt === k ? null : k; window.PROG.save(); pick(); war(); }; grid.appendChild(b); });
       $('pwnote').textContent = list.length ? '' : T('Nie masz jeszcze koszulek. Kup je w sklepie.', 'No jerseys yet. Buy some in the shop.'); }
-    else { const boots = (window.ITEMS || []).filter((i) => i.slot === 'boots' && P.owned.includes(i.id));
-      boots.forEach((it) => { const on = P.boots === it.id, b = document.createElement('button'); b.className = 'pwit boot' + (on ? ' on' : ''); const L = window.L || ((x) => x);
-        b.appendChild(BOOT_ART(it)); b.insertAdjacentHTML('beforeend', `<span>${L(it.name)}</span><em>${on ? T('ZAŁOŻONE', 'WEARING') : T('ZAŁÓŻ', 'WEAR')}</em>`);
-        b.onclick = () => { const P2 = window.PROG.get(); P2.boots = P2.boots === it.id ? null : it.id; window.PROG.save(); pick(); war(); }; grid.appendChild(b); });
-      $('pwnote').textContent = boots.length ? '' : T('Nie masz jeszcze butów. Wkrótce w sklepie!', 'No boots yet. Coming soon to the shop!'); }
+    else { const list = (P.owned || []).filter((k) => /^boot\d+$/.test(k));
+      list.forEach((k) => { const it = window.JSHOP?.info(k); if (!it) return; const on = P.kboots === k, b = document.createElement('button'); b.className = 'pwit boot' + (on ? ' on' : '');
+        b.innerHTML = `<img src="${it.img}" alt=""><span>${it.name}</span><em>${on ? T('ZAŁOŻONE', 'WEARING') : T('ZAŁÓŻ', 'WEAR')}</em>`;
+        b.onclick = () => { const P2 = window.PROG.get(); P2.kboots = P2.kboots === k ? null : k; window.PROG.save(); pick(); war(); }; grid.appendChild(b); });
+      $('pwnote').textContent = list.length ? '' : T('Nie masz jeszcze butów. Kup je w sklepie.', 'No boots yet. Buy some in the shop.'); }
     $('pwar').hidden = false; };
   root.querySelectorAll('.pwtab').forEach((b) => (b.onclick = () => { tab = b.dataset.t; pick(); war(); }));
   $('pwx').onclick = () => { $('pwar').hidden = true; };
