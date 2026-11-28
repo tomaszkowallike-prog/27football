@@ -479,6 +479,7 @@
   #szatnia .stitle { position: absolute; left: 50%; top: 12.5%; transform: translateX(-50%); font-size: clamp(11px, 1.7vw, 20px); letter-spacing: .18em; color: #ffe14a; background: rgba(0,0,0,.75); padding: 2px 12px; white-space: nowrap; }
   #szatnia .spanel { position: absolute; left: .8%; top: 75.8%; width: 70.4%; z-index: 2; height: 20.4%; background: linear-gradient(#1b1640, #0e0b26); border: 3px solid #5a4aa8; border-radius: 6px; display: flex; align-items: center; gap: 2%; padding: 0 2%; box-sizing: border-box; }
   #szatnia .face { height: 92%; aspect-ratio: 1; background: url(szatnia.jpg) no-repeat; background-size: 900% auto; image-rendering: pixelated; border-radius: 4px; flex: none; align-self: flex-end; }
+  #szatnia .who { cursor: pointer; } #szatnia .face { cursor: pointer; }
   #szatnia .who { flex: 1; display: flex; flex-direction: column; gap: .15em; font-size: clamp(9px, 1.25vw, 16px); white-space: nowrap; overflow: hidden; }
   #szatnia .who b { font-size: 2.2em; line-height: 1; } #szatnia .who em { font-style: normal; color: #ffe14a; font-size: .85em; } #szatnia .who i { font-style: normal; color: #ff8a1f; font-size: .85em; }
   /* the sports bottle: water behind the bottle picture, seen through its window (14,32 10x66 of a 46x108 picture) */
@@ -1434,7 +1435,7 @@
     const kids = [...document.querySelectorAll('#szatnia .kid')];
     const mark = () => { const q = SQ[sel]; window.CAPTAIN = q.num; kids.forEach((k, i) => k.classList.toggle('sel', i === sel));
       $('spick').style.left = (parseFloat(kids[sel].style.left) + parseFloat(kids[sel].style.width) / 2) + '%';
-      $('sname').textContent = `${q.num} ${window.PNAME(q.num)}`; $('spos').textContent = q.pos; { const nk = window.PNICK(q.num); $('ssup').textContent = nk ? (window.LANG === 'en' ? 'NICKNAME: ' : 'KSYWKA: ') + nk : (window.LANG === 'en' ? '▶ TAP THE STATS' : '▶ KLIKNIJ W STATYSTYKI'); }
+      $('sname').textContent = `${q.num} ${window.PNAME(q.num)}`; $('spos').textContent = q.pos; { const nk = window.PNICK(q.num); $('ssup').textContent = nk ? (window.LANG === 'en' ? 'NICKNAME: ' : 'KSYWKA: ') + nk : (window.LANG === 'en' ? '▶ TAP THE PLAYER' : '▶ KLIKNIJ W ZAWODNIKA'); }
       const [fx, fy] = FACE[q.face]; $('sface').style.backgroundPosition = `${(fx - 5.6) / (100 - 11.1) * 100}% ${(fy - 9.9) / (100 - 19.8) * 100}%`;
       const lvq = window.LEVELS ? window.LEVELS(q.num) : q.st; $('sbars').innerHTML = (window.LANG === 'en' ? ['SHOOTING', 'PASSING', 'DRIBBLING', 'OBRONA'.replace('OBRONA', 'DEFENCE'), 'SPEED'] : ['STRZAŁ', 'PODANIE', 'DRYBLING', 'OBRONA', 'PRĘDKOŚĆ']).map((n, i) => `<span>${n}</span><i class="${lvq[i] >= 5 ? 'max' : ''}">${[1, 2, 3, 4, 5].map((k) => `<u class="${k <= lvq[i] ? 'on' : ''}"></u>`).join('')}</i>`).join(''); };
     // little 8-bit sounds: each boy answers with his own (14 a phone game, 10 a shoelace zip, 7 a gulp of water, 27 a calm chime)
@@ -1456,7 +1457,8 @@
     window.SZ_REFRESH = () => { mark(); window.BIDON?.mini(); };
     $('spanel').addEventListener('click', () => window.BIDON.open()); $('sbidon').addEventListener('click', (e) => { e.stopPropagation(); window.BIDON.open(); });
     const L3 = (pl, en) => (window.LANG === 'en' ? en : pl);
-    $('sbars').addEventListener('click', (e) => { e.stopPropagation(); window.PPROF.open(SQ[sel].num); });
+    const prof = (e) => { e.stopPropagation(); window.PPROF.open(SQ[sel].num); };   // the player (photo, name) opens his profile; the stats open the bottle
+    $('sface').addEventListener('click', prof); document.querySelector('#spanel .who').addEventListener('click', prof);
     const choose = (i) => { FX.kid(SQ[i].face); pop(i); if (i === sel) return; sel = i; mark(); };
     kids.forEach((k, i) => k.addEventListener('click', () => choose(i)));
     // the coin box: a ding and a few coins jumping out of it
