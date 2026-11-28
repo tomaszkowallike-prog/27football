@@ -541,7 +541,7 @@
   #szatnia .bars { display: grid; grid-template-columns: auto auto; gap: .25em .8em; align-items: center; font-size: clamp(8px, 1.15vw, 15px); }
   #szatnia .bars span { color: #b8b0e8; } #szatnia .bars i { display: flex; gap: 2px; } #szatnia .bars i u { width: 1.6em; height: .7em; background: #3a3270; text-decoration: none; }
   #szatnia .bars i u.on { background: #ffc21a; } #szatnia .bars i u[style] { background: linear-gradient(90deg, #ffc21a var(--p), #3a3270 0); } #szatnia .bars i.max u.on { background: #ff5a1a; box-shadow: 0 0 6px #ff8a1f; }
-  #dog { position: absolute; left: 0.8%; top: 60.5%; width: 8.6%; aspect-ratio: 88 / 96; background: url(dog.png) 0 0 / 800% 100% no-repeat; image-rendering: pixelated; cursor: pointer; }
+  #dog { position: absolute; left: 0.8%; top: 60.5%; width: 8.6%; aspect-ratio: 88 / 96; background: url(dog.png?v=2) 0 0 / 800% 100% no-repeat; image-rendering: pixelated; cursor: pointer; }
   #dog.scr { animation: scr .16s steps(2) infinite; } @keyframes scr { 50% { transform: translate(1px, -2px); } }
   #dog.hop { animation: dhop .35s steps(3); } @keyframes dhop { 50% { transform: translateY(-14%); } }
   #trofea { position: fixed; inset: 0; z-index: 21; background: #120a24; overflow: hidden; } #trofea[hidden] { display: none; }
@@ -697,7 +697,7 @@
   body.playing #mute { display: block; } body.playing.touch #mute { top: max(10px, env(safe-area-inset-top)); right: calc(max(10px, env(safe-area-inset-right)) + 156px); bottom: auto; }
   @media (max-width: 700px) { #score .tn { font-size: 16px; } #score .num { font-size: 24px; min-width: 50px; } #score .clockp { font-size: 18px; } #score .crest { width: 26px; height: 30px; } #score .plate, #score .clockp { height: 38px; } }
 </style>
-<script src="./lang.js?v=11"></script>
+<script src="./lang.js?v=12"></script>
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
 <script>
   // music volume for every track (match, locker room, penalties, keepy-uppy): 100 / 60 / 30 / off, remembered
@@ -976,7 +976,10 @@
       raf = requestAnimationFrame(anim); };
     return { start }; })();
   const go = () => COIN.start((side, first) => { window.GAME.setSide(side); window.FIRST_KICK = first; go2(); });
-  const go2 = () => { $('menu').hidden = true; $('end').hidden = true; document.body.classList.add('playing'); meP = themP = null; meMood = themMood = '-'; window.GAME.start(); window.GAME.freeze(true); $('tip').hidden = false; tipT = performance.now(); };
+  const go2 = () => { $('menu').hidden = true; $('end').hidden = true; document.body.classList.add('playing'); meP = themP = null; meMood = themMood = '-'; window.GAME.start();
+    // the big how-to-play card only before the very first match, not before every tournament game
+    let seen = false; try { seen = localStorage.getItem('tip_seen') === '1'; localStorage.setItem('tip_seen', '1'); } catch (e) {}
+    if (seen) return; window.GAME.freeze(true); $('tip').hidden = false; tipT = performance.now(); };
   let tipT = 0; const unTip = () => { if ($('tip').hidden || performance.now() - tipT < 400) return; $('tip').hidden = true; window.GAME.freeze(false); };
   $('tip').addEventListener('pointerdown', (e) => { e.preventDefault(); unTip(); });
   $('play').addEventListener('click', go); $('again').addEventListener('click', go);
@@ -1617,7 +1620,7 @@
 <script src="./pen.js?v=6"></script>
 <script src="./lace.js"></script>
 <script src="./caps.js"></script>
-<script src="./flip.js?v=3"></script>
+<script src="./flip.js?v=4"></script>
 <script src="./paluchy.js?v=7"></script>
 <script src="./bieg.js?v=1795689651"></script>
 <script type="module" src="./game.js?v=6"></script>

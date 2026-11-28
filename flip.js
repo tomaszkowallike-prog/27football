@@ -63,9 +63,14 @@
   // swipe fallback, always on
   let sw = null;
   const P = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  // "no motion sensor" note: low on the screen, with OK that hides it for good
+  let nsOk = false; try { nsOk = localStorage.getItem('flip_nosens_ok') === '1'; } catch (e) {}
+  const nsShow = () => S.nosens && !nsOk && S.phase === 'hold';
+  const nsBtn = () => { const w = 64, h = 34; return { x: W / 2 + Math.min(W * 0.42, 330) - w, y: H - 92, w, h }; };
   const startBtn = () => { const w = Math.min(280, W * 0.4), h = 60; return { x: W / 2 - w / 2, y: H * 0.66, w, h }; };
   cv.addEventListener('pointerdown', (e) => { e.preventDefault(); const [x, y] = P(e);
     if (S.phase === 'intro') return;
+    if (nsShow()) { const b = nsBtn(); if (x > b.x - 8 && x < b.x + b.w + 8 && y > b.y - 8 && y < b.y + b.h + 8) { nsOk = true; try { localStorage.setItem('flip_nosens_ok', '1'); } catch (er) {} return; } }
     sw = { x, y, t: performance.now() }; });
   cv.addEventListener('click', async (e) => { if (S.phase !== 'intro') return; const [x, y] = P(e), b = startBtn();
     if (x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h) { S.motion = await askMotion(); hang(); tone(520, 780, 0.1); } });
@@ -142,7 +147,10 @@
         g.restore(); if (sz > 0) txt(st.mega ? 'SUPER WOW!' : 'WOW!', cx, H * 0.24 + Math.min(W, H) * (st.mega ? 0.36 : 0.3) * 0.62, Math.min(st.mega ? 46 : 40, W / 12), st.mega ? ['#ff6ad5', '#3ce6c8', '#ffe14a'][Math.floor(p * 12) % 3] : '#ffe14a'); }
       if (S.msgT > 0) { const my = S.star && S.star.t > 0 ? H * 0.62 : H * 0.42; txt(S.msg, W / 2, my, Math.min(34, W / 16), S.msgC); if (S.gain) txt('+' + S.gain, W / 2, my + Math.min(34, W / 16) * 1.15, Math.min(30, W / 18), '#6ee05a'); }
       else if (S.phase === 'hold' && Math.floor(S.t * 2.5) % 2) txt(S.motion ? 'MACHNIJ TELEFONEM W GÓRĘ' : 'PRZESUŃ PALCEM W GÓRĘ', W / 2, H - 30, Math.min(20, W / 30), '#fff');
-      if (S.nosens && S.phase === 'hold') txt('Ta przeglądarka nie daje czujnika ruchu - otwórz grę w Chrome', W / 2, 92, Math.min(13, W / 55), '#ffb0a0');
+      if (nsShow()) { const bw = Math.min(W * 0.84, 660), b = nsBtn(); pbox(W / 2 - bw / 2, H - 104, bw, 58, '#2a1238');
+        g.font = `${Math.round(Math.min(11, W / 62))}px "Press Start 2P", monospace`; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillStyle = '#ffb0a0';
+        g.fillText('Ta przeglądarka nie daje czujnika ruchu.', W / 2 - bw / 2 + 16, H - 84); g.fillText('Przesuwaj palcem albo otwórz grę w Chrome.', W / 2 - bw / 2 + 16, H - 64);
+        pbox(b.x, b.y, b.w, b.h, '#6ee05a'); g.textAlign = 'center'; g.fillStyle = '#1a1030'; g.font = '12px "Press Start 2P", monospace'; g.fillText('OK', b.x + b.w / 2, b.y + b.h / 2 + 1); }
       if (S.motion) { const n = 10, lit = Math.round(S.lvl * n); g.font = '8px "Press Start 2P", monospace'; g.textAlign = 'left'; g.fillStyle = '#fff'; g.fillText('RUCH', 14, 84);
         for (let i = 0; i < n; i++) { g.fillStyle = '#000'; g.fillRect(56 + i * 12, 78, 11, 12); g.fillStyle = i < lit ? (i > 6 ? '#ff4a3a' : i > 3 ? '#ffe14a' : '#3fe060') : '#333'; g.fillRect(57 + i * 12, 79, 9, 10); } }
     } else {
