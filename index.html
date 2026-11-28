@@ -229,7 +229,7 @@
   #kend[hidden] { display: none; }
   #kend .tbox { background: #000; border: 3px solid #8a8a8a; padding: 14px 22px; text-align: center; }
   #kend small { letter-spacing: .2em; color: #ff8a1f; } .kres { font-size: 22px; margin: 6px 0; } .kres b { font-size: 54px; color: #ffe14a; }
-  #kend p { margin: 0 0 10px; color: #8fd99a; min-height: 1em; }
+  #kend p { margin: 0 0 10px; color: #8fd99a; min-height: 1em; } #kend .krank { margin-top: 8px; } #kend .krank .btn { font-size: .8em; } #kend [hidden] { display: none; }
   .btn.ghost { background: transparent; border-color: #8a8a8a; color: #fff; }
   #kback { right: max(10px, env(safe-area-inset-right)); top: max(10px, env(safe-area-inset-top)); }
   /* the locker room: the user's picture, contained, with hot spots on the four boys */
@@ -670,7 +670,7 @@
   body.playing #mute { display: block; } body.playing.touch #mute { top: max(10px, env(safe-area-inset-top)); right: calc(max(10px, env(safe-area-inset-right)) + 156px); bottom: auto; }
   @media (max-width: 700px) { #score .tn { font-size: 16px; } #score .num { font-size: 24px; min-width: 50px; } #score .clockp { font-size: 18px; } #score .crest { width: 26px; height: 30px; } #score .plate, #score .clockp { height: 38px; } }
 </style>
-<script src="./lang.js?v=8"></script>
+<script src="./lang.js?v=9"></script>
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
 <script>
   // music volume for every track (match, locker room, penalties, keepy-uppy): 100 / 60 / 30 / off, remembered
@@ -818,7 +818,7 @@
 <div id="kapki" hidden><div class="f169"><img src="kapki_bg.jpg" alt=""></div><div id="jug"></div><div id="kdots"></div>
   <div class="khud"><div><small>KAPKI</small><b id="kscore">0</b></div><div><small>REKORD</small><b id="kbest">0</b></div></div>
   <div id="kmsg"><b>DOTYKAJ KÓŁEK!</b><span>Masz chwilę na każde, inaczej piłka spadnie.</span></div>
-  <div id="kend" hidden><div class="tbox"><small>PIŁKA SPADŁA</small><div class="kres"><b id="kres">0</b> kapek</div><p id="knew"></p><div class="row"><button class="btn" id="kagain">JESZCZE RAZ</button><button class="btn ghost" id="kmenu">MENU</button></div></div></div>
+  <div id="kend" hidden><div class="tbox"><small>PIŁKA SPADŁA</small><div class="kres"><b id="kres">0</b> kapek</div><p id="knew"></p><div class="row"><button class="btn" id="kagain">JESZCZE RAZ</button><button class="btn ghost" id="kmenu">MENU</button></div><div class="row krank"><button class="btn" id="ksave">ZAPISZ WYNIK</button><button class="btn ghost" id="krank">RANKING</button></div></div></div>
   <button class="ibtn" id="kback">✕ MENU</button></div>
 <div id="picker" hidden><div class="pbox"><small>WYBIERZ MOC</small><div class="cards" id="pcards"></div><div class="pbar"><i></i></div><div class="phint k-keys">← → wybierz · <span class="kc">K</span> użyj · <span class="kc">Esc</span> wyjdź</div><div class="phint k-touch">Dotknij mocy albo WRÓĆ</div></div></div>
 <div id="tip" hidden><div class="tbox"><small>JAK GRAĆ</small>
@@ -1327,6 +1327,7 @@
     $('tback').onclick = $('texit').onclick = () => { $('trofea').hidden = true; TMU.pause(); if (prevMus) prevMus.play().catch(() => {}); prevMus = null; }; $('tslots').addEventListener('click', (e) => e.stopPropagation());
     return { open, check }; })();
   $('strophy').onclick = () => TRO.open(); $('sworks').onclick = () => window.WARSZTAT?.open();
+  $('ksave').onclick = () => window.RANK?.ask('kapki', window.KLAST || 0); $('krank').onclick = () => window.RANK?.show('kapki');
   window.KAPKI_COINS = (n) => { const c = Math.floor(n / 5); if (c > 0) PROG.add(c); return c; };
   // the arena cards are built and their pictures loaded once, right at start, so the list never shows names without pictures
   const AIMG = []; const buildArenas = () => { const grid = $('arenagrid'); if (grid.children.length || !window.GAME?.arenas) return; for (const a of (window.GAME?.arenas || [])) { const b = document.createElement('button'); b.dataset.a = a.id; b.innerHTML = `<img src="arena_${a.id}.png" alt="" width="120" height="84" decoding="sync"><span>${a.name}</span>`; AIMG.push(b.querySelector('img'));
@@ -1443,7 +1444,7 @@
       setTimeout(() => alive && spawn(), 120); };
     const miss = () => { if (!alive) return; alive = false; dots.innerHTML = ''; if (J) { clearInterval(seqT); cur = 0; frame(0); } else { frame(1); setTimeout(() => frame(0), 450); } tone(220, 0.35, 'sawtooth', 0.06); setTimeout(() => tone(140, 0.4, 'sawtooth', 0.06), 160);
       const rec = score > best; if (rec) { best = score; try { localStorage.setItem('kapki_best', best); } catch (e) {} }
-      $('kbest').textContent = best; $('kres').textContent = score; { window.TRAIN?.('kapki', { score, record: rec && score > 0 }); const kc = window.KAPKI_COINS?.(score) || 0; $('knew').textContent = (rec && score ? 'NOWY REKORD!' : best ? `Rekord: ${best}` : '') + (kc ? ` +${kc} monet` : ''); }
+      $('kbest').textContent = best; $('kres').textContent = score; { window.TRAIN?.('kapki', { score, record: rec && score > 0 }); window.KLAST = score; $('ksave').hidden = score < 5; const kc = window.KAPKI_COINS?.(score) || 0; $('knew').textContent = (rec && score ? 'NOWY REKORD!' : best ? `Rekord: ${best}` : '') + (kc ? ` +${kc} monet` : ''); }
       setTimeout(() => { $('kend').hidden = false; }, 700); };
     const start = () => { const cap = window.CAPTAIN || 27; J = HDJ[cap] || null; FW = J ? J.n : 16; cur = 0; clearInterval(seqT);
       jug.style.backgroundImage = J ? `url(juggle_hd_${cap}.png)` : `url(juggle_${cap}.png)`; jug.style.backgroundSize = `${FW * 100}% 100%`; jug.style.aspectRatio = J ? J.ar : ''; MUS.start(actx()); $('kapki').hidden = false; window.BIDON?.hud(true, 'kapki'); $('kend').hidden = true; $('kmsg').hidden = false; score = 0; pairI = (Math.random() * 8) | 0; $('kscore').textContent = 0; $('kbest').textContent = best; frame(0); alive = true; setTimeout(() => alive && spawn(), 900); };
@@ -1475,6 +1476,7 @@
       if (!I.hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (stage === 3) { blip(); afterIntro(); } else if (['Enter', 'Escape', 'Space'].includes(e.code)) skip(); else if (I.classList.contains('muted')) tune(); return; }
       if (!$('modes').hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'KeyA' || e.code === 'KeyD') { modeSel = (modeSel + (e.code === 'ArrowLeft' || e.code === 'KeyA' ? 4 : 1)) % 5; markMode(); } else if (e.code === 'Digit1') pickMode('match'); else if (e.code === 'Digit2') pickMode('karne'); else if (e.code === 'Digit3') pickMode('kapki'); else if (e.code === 'Digit4') pickMode('but'); else if (e.code === 'Digit5') pickMode('kapsle'); else if (e.code === 'Escape' || e.code === 'Backspace') pickMode('back'); else if (e.code === 'Enter' || e.code === 'Space') pickMode(['match', 'karne', 'kapki', 'but', 'kapsle'][modeSel]); return; }
       if (!$('szatnia').hidden) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) SZ.key(e); return; }
+      if ($('rank') && !$('rank').hidden) return;
       if (!$('kapki').hidden) { e.preventDefault(); e.stopPropagation(); if (e.code === 'Escape') K.stop(); else if (!$('kend').hidden && (e.code === 'Enter' || e.code === 'Space') && !e.repeat) K.start(); return; }
       if (!$('tip').hidden) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) unTip(); return; }
       if (!$('menu').hidden && !$('play').disabled && (e.code === 'Enter' || e.code === 'Space')) { e.preventDefault(); e.stopPropagation(); go(); } }, true);
@@ -1519,6 +1521,7 @@
 </script>
 <script src="./warsztat.js?v=9"></script>
 <script src="./room.js?v=7"></script>
+<script src="./rank.js?v=1"></script>
 <script src="./pen.js?v=5"></script>
 <script src="./lace.js"></script>
 <script src="./caps.js"></script>
