@@ -80,17 +80,31 @@
   const TAU = Math.PI * 2, wrap = (a) => ((a + Math.PI) % TAU + TAU) % TAU - Math.PI;
   const lowest = () => { const c = Math.abs(Math.cos(S.a)), s = Math.abs(Math.sin(S.a)), ib = IMG[S.kind], bw = ib && ib.width ? BOT_H * ib.width / ib.height : 90;
     return S.y + (half() * c + bw / 2 * s); };
+  // an own chunky pixel star (no face), drawn once into a small canvas and blown up without smoothing
+  const starSprite = (fill, light, dark) => { const N = 23, c = document.createElement('canvas'); c.width = c.height = N; const q = c.getContext('2d'), P = [];
+    for (let i = 0; i < 10; i++) { const r = i % 2 ? 4.6 : 10.6, a = -Math.PI / 2 + i * Math.PI / 5; P.push([11.5 + Math.cos(a) * r, 12.2 + Math.sin(a) * r]); }
+    const inS = (x, y) => { let o = false; for (let i = 0, j = 9; i < 10; j = i++) { const [xi, yi] = P[i], [xj, yj] = P[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) o = !o; } return o; };
+    const m = []; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) m[y * N + x] = inS(x + 0.5, y + 0.5);
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const k = y * N + x;
+      if (m[k]) { q.fillStyle = x + y > 25 ? dark : (x + y < 17 && (x > 8 && x < 12 || y < 11)) ? light : fill; q.fillRect(x, y, 1, 1); }
+      else if ((x > 0 && m[k - 1]) || (x < N - 1 && m[k + 1]) || (y > 0 && m[k - N]) || (y < N - 1 && m[k + N])) { q.fillStyle = '#1a1030'; q.fillRect(x, y, 1, 1); } }
+    q.fillStyle = '#fff'; q.fillRect(9, 7, 1, 2); q.fillRect(10, 6, 1, 1); return c; };
+  const STAR = starSprite('#ffd21a', '#fff6b0', '#e08a00'), MEGA = starSprite('#ff6ad5', '#ffd6f4', '#b03aa8');
   const say = (t, c, d = 1.4) => { S.msg = t; S.msgC = c; S.msgT = d; };
   const burst = (x, y, c, n = 22) => { for (let i = 0; i < n; i++) S.parts.push({ x, y, vx: (Math.random() - 0.5) * 700, vy: -Math.random() * 700 - 150, l: 0.7 + Math.random() * 0.4, c }); };
   const land = () => { const ang = wrap(S.a), spins = Math.round(Math.abs(S.a) / TAU), tol = 0.55;
     if (Math.abs(ang) < tol && spins >= 1) { S.phase = 'stand'; S.wob = ang * 1.3; S.a = 0; S.y = FLOOR - half(); S.t = 0; S.streak++;
-      const pts = spins >= 2 ? 3 : 1; S.score += pts * S.streak; say(spins >= 2 ? 'PODWÓJNY FLIP!' : 'FLIP!', '#ffe14a'); burst(S.x, FLOOR, '#ffe14a'); burst(S.x, FLOOR, '#ff6ad5', 12);
+      // more turns, more points: 1 / 3 / 6 / 10 / 15; from three turns on a star pops up with a WOW
+      const pts = [0, 1, 3, 6, 10, 15][Math.min(5, spins)]; S.score += pts * S.streak;
+      say(['', 'FLIP!', 'PODWÓJNY FLIP!', 'POTRÓJNY FLIP!', 'POCZWÓRNY FLIP!', 'MEGA FLIP!'][Math.min(5, spins)], spins >= 4 ? '#ff6ad5' : '#ffe14a', spins >= 3 ? 2 : 1.4);
+      S.gain = pts * S.streak;
+      if (spins >= 3) { S.star = { t: 2, d: 2, mega: spins >= 4 }; burst(S.x, FLOOR, '#8ae0ff', 18); [784, 988, 1175, 1568, 1976].forEach((fq, i) => tone(fq, fq, 0.12, 'square', 0.05, 0.35 + i * 0.07)); } burst(S.x, FLOOR, '#ffe14a'); burst(S.x, FLOOR, '#ff6ad5', 12);
       [523, 659, 784, 1047].forEach((f, i) => tone(f, f, 0.1, 'square', 0.05, i * 0.08)); thud(0.25); vib([30, 30, 60]);
       if (S.score > S.best) { S.best = S.score; try { localStorage.setItem('flip_best', S.best); } catch (e) {} } }
-    else { S.phase = 'fall'; S.t = 0; S.side = Math.sin(ang) >= 0 ? 1 : -1; S.a = ang;
+    else { S.gain = 0; S.phase = 'fall'; S.t = 0; S.side = Math.sin(ang) >= 0 ? 1 : -1; S.a = ang;
       say(Math.abs(ang) < tol ? 'BEZ OBROTU SIĘ NIE LICZY' : Math.abs(ang) > 2.3 ? 'DO GÓRY DNEM!' : ang > 0 ? 'ZA MOCNO' : 'ZA SŁABO', '#ff6a4a');
       if (S.streak > 1) say('KONIEC SERII ×' + S.streak, '#ff6a4a'); S.streak = 0; S.score = 0; thud(0.4); tone(180, 70, 0.35, 'sawtooth', 0.04); vib(80); } };
-  const update = (dt) => { S.t += dt; if (S.msgT > 0) S.msgT -= dt;
+  const update = (dt) => { S.t += dt; if (S.msgT > 0) S.msgT -= dt; if (S.star && S.star.t > 0) S.star.t -= dt;
     if (S.phase === 'hold') { S.a = Math.sin(S.t * 2.1) * 0.1; const ty = holdY(); S.x = LX + Math.sin(S.a) * half(); S.y = ty + Math.cos(S.a) * half(); }
     else if (S.phase === 'fly') { S.vy += G * dt; S.x += S.vx * dt; S.y += S.vy * dt; S.a += S.w * dt; if (S.vy > 0 && lowest() >= FLOOR) land(); }
     else if (S.phase === 'stand') { S.wob *= Math.exp(-6 * dt); S.a = S.wob * Math.cos(S.t * 24); if (S.t > 1.5) hang(); }
@@ -119,7 +133,14 @@
       // HUD
       pbox(10, 10, 230, 62, '#1a1540'); g.font = '10px "Press Start 2P", monospace'; g.textAlign = 'left'; g.textBaseline = 'middle';
       g.fillStyle = '#ffe14a'; g.fillText(`WYNIK ${S.score}  ×${S.streak}`, 22, 30); g.fillStyle = '#9fd8ff'; g.fillText(`REKORD ${S.best}`, 22, 52);
-      if (S.msgT > 0) txt(S.msg, W / 2, H * 0.42, Math.min(34, W / 16), S.msgC);
+      if (S.star && S.star.t > 0) { const st = S.star, p = 1 - st.t / st.d, pop = p < 0.15 ? Math.floor(p / 0.15 * 4) / 4 * 1.25 : p < 0.25 ? 1.25 - (p - 0.15) * 2.5 : 1, fade = st.t < 0.35 ? st.t / 0.35 : 1;
+        const sz = Math.round(Math.min(W, H) * (st.mega ? 0.36 : 0.3) * pop / 23) * 23, cx = W / 2, cy = H * 0.24; g.save(); g.globalAlpha = fade; g.imageSmoothingEnabled = false;
+        g.translate(cx, cy); g.rotate(Math.sin(p * 18) * 0.08); g.drawImage(st.mega ? MEGA : STAR, -sz / 2, -sz / 2, sz, sz); g.restore();
+        g.save(); g.globalAlpha = fade; const cols = st.mega ? ['#ff6ad5', '#3ce6c8', '#ffe14a', '#8ae0ff'] : ['#fff6b0', '#ffe14a'];
+        for (let i = 0; i < (st.mega ? 12 : 8); i++) { const a = i / (st.mega ? 12 : 8) * Math.PI * 2 + p * 3, r = sz * (0.62 + 0.12 * Math.sin(p * 20 + i)), s = Math.max(3, Math.round(sz / 23)), x = Math.round(cx + Math.cos(a) * r), y = Math.round(cy + Math.sin(a) * r);
+          g.fillStyle = cols[i % cols.length]; g.fillRect(x - s, y, s * 3, s); g.fillRect(x, y - s, s, s * 3); }
+        g.restore(); if (sz > 0) txt(st.mega ? 'SUPER WOW!' : 'WOW!', cx, H * 0.24 + Math.min(W, H) * (st.mega ? 0.36 : 0.3) * 0.62, Math.min(st.mega ? 46 : 40, W / 12), st.mega ? ['#ff6ad5', '#3ce6c8', '#ffe14a'][Math.floor(p * 12) % 3] : '#ffe14a'); }
+      if (S.msgT > 0) { const my = S.star && S.star.t > 0 ? H * 0.62 : H * 0.42; txt(S.msg, W / 2, my, Math.min(34, W / 16), S.msgC); if (S.gain) txt('+' + S.gain, W / 2, my + Math.min(34, W / 16) * 1.15, Math.min(30, W / 18), '#6ee05a'); }
       else if (S.phase === 'hold' && Math.floor(S.t * 2.5) % 2) txt(S.motion ? 'MACHNIJ TELEFONEM W GÓRĘ' : 'PRZESUŃ PALCEM W GÓRĘ', W / 2, H - 30, Math.min(20, W / 30), '#fff');
       if (S.nosens && S.phase === 'hold') txt('Ta przeglądarka nie daje czujnika ruchu - otwórz grę w Chrome', W / 2, 92, Math.min(13, W / 55), '#ffb0a0');
       if (S.motion) { const n = 10, lit = Math.round(S.lvl * n); g.font = '8px "Press Start 2P", monospace'; g.textAlign = 'left'; g.fillStyle = '#fff'; g.fillText('RUCH', 14, 84);
