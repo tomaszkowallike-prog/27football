@@ -997,6 +997,7 @@
   const FOODS = [['SCHABOWY', 'SCHNITZEL'], ['KOTLET', 'CUTLET'], ['ROSOL', 'BROTH'], ['ZUREK', 'SOUP'], ['PIEROG', 'DUMPLING'], ['BIGOS', 'STEW'], ['ZIEMNIAK', 'POTATO'], ['MAKARON', 'PASTA'], ['RYZ', 'RICE'], ['BURAK', 'BEETROOT'], ['KLUSEK', 'NOODLE'], ['GULASZ', 'GOULASH']];
   const nicks = () => { try { return JSON.parse(localStorage.getItem('cs_nicks') || '{}'); } catch (e) { return {}; } };
   const nickTxt = (p) => { const e = window.LANG === 'en' ? 1 : 0; return p && TRAITS[p[0]] && FOODS[p[1]] ? `${TRAITS[p[0]][e]} ${FOODS[p[1]][e]}` : ''; };
+  try { if (localStorage.getItem('cs_nicks_v') !== '2') { localStorage.removeItem('cs_nicks'); localStorage.setItem('cs_nicks_v', '2'); } } catch (e) {}   // one-time reset of the first test nicknames
   window.PNICK = (n) => nickTxt(nicks()[n]);
   window.PPROF = (() => { let num = 27, name = '', tr = -1, fo = -1, done = null; const EN = () => window.LANG === 'en', L = (pl, en) => (EN() ? en : pl);
     const ROWS = [['Q','W','E','R','T','Y','U','I','O','P'], ['A','S','D','F','G','H','J','K','L','BS'], ['Z','X','C','V','B','N','M','-','RET'], ['STOP','SP']];
@@ -1011,14 +1012,14 @@
     const WEEK = 7 * 864e5; let mode = 'show', pop = false;
     const chips = (list, pick) => `<div class="ppchips">${list.map((t, i) => `<button data-i="${i}">${t[EN() ? 1 : 0]}</button>`).join('')}</div>`;
     const draw = () => { $('ppname').textContent = name; const w = $('ppwiz'), p = nicks()[num], t = p ? p[2] || 0 : 0, wait = t + WEEK - Date.now();
-      if (mode === 'q1') { w.innerHTML = `<p class="ppstep">${L('PYTANIE 1 Z 2', 'QUESTION 1 OF 2')}</p><h4>${L('JAKI JESTES NA BOISKU?', 'HOW DO YOU PLAY?')}</h4>${chips(TRAITS)}<p class="ppnote">${L('Uwaga: ksywka zostanie z toba na 7 dni!', 'Careful: the nickname stays with you for 7 days!')}</p>`;
+      if (mode === 'q1') { w.innerHTML = `<p class="ppstep">${L('PYTANIE 1 Z 2', 'QUESTION 1 OF 2')}</p><h4>${L('JAKI JESTES NA BOISKU?', 'HOW DO YOU PLAY?')}</h4>${chips(TRAITS)}`;
         w.querySelectorAll('button').forEach((b) => (b.onclick = () => { tr = +b.dataset.i; mode = 'q2'; window.SZFX?.drip?.(); draw(); })); return; }
       if (mode === 'q2') { w.innerHTML = `<p class="ppstep">${L('PYTANIE 2 Z 2', 'QUESTION 2 OF 2')}</p><h4>${L('CO JADLES NA OBIAD?', 'WHAT DID YOU HAVE FOR LUNCH?')}</h4>${chips(FOODS)}`;
         w.querySelectorAll('button').forEach((b) => (b.onclick = () => { fo = +b.dataset.i; const o = nicks(); o[num] = [tr, fo, Date.now()]; try { localStorage.setItem('cs_nicks', JSON.stringify(o)); } catch (e) {}
           mode = 'show'; pop = true; window.SZFX?.shop?.(); draw(); window.SZ_REFRESH?.(); })); return; }
       const nk = window.PNICK(num), days = Math.ceil(wait / 864e5);
       w.innerHTML = `<div class="ppnick${pop ? ' pop' : ''}"><span>${L('KSYWKA', 'NICKNAME')}</span>: <b>${nk || '...'}</b>${!nk || wait <= 0 ? `<button id="ppnew">${nk ? L('NOWA KSYWKA', 'NEW NICKNAME') : L('WYMYSL KSYWKE', 'GET A NICKNAME')}</button>` : ''}</div>
-        <p class="ppnote">${pop ? L('Tak zostaje! Nowa ksywka dopiero za 7 dni.', 'That\'s it! A new one only in 7 days.') : nk && wait > 0 ? L(`Nowa ksywka za ${days} ${days === 1 ? 'dzien' : 'dni'}.`, `New nickname in ${days} ${days === 1 ? 'day' : 'days'}.`) : ''}</p>`;
+        <p class="ppnote">${pop ? L('KSYWKA PRZYJETA! Zmienisz ja za 7 dni.', 'NICKNAME ACCEPTED! You can change it in 7 days.') : nk && wait > 0 ? L(`Nowa ksywka za ${days} ${days === 1 ? 'dzien' : 'dni'}.`, `New nickname in ${days} ${days === 1 ? 'day' : 'days'}.`) : ''}</p>`;
       pop = false; const nb = $('ppnew'); if (nb) nb.onclick = () => { mode = 'q1'; window.SZFX?.drip?.(); draw(); }; };
     const close = () => { kbd(false); $('pprof').hidden = true; };
     const open = (n, cb) => { num = n; done = cb; name = window.PNAME(n); tr = fo = -1; mode = window.PNICK(n) ? 'show' : 'q1'; pop = false;
@@ -1433,7 +1434,7 @@
     const kids = [...document.querySelectorAll('#szatnia .kid')];
     const mark = () => { const q = SQ[sel]; window.CAPTAIN = q.num; kids.forEach((k, i) => k.classList.toggle('sel', i === sel));
       $('spick').style.left = (parseFloat(kids[sel].style.left) + parseFloat(kids[sel].style.width) / 2) + '%';
-      $('sname').textContent = `${q.num} ${window.PNAME(q.num)}`; $('spos').textContent = q.pos; { const nk = window.PNICK(q.num); $('ssup').textContent = nk ? (window.LANG === 'en' ? 'NICKNAME: ' : 'KSYWKA: ') + nk : (window.LANG === 'en' ? '▶ TAP THE STATS: NICKNAME' : '▶ KLIKNIJ STATYSTYKI: KSYWKA'); }
+      $('sname').textContent = `${q.num} ${window.PNAME(q.num)}`; $('spos').textContent = q.pos; { const nk = window.PNICK(q.num); $('ssup').textContent = nk ? (window.LANG === 'en' ? 'NICKNAME: ' : 'KSYWKA: ') + nk : (window.LANG === 'en' ? '▶ TAP THE STATS' : '▶ KLIKNIJ W STATYSTYKI'); }
       const [fx, fy] = FACE[q.face]; $('sface').style.backgroundPosition = `${(fx - 5.6) / (100 - 11.1) * 100}% ${(fy - 9.9) / (100 - 19.8) * 100}%`;
       const lvq = window.LEVELS ? window.LEVELS(q.num) : q.st; $('sbars').innerHTML = (window.LANG === 'en' ? ['SHOOTING', 'PASSING', 'DRIBBLING', 'OBRONA'.replace('OBRONA', 'DEFENCE'), 'SPEED'] : ['STRZAŁ', 'PODANIE', 'DRYBLING', 'OBRONA', 'PRĘDKOŚĆ']).map((n, i) => `<span>${n}</span><i class="${lvq[i] >= 5 ? 'max' : ''}">${[1, 2, 3, 4, 5].map((k) => `<u class="${k <= lvq[i] ? 'on' : ''}"></u>`).join('')}</i>`).join(''); };
     // little 8-bit sounds: each boy answers with his own (14 a phone game, 10 a shoelace zip, 7 a gulp of water, 27 a calm chime)
