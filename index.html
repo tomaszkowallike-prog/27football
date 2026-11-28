@@ -703,7 +703,7 @@
   body.playing #mute { display: block; } body.playing.touch #mute { top: max(10px, env(safe-area-inset-top)); right: calc(max(10px, env(safe-area-inset-right)) + 156px); bottom: auto; }
   @media (max-width: 700px) { #score .tn { font-size: 16px; } #score .num { font-size: 24px; min-width: 50px; } #score .clockp { font-size: 18px; } #score .crest { width: 26px; height: 30px; } #score .plate, #score .clockp { height: 38px; } }
 </style>
-<script src="./lang.js?v=12"></script>
+<script src="./lang.js?v=13"></script>
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
 <script>
   // music volume for every track (match, locker room, penalties, keepy-uppy): 100 / 60 / 30 / off, remembered
@@ -766,7 +766,7 @@
   <p class="q">Znalazłeś ukrytą grę w paluchy! Chcesz zagrać?</p>
   <div class="yn"><button class="big grn" id="palyes">TAK</button><button class="big red2" id="palno">NIE</button></div></div></div>
 <div class="setov" id="flippick" hidden><div class="setp" role="dialog" aria-label="Wybierz butelkę"><h2>WYBIERZ BUTELKĘ <button class="x" id="flipx" aria-label="Zamknij">X</button></h2>
-  <div class="flipgrid"><button data-b="woda"><img src="flip_woda.png" alt="Woda"></button><button data-b="cola"><img src="flip_cola.png" alt="Cola"></button><button data-b="cytryna"><img src="flip_cytryna.png" alt="Cytryna"></button><button data-b="truskawka"><img src="flip_truskawka.png" alt="Truskawka"></button><button data-b="fiolet"><img src="flip_fiolet.png" alt="Duża woda"></button></div></div></div>
+  <div class="flipgrid"><button data-b="woda"><img src="flip_woda.png?v=2" alt="Woda"></button><button data-b="cola"><img src="flip_cola.png?v=2" alt="Wiśnia"></button><button data-b="cytryna"><img src="flip_cytryna.png?v=2" alt="Cytryna"></button><button data-b="truskawka"><img src="flip_truskawka.png?v=2" alt="Jabłko"></button><button data-b="fiolet"><img src="flip_fiolet.png?v=2" alt="Woda gazowana"></button></div></div></div>
 <div class="setov" id="arenapick" hidden><div class="setp" role="dialog" aria-label="Wybierz boisko"><h2>WYBIERZ BOISKO <button class="x" id="arenax" aria-label="Zamknij">X</button></h2>
   <div class="abar"><button id="tabTour" class="on">TURNIEJ</button><button id="tabFree">DOWOLNY MECZ</button><span class="sp"></span>
     <span class="lv" id="lvbtns"><button data-l="0">ŁATWY</button><button data-l="1">NORMALNY</button><button data-l="2">MISTRZ</button></span>
@@ -849,7 +849,7 @@
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <button class="hot" id="sset" aria-label="Ustawienia"></button>
   <div class="stitle">WYBIERZ KAPITANA</div><button class="sshop" id="sshop">SKLEP</button><button class="srank" id="srank" aria-label="Ranking" title="Ranking"><svg viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="#1a1030" d="M3 1h10v1h2v4h-1v1h-1v1h-1v1h-1v2h1v1h1v3H3v-3h1v-1h1V9H4V8H3V7H2V6H1V2h2z"/><path fill="#ffd21a" d="M4 2h8v5h-1v1h-1v1H6V8H5V7H4zM2 3h1v2H2zM13 3h1v2h-1zM7 10h2v1H7zM5 12h6v2H5z"/><path fill="#fff6b0" d="M5 3h1v3H5z"/><path fill="#c88a00" d="M10 3h1v4h-1z"/></svg></button><button class="sroom" id="sroom" aria-label="Pokój gracza"></button><div class="scoin" id="coinL">0</div><button class="scoinhit" id="coinHit" aria-label="Monety"></button><button class="hot" id="sworks" aria-label="Warsztat"></button><img id="scup" src="szatnia_cup.png?v=1" alt=""><button class="hot" id="strophy" aria-label="Trofea"></button></div></div>
-<div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt=""><button class="hbottle" id="hbottle" aria-label="Butelka"><img src="flip_woda.png" alt=""></button><button class="hsocks" id="hsocks" aria-label="Paluchy"><img src="paluchy_buty.png?v=1" alt=""></button>
+<div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt=""><button class="hbottle" id="hbottle" aria-label="Butelka"><img src="flip_woda.png?v=2" alt="Woda"></button><button class="hsocks" id="hsocks" aria-label="Paluchy"><img src="paluchy_buty.png?v=1" alt=""></button>
   <small id="mq">CO ROBIMY?</small>
   <div class="mrow"><button class="mb" data-m="match"><b><img class="pxi" src="ico_match.png" alt=""></b>MECZ<em>Pixels kontra Fioletowi</em></button><button class="mb" data-m="karne"><b><img class="pxi" src="ico_karne.png" alt=""></b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b><img class="pxi" src="ico_kapki.png" alt=""></b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b><img class="pxi" src="ico_but.png" alt=""></b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b><img class="pxi" src="ico_kapsle.png" alt=""></b>KAPSLE<em>wyścig kapsli po torze</em></button><button class="mb" data-m="bieg"><b><img class="pxi" src="ico_bieg.png" alt=""></b>BIEG<em>wyścig dookoła boiska</em></button></div>
   <button class="ibtn mback" data-m="back">◀ SZATNIA</button></div></div></div>
@@ -1626,7 +1626,7 @@
 <script src="./pen.js?v=6"></script>
 <script src="./lace.js"></script>
 <script src="./caps.js"></script>
-<script src="./flip.js?v=5"></script>
+<script src="./flip.js?v=6"></script>
 <script src="./paluchy.js?v=7"></script>
 <script src="./bieg.js?v=1795689651"></script>
 <script type="module" src="./game.js?v=6"></script>

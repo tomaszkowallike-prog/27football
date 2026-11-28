@@ -16,7 +16,7 @@
   const FLOOR = 985, LX = 1180;             // where the bottle lands, in picture units
   const BOT_H = 320;                        // bottle height in picture units
   const G = 2700;
-  const IMG = {}; const load = (k) => { if (!IMG[k]) { IMG[k] = new Image(); IMG[k].src = `flip_${k}.png`; } return IMG[k]; };
+  const IMG = {}; const load = (k) => { const src = `flip_${k}${window.LANG === 'en' ? '_en' : ''}.png?v=2`; if (!IMG[k] || !IMG[k].src.endsWith(src)) { IMG[k] = new Image(); IMG[k].src = src; } return IMG[k]; };   // labels have words: English twins
   ['woda', 'cola', 'cytryna', 'truskawka', 'fiolet'].forEach(load);
 
   // ---- sound ----

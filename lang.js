@@ -129,7 +129,7 @@
   const C = CanvasRenderingContext2D.prototype;
   for (const k of ['fillText', 'strokeText', 'measureText']) { const f = C[k]; C[k] = function (s, ...a) { return f.call(this, tr(String(s)), ...a); }; }
   // pictures with Polish words on them
-  const IMG = { 'tablica.jpg': 'tablica_en.jpg', 'szatnia_base.jpg?v=2': 'szatnia_base_en.jpg?v=2', 'szatnia_base.jpg': 'szatnia_base_en.jpg?v=2' };
+  const IMG = { 'flip_woda.png?v=2': 'flip_woda_en.png?v=2', 'flip_cola.png?v=2': 'flip_cola_en.png?v=2', 'flip_cytryna.png?v=2': 'flip_cytryna_en.png?v=2', 'flip_truskawka.png?v=2': 'flip_truskawka_en.png?v=2', 'flip_fiolet.png?v=2': 'flip_fiolet_en.png?v=2', 'tablica.jpg': 'tablica_en.jpg', 'szatnia_base.jpg?v=2': 'szatnia_base_en.jpg?v=2', 'szatnia_base.jpg': 'szatnia_base_en.jpg?v=2' };
   const css = document.createElement('style'); css.textContent = '#modes .sbg.tb { background-image: url(tablica_en.jpg) !important; } #trofea .sbg { background-image: url(trofea_bg_en.jpg?v=3) !important; }'; document.head.appendChild(css);
   // page text: translated as it appears and every time it changes
   const fix = (n) => {
