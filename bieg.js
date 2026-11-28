@@ -125,7 +125,7 @@
         r.d += r.v * dt; r.ft += dt * (2 + r.v / 22); r.lap = Math.min(LAPS, Math.floor(r.d / perim(r.lane)) + 1);
         if (r.me && !r.done) { const k = Math.floor(4 * Math.min(1, r.d / r.dist)) * 3; if (k !== S.bpend) { S.bpend = k; window.BIDON?.pend(k); } }   // the bottle fills as you run: 3 points a quarter
         if (r.d >= r.dist) { r.done = true; r.time = S.t; r.place = S.runners.filter((q) => q.done).length;
-          if (r.me) { tone(523, 1046, 0.4); S.phase = 'finish'; S.fin = S.t; let rec = false; if (r.place === 1 && (!S.best || r.time < S.best)) { rec = true; S.best = r.time; try { localStorage.setItem(bestKey(), S.best.toFixed(2)); } catch (e) {} } window.TRAIN?.('bieg', { place: r.place, record: rec }); } } }
+          if (r.me) { tone(523, 1046, 0.4); S.phase = 'finish'; S.fin = S.t; let rec = false; if (r.place === 1 && (!S.best || r.time < S.best)) { rec = true; S.best = r.time; try { localStorage.setItem(bestKey(), S.best.toFixed(2)); } catch (e) {} } window.TRAIN?.('bieg', { place: r.place, record: rec }); window.RANK?.offer('bieg' + LAPS, Math.round(r.time * 100)); } } }
       if (S.phase === 'finish' && (S.runners.every((r) => r.done) || S.t - S.fin > 3)) { S.phase = 'over'; S.t = 0; } } };
 
   // ---- drawing ----

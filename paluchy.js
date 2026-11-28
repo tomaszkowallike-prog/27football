@@ -80,7 +80,7 @@
       tone(220, 70, 0.45, 'sawtooth', 0.05); tone(160, 60, 0.5, 'square', 0.03, 0.1); vib([60, 40, 120]); say(T('PUDŁO!', 'OOPS!'), '#ff5a4a', 1.6); } };
 
   const finish = () => { const done = S.round - 1; S.coins = Math.min(30, done * 2) + (S.rec && done > 0 ? 10 : 0);
-    if (S.coins && window.PROG) window.PROG.add(S.coins); S.phase = 'end'; };
+    if (S.coins && window.PROG) window.PROG.add(S.coins); S.phase = 'end'; window.RANK?.offer('paluchy', done); };
 
   // ---- input ----
   const P = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };

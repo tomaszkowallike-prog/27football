@@ -243,7 +243,7 @@
     S.us.push(S.result === 'goal'); if (S.result === 'goal') window.BIDON?.pend(4 * S.us.filter(Boolean).length); const cpu = Math.random() < 0.7; S.them.push(cpu); S.cpuT = 1.6; S.cpuGoal = cpu;
     const a = S.us.filter(Boolean).length, b = S.them.filter(Boolean).length, n = S.us.length;
     const left = Math.max(0, KICKS - n), decided = n <= KICKS ? (a + left < b || b + left < a) : a !== b;
-    if (decided || (n >= KICKS && a !== b)) { S.phase = 'end'; S.t = 0; S.win = a > b; { let best = 0; try { best = +localStorage.getItem('pen_best') || 0; } catch (e) {} const rec = a > best; if (rec) try { localStorage.setItem('pen_best', a); } catch (e) {} window.TRAIN?.('karne', { goals: a, win: a > b, record: rec }); } setTimeout(() => (S.win ? SND.crowd() : SND.groan()), 900); return; }
+    if (decided || (n >= KICKS && a !== b)) { S.phase = 'end'; S.t = 0; S.win = a > b; { let best = 0; try { best = +localStorage.getItem('pen_best') || 0; } catch (e) {} const rec = a > best; if (rec) try { localStorage.setItem('pen_best', a); } catch (e) {} window.TRAIN?.('karne', { goals: a, win: a > b, record: rec }); window.RANK?.offer('karne', a); } setTimeout(() => (S.win ? SND.crowd() : SND.groan()), 900); return; }
     newKick(); S.phase = 'cpu'; S.t = 0;
   };
 

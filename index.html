@@ -435,6 +435,7 @@
   #toast.on { transform: translate(-50%, 0); visibility: visible; transition: transform .25s steps(4); }
   #szatnia .scoin { position: absolute; left: 85.6%; top: 4.9%; width: 5.6%; height: 4.6%; display: flex; align-items: center; justify-content: center; font: 700 clamp(9px, 2vw, 24px) "Pixelify Sans", monospace; color: #fff; }
   #szatnia .scoinhit { position: absolute; left: 75.6%; top: 2.4%; width: 16.4%; height: 7.6%; cursor: pointer; background: none; border: 0; }
+  #szatnia .srank { position: absolute; left: 76.1%; top: 2.6%; width: 4.4%; aspect-ratio: 1; padding: 3px; background: #2a1858; border: 2px solid #ffd21a; box-shadow: 0 3px 0 #0e0820, 0 0 0 2px #2a1240; cursor: pointer; } #szatnia .srank svg { width: 100%; height: 100%; display: block; } #szatnia .srank:hover { background: #3a2478; }
   #szatnia .sshop { position: absolute; left: 66.4%; top: 2.9%; width: 8.4%; height: 6.4%; font: 700 clamp(7px, 1.25vw, 15px) var(--px); letter-spacing: .06em; color: #1a1030; background: #ff9a2a; border: 2px solid #ffd8a0; box-shadow: 0 3px 0 #8a4a00, 0 0 0 2px #2a1240; cursor: pointer; padding: 0; image-rendering: pixelated; }
   #szatnia .sshop:active { transform: translateY(2px); box-shadow: 0 1px 0 #8a4a00, 0 0 0 2px #2a1240; }
   #szatnia .coinfly { position: absolute; width: 2.4%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff3a0 0 18%, #ffd23a 19% 60%, #c98a10 61%); box-shadow: 0 0 0 2px #6a4200; pointer-events: none; z-index: 5; }
@@ -810,7 +811,7 @@
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <button class="hot" id="sset" aria-label="Ustawienia"></button>
-  <div class="stitle">WYBIERZ KAPITANA</div><button class="sshop" id="sshop">SKLEP</button><button class="sroom" id="sroom" aria-label="Pokój gracza"></button><div class="scoin" id="coinL">0</div><button class="scoinhit" id="coinHit" aria-label="Monety"></button><button class="hot" id="sworks" aria-label="Warsztat"></button><img id="scup" src="szatnia_cup.png?v=1" alt=""><button class="hot" id="strophy" aria-label="Trofea"></button></div></div>
+  <div class="stitle">WYBIERZ KAPITANA</div><button class="sshop" id="sshop">SKLEP</button><button class="srank" id="srank" aria-label="Ranking" title="Ranking"><svg viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="#1a1030" d="M3 1h10v1h2v4h-1v1h-1v1h-1v1h-1v2h1v1h1v3H3v-3h1v-1h1V9H4V8H3V7H2V6H1V2h2z"/><path fill="#ffd21a" d="M4 2h8v5h-1v1h-1v1H6V8H5V7H4zM2 3h1v2H2zM13 3h1v2h-1zM7 10h2v1H7zM5 12h6v2H5z"/><path fill="#fff6b0" d="M5 3h1v3H5z"/><path fill="#c88a00" d="M10 3h1v4h-1z"/></svg></button><button class="sroom" id="sroom" aria-label="Pokój gracza"></button><div class="scoin" id="coinL">0</div><button class="scoinhit" id="coinHit" aria-label="Monety"></button><button class="hot" id="sworks" aria-label="Warsztat"></button><img id="scup" src="szatnia_cup.png?v=1" alt=""><button class="hot" id="strophy" aria-label="Trofea"></button></div></div>
 <div id="modes" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg tb"></div><div class="tbox2"><img src="tablica.jpg" alt=""><button class="hbottle" id="hbottle" aria-label="Butelka"><img src="flip_woda.png" alt=""></button><button class="hsocks" id="hsocks" aria-label="Paluchy"><img src="paluchy_buty.png?v=1" alt=""></button>
   <small id="mq">CO ROBIMY?</small>
   <div class="mrow"><button class="mb" data-m="match"><b><img class="pxi" src="ico_match.png" alt=""></b>MECZ<em>Pixels kontra Fioletowi</em></button><button class="mb" data-m="karne"><b><img class="pxi" src="ico_karne.png" alt=""></b>KARNE<em>seria rzutów karnych</em></button><button class="mb" data-m="kapki"><b><img class="pxi" src="ico_kapki.png" alt=""></b>KAPKI<em>dotykaj kółek, żongluj piłką</em></button><button class="mb" data-m="but"><b><img class="pxi" src="ico_but.png" alt=""></b>BUT<em>zawiąż sznurówki</em></button><button class="mb" data-m="kapsle"><b><img class="pxi" src="ico_kapsle.png" alt=""></b>KAPSLE<em>wyścig kapsli po torze</em></button><button class="mb" data-m="bieg"><b><img class="pxi" src="ico_bieg.png" alt=""></b>BIEG<em>wyścig dookoła boiska</em></button></div>
@@ -1327,6 +1328,7 @@
     $('tback').onclick = $('texit').onclick = () => { $('trofea').hidden = true; TMU.pause(); if (prevMus) prevMus.play().catch(() => {}); prevMus = null; }; $('tslots').addEventListener('click', (e) => e.stopPropagation());
     return { open, check }; })();
   $('strophy').onclick = () => TRO.open(); $('sworks').onclick = () => window.WARSZTAT?.open();
+  $('srank').onclick = () => window.RANK?.show('kapki');
   $('ksave').onclick = () => window.RANK?.ask('kapki', window.KLAST || 0); $('krank').onclick = () => window.RANK?.show('kapki');
   window.KAPKI_COINS = (n) => { const c = Math.floor(n / 5); if (c > 0) PROG.add(c); return c; };
   // the arena cards are built and their pictures loaded once, right at start, so the list never shows names without pictures
@@ -1521,13 +1523,13 @@
 </script>
 <script src="./warsztat.js?v=9"></script>
 <script src="./room.js?v=7"></script>
-<script src="./rank.js?v=1"></script>
-<script src="./pen.js?v=5"></script>
+<script src="./rank.js?v=2"></script>
+<script src="./pen.js?v=6"></script>
 <script src="./lace.js"></script>
 <script src="./caps.js"></script>
 <script src="./flip.js"></script>
-<script src="./paluchy.js?v=6"></script>
-<script src="./bieg.js?v=1795689649"></script>
+<script src="./paluchy.js?v=7"></script>
+<script src="./bieg.js?v=1795689650"></script>
 <script type="module" src="./game.js?v=5"></script>
 </body>
 </html>
