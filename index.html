@@ -547,6 +547,12 @@
   #trofea { position: fixed; inset: 0; z-index: 21; background: #120a24; overflow: hidden; } #trofea[hidden] { display: none; }
   #trofea .sbg { position: absolute; inset: -20px; background: url(trofea_bg.jpg?v=3) center / cover; filter: blur(12px) brightness(.45); }
   #trofea .tbox { position: absolute; left: 50%; top: 50%; width: min(100vw, 179.1vh); aspect-ratio: 2576 / 1438; transform: translate(-50%, -50%); }
+  /* the team dog sits on the floor with its back to us, watching the cups, now and then turning its head */
+  #tdog { position: absolute; left: 23.5%; top: 79%; height: 14%; aspect-ratio: 88 / 96; pointer-events: none; z-index: 2; } #tdog[hidden] { display: none; }
+  #tdog img { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+  #tdog .hd { transform-origin: 50% 47%; animation: tdlook 6s steps(1) infinite; }
+  @keyframes tdlook { 0%, 30% { transform: none; } 34% { transform: rotate(-6deg); } 38%, 50% { transform: rotate(-12deg) translateX(-2%); } 54% { transform: rotate(-5deg); } 58%, 66% { transform: none; } 70% { transform: rotate(6deg); }
+    74%, 86% { transform: rotate(12deg) translateX(2%); } 90% { transform: rotate(5deg); } 94%, 100% { transform: none; } }
   #trofea .tbox > img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
   #trofea .tro { position: absolute; display: flex; align-items: flex-end; justify-content: center; cursor: pointer; }
   #trofea .tro i { display: block; height: 92%; aspect-ratio: 1; background: url(trofea.png?v=3) 0 0 / 5000% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0,0,0,.6)); }
@@ -769,7 +775,7 @@
   <div class="flipgrid arenagrid" id="arenagrid" hidden></div>
   <p class="arenahint" id="tourhint">Turniej: wygraj mecz, żeby odblokować następne boisko. Na końcu czeka MROCZNY ZAMEK.</p>
   <p class="arenahint" id="freehint" hidden>Na start masz 3 boiska. Każda wygrana w turnieju odkrywa kolejne. Na Księżycu, w oceanie, w niebie i na stacji niższa grawitacja: piłka i skoki lecą wyżej.</p></div></div>
-<div id="trofea" hidden><div class="side90 l blue"></div><div class="side90 r blue"></div><div class="sbg"></div><div class="tbox"><img src="trofea_bg.jpg?v=3" alt=""><div id="tslots"></div>
+<div id="trofea" hidden><div class="side90 l blue"></div><div class="side90 r blue"></div><div class="sbg"></div><div class="tbox"><img src="trofea_bg.jpg?v=3" alt=""><div id="tslots"></div><div id="tdog" aria-hidden="true"><img src="dog_back_body.png?v=1" alt=""><img class="hd" src="dog_back_head.png?v=1" alt=""></div>
   <div class="lamp a" style="left:19.6%;width:13%"></div><div class="lamp b" style="left:43%;width:13.5%"></div><div class="lamp c" style="left:67.5%;width:13%"></div>
   <button class="tarrow l" id="tleft" aria-label="W lewo">◀</button><button class="tarrow r" id="tright" aria-label="W prawo" hidden>▶</button>
   <button class="texit" id="texit" aria-label="Exit"><b>EXIT</b><i></i></button><button class="tback" id="tback" hidden>◀ WRÓĆ</button><div class="tcount" id="tcount"></div><div class="tinfo" id="tinfo" hidden></div></div></div>
@@ -1403,7 +1409,7 @@
     C2.forEach(([i, pl, en, hp, he, ok], k) => T.push({ i, n: L(pl, en), how: L(hp, he), ok, s: k, room: 1 }));
     let room = 0;
     const draw = (fresh = []) => { const P = PROG.get(), box = $('tslots'); box.innerHTML = ''; let n = 0;
-      $('tleft').hidden = room !== 0; $('tright').hidden = room !== 1; $('texit').hidden = room !== 0; const bi = document.querySelector('#trofea .tbox > img'); const en = window.LANG === 'en' ? '_en' : ''; bi.src = room ? `trofea_bg2${en}.jpg?v=1` : `trofea_bg${en}.jpg?v=3`;
+      $('tleft').hidden = room !== 0; $('tdog').hidden = room !== 0; $('tright').hidden = room !== 1; $('texit').hidden = room !== 0; const bi = document.querySelector('#trofea .tbox > img'); const en = window.LANG === 'en' ? '_en' : ''; bi.src = room ? `trofea_bg2${en}.jpg?v=1` : `trofea_bg${en}.jpg?v=3`;
       for (const t of T) { if (t.room !== room) { n += !!t.ok(P); continue; } const [x, y, w, h] = TSLOT[t.s], got = !!t.ok(P); n += got; const d = document.createElement('div'); d.className = 'tro' + (got ? '' : ' off') + (fresh.includes(t.i) ? ' new' : '');
         d.style.cssText = `left:${x}%;top:${y}%;width:${w}%;height:${h}%`; d.innerHTML = `<i style="background-position:${t.i / 49 * 100}% 0"></i>`;
         d.onclick = () => { const e = $('tinfo'); e.innerHTML = `<b>${got ? t.n : '???'}</b><br>${t.how}${got ? '<br>✔ ' + L('ZDOBYTE', 'WON') : ''}`; e.hidden = false; }; box.appendChild(d); }
