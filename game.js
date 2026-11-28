@@ -13,6 +13,7 @@ if (HD) Object.assign(FR, await (await fetch('./frames_hd_g.json?v=4')).json());
 const POSE = FR.poses;
 const loadImg = (src) => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
 const [IMG_G, IMG_P, IMG_C] = await Promise.all([loadImg('./atlas_green.png'), loadImg('./atlas_purple.png'), loadImg('./creatures.png')]);
+const [IMG_WIZ, IMG_ICEK, IMG_GOLEM, IMG_SHARK, IMG_ROCK, IMG_SMOKE, IMG_VOLC] = await Promise.all([loadImg('./moc_wizard.png?v=1'), loadImg('./moc_ice.png?v=1'), loadImg('./moc_golem.png?v=1'), loadImg('./moc_shark.png?v=1'), loadImg('./fx_rock.png?v=1'), loadImg('./fx_smoke.png?v=1'), loadImg('./fx_volcano.jpg?v=1')]);
 const [IMG_GORYL, IMG_NINJA, IMG_SMOK, IMG_ROB, IMG_SAT, IMG_EARTH] = await Promise.all([loadImg('./goryl.png?v=1'), loadImg('./ninja.png?v=1'), loadImg('./moc_smok.png?v=1'), loadImg('./moc_robot.png?v=1'), loadImg('./space_sat.png?v=1'), loadImg('./space_earth.png?v=1')]);
 const [IMG_HG, IMG_HR] = HD ? await Promise.all([loadImg('./atlas_hd_g.png?v=3'), loadImg('./atlas_hd_p.png?v=2')]) : [null, null];
 const HD_MAP = { 0: { 7: 'h7', 10: 'h10', 14: 'h14', 27: 'h27' }, 1: { 21: 'h7', 17: 'h10', 14: 'h14', 11: 'h27' } };
@@ -470,7 +471,7 @@ const FX = (() => {
   const pool = [], geo = new THREE.PlaneGeometry(1, 1);
   for (let i = 0; i < 160; i++) { const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: '#fff', fog: false })); m.visible = false; scene.add(m); toPlay(m); pool.push({ m, life: 0, vx: 0, vy: 0, vz: 0, g: 0 }); }
   let k = 0;
-  const PAL = { fire: ['#ffd23f', '#ff8a1f', '#e8361f', '#fff3a0'], zigzag: ['#7fe3ff', '#ffffff', '#ffe14a', '#3aa0ff'], tornado: ['#ffffff', '#cde9f5', '#9fd3e8', '#e6f7ff'], curve: ['#ffe14a', '#ff7ac8', '#ffffff', '#7affb0'], goal: ['#3fbf55', '#f4ecd6', '#1d1f22', '#ffe14a'], goal2: ['#a46ee8', '#f4ecd6', '#4a2a78', '#ffe14a'], dust: ['#d9caa0', '#bfae84', '#e8dcc0'], smoke: ['#7ad04a', '#4aa83a', '#b4f08a', '#2e7a2a'] };
+  const PAL = { sparkle: ['#8af4ff', '#ffffff', '#d8b0ff', '#fff6a0'], fire: ['#ffd23f', '#ff8a1f', '#e8361f', '#fff3a0'], zigzag: ['#7fe3ff', '#ffffff', '#ffe14a', '#3aa0ff'], tornado: ['#ffffff', '#cde9f5', '#9fd3e8', '#e6f7ff'], curve: ['#ffe14a', '#ff7ac8', '#ffffff', '#7affb0'], goal: ['#3fbf55', '#f4ecd6', '#1d1f22', '#ffe14a'], goal2: ['#a46ee8', '#f4ecd6', '#4a2a78', '#ffe14a'], dust: ['#d9caa0', '#bfae84', '#e8dcc0'], smoke: ['#7ad04a', '#4aa83a', '#b4f08a', '#2e7a2a'] };
   return {
     emit(kind, x, y, z, n = 1, sp = 1.5, size = 0.22, grav = 0) {
       for (let i = 0; i < n; i++) { const p = pool[k++ % pool.length]; const c = PAL[kind] || PAL.dust;
@@ -807,7 +808,7 @@ window.MATCH_MUSIC = MUSIC;
 const ui = window.UI || {};
 const HALF = () => (window.CFG && window.CFG.half) || 120;
 const VIB = (ms) => { try { if (!window.CFG || window.CFG.vib !== false) navigator.vibrate?.(ms); } catch (e) {} };
-const G = { inv2: {}, inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0, ninja: 0, goryl: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
+const G = { inv2: {}, inv: { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0, ninja: 0, goryl: 0, wizard: 0, iceking: 0, golem: 0, shark: 0 }, fakes: null, pu: null, ca: 0, weather: 'leaves', state: 'menu', score: [0, 0], clock: 120, half: 1, pause: 0, kickoff: 0, shake: 0, superCool: [0, 5], flash: 0, safe: 0 };
 let GRAV = 30; const JUMP_V = 11, APEX = 3.2;                       // a jump peaks ~0.37 s after take-off, ~2 units up
 const WALK = 6.4, DASH = 11.8, AI_WALK = 5.8, AI_RUN = 7.6;
 // difficulty 0 ŁATWY, 1 NORMALNY, 2 MISTRZ; perks come from the shop (boots, balls, gloves...)
@@ -834,7 +835,16 @@ const POWERS = {
   twister: { name: 'TRĄBA POWIETRZNA', col: '#cfe0ee', dark: '#3a4a5a' },
   ninja: { name: 'NINJA', col: '#3a3a44', dark: '#c81e1e' },
   goryl: { name: 'GORYL', col: '#8a8a96', dark: '#1a1a20' },
+  wizard: { name: 'CZARODZIEJ', col: '#5a4ab8', dark: '#1a1250' },
+  iceking: { name: 'LODOWY KRÓL', col: '#9ae4ff', dark: '#1a5a8a' },
+  golem: { name: 'KAMIENNY GOLEM', col: '#7a7a82', dark: '#2a2a30' },
+  shark: { name: 'KRÓL REKIN', col: '#3a7ab8', dark: '#0a2a4a' },
 };
+// the four summoned heroes: the user's GIFs cut into 10x3 sheets (frame w x h, feet at the bottom, body centre ax);
+// 0-9 they appear, 10-19 they stand, 20-29 they cast
+const HERO = { wizard: { img: IMG_WIZ, w: 240, h: 230, ax: 154, tall: 4.6 }, iceking: { img: IMG_ICEK, w: 336, h: 230, ax: 120, tall: 4.8 },
+  golem: { img: IMG_GOLEM, w: 331, h: 229, ax: 179, tall: 6 }, shark: { img: IMG_SHARK, w: 293, h: 229, ax: 137, tall: 5.2 } };
+const heroFrame = (k, i) => { const H = HERO[k]; return [(i % 10) * H.w, (i / 10 | 0) * H.h, H.w, H.h, H.ax]; };
 const boxTex = (k) => tex(20, 20, (g) => { const P = POWERS[k];
   g.fillStyle = '#111'; g.fillRect(0, 0, 20, 20); g.fillStyle = P.dark; g.fillRect(1, 1, 18, 18); g.fillStyle = P.col; g.fillRect(2, 2, 16, 15);
   g.fillStyle = 'rgba(255,255,255,.55)'; g.fillRect(2, 2, 16, 2); g.fillRect(2, 2, 2, 14);
@@ -851,6 +861,7 @@ const boxTex = (k) => tex(20, 20, (g) => { const P = POWERS[k];
     g.imageSmoothingEnabled = false; g.drawImage(IMG_SAT, 2, 1, 14, 11); ink('#ff2a3a', [[11, 9, 2, 2], [12, 11, 2, 2], [13, 13, 2, 2], [14, 15, 2, 2]]); ink('#ffd0d0', [[12, 10, 1, 1], [13, 12, 1, 1], [14, 14, 1, 1]]); }
   if (k === 'portal') for (const [cx, c1, c2] of [[6, '#ff9a2a', '#ffe0a0'], [14, '#5a2aff', '#c8b0ff']]) { ink('#111', [[cx - 3, 4, 6, 12], [cx - 4, 6, 8, 8]]); ink(c1, [[cx - 2, 5, 4, 10], [cx - 3, 7, 6, 6]]); ink(c2, [[cx - 1, 7, 2, 6]]); ink('#111', [[cx - 1, 8, 2, 4]]); }
   if (k === 'goryl') { g.imageSmoothingEnabled = false; g.drawImage(IMG_GORYL, 2 * 259 + 60, 86, 140, 125, 2, 2, 16, 15); }
+  if (HERO[k]) { const H = HERO[k], f = heroFrame(k, 14), hw = H.h * 0.4; g.imageSmoothingEnabled = false; g.drawImage(H.img, f[0] + H.ax - hw / 2, f[1] + 2, hw, hw * 0.94, 2, 2, 16, 15); }
   if (k === 'ninja') { g.imageSmoothingEnabled = false; g.drawImage(IMG_NINJA, 8 * 229 + 60, 20, 110, 100, 2, 2, 16, 15); }
   if (k === 'twister') { ink('#111', [[3, 3, 14, 3], [5, 6, 11, 3], [7, 9, 8, 3], [8, 12, 6, 2], [9, 14, 4, 2]]); ink('#ffffff', [[4, 4, 12, 1], [6, 7, 9, 1], [8, 10, 6, 1], [9, 12, 4, 1]]); ink('#8a9aae', [[5, 5, 10, 1], [7, 8, 7, 1], [9, 11, 5, 1], [10, 13, 3, 1]]); ink('#ffe14a', [[3, 14, 2, 2], [15, 12, 2, 2]]); }
   if (k === 'pinball') { ink('#111', [[9, 6, 8, 8], [8, 7, 10, 6]]); ink('#fff', [[10, 7, 6, 6], [9, 8, 8, 4]]); ink('#111', [[12, 9, 2, 2]]); ink('#2a5a08', [[2, 7, 5, 1], [3, 10, 4, 1], [2, 13, 5, 1]]); ink('#fff', [[4, 4, 2, 2], [15, 15, 2, 2]]); }
@@ -911,7 +922,7 @@ function rivalPower(c, k) {
   if (k === 'lightning') { lightning(c); return; }
   if (k === 'dragon') { beastStart(c, 'smok'); return; }
   if (k === 'robot') { beastStart(c, 'robot'); return; }
-  if (k === 'portal' || k === 'pinball' || k === 'laser' || k === 'twister' || k === 'ninja' || k === 'goryl') { MAGIC.start(c, k); return; }
+  if (k === 'portal' || k === 'pinball' || k === 'laser' || k === 'twister' || k === 'ninja' || k === 'goryl' || HERO[k]) { MAGIC.start(c, k); return; }
   ball.owner = null; shoot(c, 0.9, { name: POWERS[k].name, kind: k === 'wolf' ? 'mega' : k });
 }
 // the super picker: in the air with the ball, STRZAŁ freezes the moment and you choose which super to fire
@@ -938,7 +949,7 @@ function doPick(i = PICK.sel) {
   if (o.id === 'wolf') { wolfStart(c); return; }
   if (o.id === 'dragon') { beastStart(c, 'smok'); return; }
   if (o.id === 'robot') { beastStart(c, 'robot'); return; }
-  if (o.id === 'portal' || o.id === 'pinball' || o.id === 'laser' || o.id === 'twister' || o.id === 'ninja' || o.id === 'goryl') { MAGIC.start(c, o.id); return; }
+  if (o.id === 'portal' || o.id === 'pinball' || o.id === 'laser' || o.id === 'twister' || o.id === 'ninja' || o.id === 'goryl' || HERO[o.id]) { MAGIC.start(c, o.id); return; }
   ball.owner = null; shoot(c, 0.9, { name: POWERS[o.id].name, kind: o.id });
 }
 // a sprinter leaves a trail of fading copies of himself
@@ -1052,9 +1063,29 @@ const MAGIC = (() => {
   const GR = makeSprite(IMG_GORYL, { unit: 5.4 / 208 }); GR.holder.visible = GR.blob.visible = GR.sgrp.visible = false;
   const grShow = (f, x, y, z, dir) => { GR.show([f * 259, 0, 259, 215, 105], dir < 0); GR.holder.visible = GR.blob.visible = true; GR.holder.position.set(x, y, z); GR.blob.position.set(x, 0.02, z); GR.blob.scale.set(2.6, 1, 1); };
   const njHide = () => NJ.forEach((sp) => (sp.holder.visible = sp.blob.visible = false));
+  // the four heroes: one sprite each, and their props (falling rocks, the wave, the ice rings, the glow under floating rivals)
+  const HS = Object.fromEntries(Object.keys(HERO).map((k) => { const H = HERO[k], sp = makeSprite(H.img, { unit: H.tall / H.h }); sp.holder.visible = sp.blob.visible = sp.sgrp.visible = false; return [k, sp]; }));
+  const hShow = (k, f, x, z, dir, y = 0) => { const sp = HS[k]; sp.show(heroFrame(k, Math.max(0, Math.min(29, f | 0))), dir < 0); sp.holder.visible = sp.blob.visible = true; sp.holder.position.set(x, y, z); sp.blob.position.set(x, 0.02, z); sp.blob.scale.set(HERO[k].tall * 0.45, 0.8, 1); };
+  const hHide = () => { for (const k in HS) HS[k].holder.visible = HS[k].blob.visible = false; };
+  const billboard = (img, wd, ht, n) => Array.from({ length: n }, () => { const t = new THREE.Texture(img); t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.colorSpace = THREE.SRGBColorSpace; t.needsUpdate = true;
+    const geo = new THREE.PlaneGeometry(wd, ht); geo.translate(0, ht / 2, 0); const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: t, transparent: true, alphaTest: 0.5, fog: false })); m.visible = false; scene.add(m); toPlay(m); return m; });
+  const ROCKS = billboard(IMG_ROCK, 1.9, 1.75, 11);
+  // the wave: a pixel crest with foam, a few of them side by side across the pitch
+  const waveTex = tex(64, 48, (q) => { for (let x = 0; x < 64; x++) { const h = 30 + Math.round(Math.sin(x / 64 * Math.PI) * 14 + Math.sin(x * 0.7) * 2);
+      for (let y = 48 - h; y < 48; y++) { const d = y - (48 - h); q.fillStyle = d < 3 ? '#ffffff' : d < 6 ? '#bfefff' : d < 14 ? '#4ab8f0' : d < 26 ? '#2a86d0' : '#1a5aa8'; q.fillRect(x, y, 1, 1); } }
+    q.fillStyle = '#ffffff'; for (let i = 0; i < 22; i++) q.fillRect(Math.random() * 64 | 0, 4 + Math.random() * 12 | 0, 2, 2);
+    q.fillStyle = '#8ad8ff'; for (let i = 0; i < 30; i++) q.fillRect(Math.random() * 64 | 0, 20 + Math.random() * 26 | 0, 3, 1); });
+  const wgeo = new THREE.PlaneGeometry(9, 6.5); wgeo.translate(0, 3.1, 0);
+  const WAVES = Array.from({ length: 6 }, () => { const m = new THREE.Mesh(wgeo, new THREE.MeshBasicMaterial({ map: waveTex, transparent: true, alphaTest: 0.5, fog: false })); m.visible = false; scene.add(m); toPlay(m); return m; });
+  // the ice rings: flat rings on the grass that grow from the ice ball
+  const ringT = tex(64, 64, (q) => { for (let r = 30; r > 20; r -= 2) { q.strokeStyle = r > 26 ? '#ffffff' : r > 23 ? '#bff4ff' : '#5ad0ff'; q.lineWidth = 2; q.beginPath(); q.arc(32, 32, r, 0, Math.PI * 2); q.stroke(); } });
+  const ICER = Array.from({ length: 3 }, () => { const m = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: ringT, transparent: true, opacity: 0.9, depthWrite: false, fog: false })); m.rotation.x = -Math.PI / 2; m.visible = false; scene.add(m); toPlay(m); return m; });
+  const orbT = tex(32, 32, (q) => { for (let r = 15; r > 0; r--) { q.fillStyle = r > 12 ? 'rgba(140,230,255,.5)' : r > 8 ? '#8ae8ff' : r > 4 ? '#dff8ff' : '#ffffff'; q.beginPath(); q.arc(16, 16, r, 0, Math.PI * 2); q.fill(); } });
+  const ogeo = new THREE.PlaneGeometry(2.4, 2.4); const ORB = new THREE.Mesh(ogeo, new THREE.MeshBasicMaterial({ map: orbT, transparent: true, depthWrite: false, fog: false })); ORB.visible = false; scene.add(ORB); toPlay(ORB);
+  const propsHide = () => { ROCKS.forEach((m) => (m.visible = false)); WAVES.forEach((m) => (m.visible = false)); ICER.forEach((m) => (m.visible = false)); ORB.visible = false; };
   const M = { on: false, kind: '', t: 0, ph: '', c: null };
   const txt = (s, x, y, size, col, al = 'center') => { g.font = size + "px 'Press Start 2P', monospace"; g.textAlign = al; g.fillStyle = '#000'; for (const [a, b] of [[-2, 0], [2, 0], [0, -2], [0, 2], [2, 2]]) g.fillText(s, x + a, y + b); g.fillStyle = col; g.fillText(s, x, y); };
-  const end = () => { njHide(); GR.holder.visible = GR.blob.visible = false; M.on = false; cv.style.display = 'none'; portals.forEach((m) => (m.visible = false)); beam.visible = false; twister.visible = false; if (G.state === 'dragon') G.state = 'play'; };
+  const end = () => { hHide(); propsHide(); njHide(); GR.holder.visible = GR.blob.visible = false; M.on = false; cv.style.display = 'none'; portals.forEach((m) => (m.visible = false)); beam.visible = false; twister.visible = false; if (G.state === 'dragon') G.state = 'play'; };
   function start(c, kind) {
     Object.assign(M, { on: true, kind, t: 0, ph: 'a', c, dir: Math.sign(goalX(c.team)), hit: [], spin: 0 });
     c.vx = c.vz = 0; c.vy = 0; c.y = 0; c.st = 'run'; c.act = null; c.t = 0; ball.owner = c; G.state = 'dragon'; fit();
@@ -1077,6 +1108,12 @@ const MAGIC = (() => {
       while (left.length) { left.sort((a, b) => dist(a, at) - dist(b, at)); at = left.shift(); M.route.push(at); }
       const gk = players.find((q) => q.team !== c.team && q.keeper); if (gk) M.route.push(gk);
       M.done = new Set(); M.STEP = 0.55; M.T0 = 1.2; M.T1 = M.T0 + M.route.length * M.STEP; }
+    if (HERO[kind]) { const nm = { wizard: ['CZARODZIEJ!', 'Abrakadabra!'], iceking: ['LODOWY KRÓL!', 'Zamarznij!'], golem: ['KAMIENNY GOLEM!', 'Ziemia drży!'], shark: ['KRÓL REKIN!', 'Fala!'] }[kind];
+      ui.banner?.(nm[0], c.T, 'super', c); shout(c, nm[1]); SFX.charge(1); ball.owner = c;
+      M.hx = c.x - M.dir * 2.6; M.hz = Math.max(-PZ + 3, Math.min(PZ - 3, c.z - 1.5)); M.cast = false; M.done = new Set();
+      M.vic = players.filter((q) => q.team !== c.team).map((q, i) => ({ q, x0: q.x, z0: q.z, i, ph: Math.random() * 6 }));
+      if (kind === 'golem') M.rocks = M.vic.map((v, i) => ({ v, t0: 0.15 * i, x: v.q.x, z: v.q.z }));
+      if (kind === 'shark') { M.wx0 = goalX(c.team) + M.dir * 6; M.wx1 = goalX(1 - c.team) - M.dir * 2; } }
     if (kind === 'twister') { ui.banner?.('TRĄBA POWIETRZNA!', c.T, 'super', c); shout(c, 'Wiej!'); SFX.super(); SFX.portal();
       M.tx = c.x + M.dir * 4; M.tz = Math.max(-PZ + 5, Math.min(PZ - 2, c.z + 3)); M.dropX = goalX(1 - c.team) * 0.7;
       M.vic = players.filter((q) => q.team !== c.team).map((q, i) => ({ q, x0: q.x, z0: q.z, a: i * 1.1, r: 1.6 + (i % 3) * 0.6, h: 1 + (i % 4) * 1.6 })); }
@@ -1146,6 +1183,7 @@ const MAGIC = (() => {
           SFX.kick(); SFX.super(); G.state = 'play'; }
         if (T > M.T1 + 1.2) { c.spr.holder.visible = true; end(); } }
       return; }
+    if (HERO[M.kind]) { heroUpdate(c, dt); return; }
     if (M.kind === 'twister') {
       const T = M.t; twister.visible = true; twMap.offset.x = twFrame(T) / TWN; twister.quaternion.copy(camera.quaternion);
       // grows, sucks everyone in (0-1.1 s), spins and carries them towards your goal (1.1-3.1 s), throws them out (3.1-3.8 s)
@@ -1170,6 +1208,66 @@ const MAGIC = (() => {
         if (M.t > 0.9) { ball.owner = c; if (c.team === 0) ui.banner?.('BRAMKARZ LEŻY!', c.T, 'small'); shout(c, 'Pusta bramka!'); end(); } }
     }
   }
+  // the heroes: appear (0-1 s), stand (1-1.6 s), cast (1.6-2.6 s), then each does his trick
+  const CAST = 2.6;
+  const heroFrameAt = (T) => (T < 1 ? T * 10 : T < 1.6 ? 10 + (T - 1) / 0.6 * 9 : Math.min(29, 20 + (T - 1.6) * 10));
+  const lieDown = (q, dur, push = [0, 0]) => { q.st = 'run'; knock(q, dur, { lie: Math.random() < 0.5 ? 'lieBack' : 'lieFront', dizzy: true, foul: false, push }); };
+  function heroUpdate(c, dt) {
+    const T = M.t, k = M.kind, sg = M.dir;
+    const finish = (msg) => { ball.owner = c; ball.hidden = false; c.hold = 0; if (c.team === 0) ui.banner?.(msg, c.T, 'small'); shout(c, 'Teraz!'); end(); };
+    if (T < CAST + 0.2) hShow(k, heroFrameAt(T), M.hx, M.hz, sg);
+    if (T < 1 && Math.random() < 0.5) FX.emit(k === 'golem' ? 'dust' : k === 'shark' || k === 'iceking' ? 'tornado' : 'zigzag', M.hx, 1 + Math.random() * 2, M.hz, 2, 2, 0.3);
+    if (T > 1.9 && !M.cast) { M.cast = true; SFX.super(); G.flash = 0.4; }
+    if (k === 'wizard') {
+      // a bright glow round every rival, then they all float up high, hang there, and drop
+      if (T > 2.1 && T < 2.9) for (const v of M.vic) if (Math.random() < 0.4) FX.emit('sparkle', v.q.x + (Math.random() - 0.5) * 1.4, 0.3 + Math.random() * 2.2, v.q.z, 1, 0.6, 0.28);
+      if (T > 2.1 && !M.done.has('glow')) { M.done.add('glow'); SFX.portal(); for (const v of M.vic) FX.emit('curve', v.q.x, 1.2, v.q.z, 14, 2.5, 0.3); }
+      if (T > 2.6 && T < 5.4) { const u = Math.min(1, (T - 2.6) / 1.2);
+        for (const v of M.vic) { const q = v.q; q.st = 'dizzy'; q.t = 9; q.vx = q.vz = q.vy = 0; q.x = v.x0; q.z = v.z0; q.y = u * u * (3 - 2 * u) * (3 + (v.i % 3) * 0.8) + Math.sin(T * 3 + v.ph) * 0.3;
+          if (Math.random() < 0.25) FX.emit('sparkle', q.x, q.y + 0.5, q.z, 1, 0.5, 0.25); } }
+      if (T > 5.4 && !M.done.has('drop')) { M.done.add('drop'); for (const v of M.vic) { v.q.vy = -2; v.q.st = 'run'; v.q.t = 0; lieDown(v.q, 5); v.q.vy = -4; } }
+      if (T > 6.2) { SFX.tackle(); G.shake = 0.5; finish('LATAJĄ! STRZELAJ!'); }
+      return; }
+    if (k === 'iceking') {
+      // ice energy shot forward, a ball of ice that sends rings out and freezes every rival blue
+      const ox = M.hx + sg * 5, oz = M.hz;
+      if (T > 2.0 && T < 2.6) for (let i = 0; i < 3; i++) FX.emit('tornado', M.hx + sg * (1.5 + Math.random() * 3.5), 2.4 + (Math.random() - 0.5), M.hz, 1, 0.5, 0.35);
+      if (T > 2.3 && T < 4.6) { ORB.visible = true; ORB.position.set(ox, 2.4, oz); ORB.quaternion.copy(camera.quaternion); ORB.scale.setScalar(Math.min(1.4, (T - 2.3) * 2) * (1 + Math.sin(T * 20) * 0.08)); }
+      else ORB.visible = false;
+      if (T > 2.7 && T < 4.6) { const R = (T - 2.7) * 26; ICER.forEach((m, i) => { const r = Math.max(0.1, R - i * 5); m.visible = r < 70; m.position.set(ox, 0.06 + i * 0.01, oz); m.scale.setScalar(r); m.material.opacity = Math.max(0, 0.95 - r / 75); });
+        if (!M.done.has('boom')) { M.done.add('boom'); SFX.zap(); G.shake = 0.5; G.flash = 0.5; }
+        for (const v of M.vic) { const q = v.q; if (!M.done.has(q) && Math.hypot(q.x - ox, (q.z - oz) * 1.4) < R) { M.done.add(q); q.st = 'dizzy'; q.t = 4.2; q.dizzy = false; q.vx = q.vz = q.vy = 0; q.ice = 4.2; FX.emit('tornado', q.x, 1.2, q.z, 12, 2, 0.3); SFX.pickup(); } } }
+      else ICER.forEach((m) => (m.visible = false));
+      if (T > 4.6) { hHide(); FX.emit('tornado', M.hx, 2, M.hz, 20, 3, 0.35); finish('ZAMROŻENI! BIEGNIJ!'); }
+      return; }
+    if (k === 'golem') {
+      // the fist goes up, cut to the volcano erupting, then rocks rain down on every rival
+      if (T > 2.6 && T < 4.8) { cv.style.display = 'block'; G.shake = Math.max(G.shake, 0.25); if (!M.done.has('volc')) { M.done.add('volc'); SFX.roar(); } }
+      if (T > 4.8 && !M.done.has('back')) { M.done.add('back'); cv.style.display = 'none'; hHide(); G.flash = 0.3; }
+      if (T > 4.8) { const tt = T - 4.8;
+        M.rocks.forEach((r, i) => { const m = ROCKS[i]; if (!m) return; const u = (tt - r.t0) / 0.7;
+          if (u < 0) { m.visible = false; r.x = r.v.q.x; r.z = r.v.q.z; return; }
+          m.visible = u < 2.2; m.quaternion.copy(camera.quaternion); m.rotation.z = 0;
+          const y = Math.max(0, 26 * (1 - Math.min(1, u))); m.position.set(r.x + (1 - Math.min(1, u)) * -sg * 6, y, r.z);
+          if (u >= 1 && !M.done.has(r)) { M.done.add(r); lieDown(r.v.q, 5.5, [(Math.random() - 0.5) * 4, (Math.random() - 0.5) * 3]); SFX.tackle(); G.shake = Math.max(G.shake, 0.55); FX.emit('dust', r.x, 0.4, r.z, 20, 5, 0.45, 6); } });
+        if (tt > 0.15 * M.rocks.length + 1.6) finish('KAMIENIE! STRZELAJ!'); }
+      return; }
+    if (k === 'shark') {
+      // a wave rolls over the whole pitch: rivals are washed away, our boys jump over it
+      if (T > 2.6) { const u = Math.min(1, (T - 2.6) / 2.4), wx = M.wx0 + (M.wx1 - M.wx0) * u;
+        if (T > 2.7) hHide();
+        WAVES.forEach((m, i) => { m.visible = u < 1; m.position.set(wx + Math.sin(T * 4 + i) * 0.4, 0, -PZ + 2 + i * (2 * PZ - 4) / 5); m.quaternion.copy(camera.quaternion); m.scale.x = -sg; });
+        if (Math.random() < 0.8) FX.emit('tornado', wx, 2 + Math.random() * 3, (Math.random() - 0.5) * 2 * PZ, 2, 2.5, 0.35, 6);
+        G.shake = Math.max(G.shake, 0.18);
+        for (const p of players) { const ahead = (p.x - wx) * sg;
+          if (p.team === c.team) { if (ahead > 0 && ahead < 3.5 && p.y <= 0.01 && p.st !== 'down') { p.vy = 12; p.y = 0.02; p.st = p.st === 'run' ? 'jump' : p.st; } }
+          else { const v = M.vic.find((o) => o.q === p); if (ahead < 1.2 && !v.wet) { v.wet = true; SFX.boing(); }
+            if (v.wet && u < 1) { p.st = 'down'; p.t = 9; p.lie = 'lieFront'; p.dizzy = true; p.vx = p.vz = 0; p.x = wx + sg * 0.8 + (v.i % 3) * sg * 0.6; p.y = 1.2 + Math.sin(T * 6 + v.ph) * 0.5; p.vy = 0; } } }
+        if (u >= 1 && !M.done.has('crash')) { M.done.add('crash'); WAVES.forEach((m) => (m.visible = false)); FX.emit('tornado', M.wx1, 1, 0, 30, 6, 0.4, 6);
+          for (const v of M.vic) { v.q.st = 'run'; lieDown(v.q, 4.5, [sg * 3, (Math.random() - 0.5) * 3]); } SFX.tackle(); }
+        if (T > 5.4) finish('ZMYCI! STRZELAJ!'); }
+      return; }
+  }
   function draw() {
     if (!M.on || cv.style.display === 'none') return; const W = cv.width, H = cv.height, t = M.t; g.clearRect(0, 0, W, H);
     if (M.kind === 'portal') {
@@ -1181,6 +1279,15 @@ const MAGIC = (() => {
       txt(M.done ? (M.good ? 'GOL DLA CIEBIE!' : 'OJ... SAMOBÓJ!') : 'LOSOWANIE...', W / 2, H / 2 - 30, 12, '#ffe14a');
       return;
     }
+    if (M.kind === 'golem') { const t2 = t - 2.6, W2 = W, H2 = H;
+      // the volcano: the user's picture, smoke rising from the crater, rocks shot out, the screen shaking
+      const sx = (Math.random() - 0.5) * 6, sy = (Math.random() - 0.5) * 4, s = Math.max(W2 / IMG_VOLC.width, H2 / IMG_VOLC.height) * 1.04, iw = IMG_VOLC.width * s, ih = IMG_VOLC.height * s, ox = (W2 - iw) / 2 + sx, oy = (H2 - ih) / 2 + sy;
+      g.drawImage(IMG_VOLC, ox, oy, iw, ih); const cx = ox + iw * 0.615, cy = oy + ih * 0.19;
+      const grow = Math.min(1, t2 / 1.2), sh = ih * 0.55 * grow, sw = sh * IMG_SMOKE.width / IMG_SMOKE.height; if (sh > 2) g.drawImage(IMG_SMOKE, cx - sw / 2, cy - sh + ih * 0.03, sw, sh);
+      for (let i = 0; i < 9; i++) { const a = (i / 9 - 0.5) * 2.2, u = ((t2 * 0.9 + i * 0.37) % 1.3); if (u > 1) continue; const rx = cx + Math.sin(a) * u * W2 * 0.35, ry = cy - Math.cos(a) * u * H2 * 0.6 + u * u * H2 * 0.55, rs = 10 + (i % 3) * 5;
+        g.drawImage(IMG_ROCK, rx - rs / 2, ry - rs / 2, rs, rs); }
+      for (let i = 0; i < 14; i++) { g.fillStyle = ['#ffd23f', '#ff8a1f', '#e8361f'][i % 3]; g.fillRect(cx + (Math.random() - 0.5) * 30, cy - Math.random() * 18, 2, 2); }
+      txt('WULKAN!', W2 / 2, 26, 14, Math.floor(t * 8) % 2 ? '#ff8a1f' : '#ffe14a'); return; }
     // the laser from space: stars, the Earth, the satellite charges up and fires a red beam
     g.fillStyle = '#05040f'; g.fillRect(0, 0, W, H);
     for (const [x, y, b] of stars) { g.fillStyle = (Math.sin(t * 6 + b * 20) > 0.6) ? '#ffffff' : '#8a8ab0'; g.fillRect((x * W) | 0, (y * H) | 0, b > 0.8 ? 2 : 1, b > 0.8 ? 2 : 1); }
@@ -1757,6 +1864,8 @@ function draw(dt) {
   for (const p of players) {
     const fr = frameOf(p); if (p.hd) fr.flat = false; p.spr.show(fr.f, fr.flip, !!fr.flat);
     p.spr.holder.position.set(p.x, p.y + (fr.hop || 0), p.z);
+    if (p.ice > 0) { p.ice -= dt; p.spr.mat.color.set(p.ice < 0.6 && Math.floor(p.ice * 10) % 2 ? '#ffffff' : '#9ae0ff'); p.iceOn = true; if (p.st === 'dizzy') p.t = Math.max(p.t, 0.05); else if (p.st === 'run') { p.vx = p.vz = 0; } if (p.ice <= 0) p.st = 'run'; }
+    else if (p.iceOn) { p.iceOn = false; p.spr.mat.color.set('#ffffff'); }
     const sprint = p.dash && p.st === 'run' && p.y <= 0.01 && !fr.flat && Math.hypot(p.vx, p.vz) > 8;
     p.spr.mesh.rotation.z = sprint ? -(Math.sign(p.vx) || p.face) * 0.17 : 0;
     if (sprint) { p.trailT = (p.trailT || 0) - dt; if (p.trailT <= 0) { p.trailT = 0.05; TRAIL.spawn(p); } if (Math.random() < 0.35) FX.emit('dust', p.x - p.vx * 0.05, 0.15, p.z, 1, 1.2, 0.22, 4); }
@@ -1812,7 +1921,7 @@ placeKickoff(0); G.state = 'menu'; WX.set('leaves'); try { ARENA.set(localStorag
 window.GAME = {
   setSide(s) { SIDE = s; TEAMS[0].dir = s; TEAMS[1].dir = -s; },
   whistle() { SFX.unlock(); SFX.whistle(1); },
-  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0, ninja: 0, goryl: 0 }; G.inv2 = {}; G.supGoals = 0;
+  start() { G.inv = { lightning: 0, split: 0, mega: 0, wolf: 0, dragon: 0, robot: 0, portal: 0, pinball: 0, laser: 0, twister: 0, ninja: 0, goryl: 0, wizard: 0, iceking: 0, golem: 0, shark: 0 }; G.inv2 = {}; G.supGoals = 0;
     { const pk = PERK(); for (const p of players) { if (p.spd0 == null) p.spd0 = p.spd;
         if (p.team === 0 && p.stats && window.LEVELS) { const l = window.LEVELS(p.num), bb = p === captain && window.BOOT_BONUS ? window.BOOT_BONUS() : [0, 0, 0, 0, 0], v = (i) => Math.min(5.6, 2 + (l[i] + bb[i]) * 0.6);   // level 0 plays like a 2, level 5 like a 5
           p.stats = { st: v(0), pa: v(1), dr: v(2), ob: v(3), sp: v(4) }; p.spd0 = 0.9 + p.stats.sp * 0.035; } p.spd = p.spd0 * (p.team === 0 && pk.speed ? pk.speed : 1); }
