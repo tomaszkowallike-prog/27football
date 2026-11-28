@@ -490,14 +490,27 @@
   #szatnia .sbidon { position: relative; flex: none; height: 96%; padding: 0; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   #szatnia .sbidon .bbox { height: 78%; } #szatnia .sbidon .bpts { font: clamp(6px, .9vw, 11px) "Press Start 2P", monospace; color: #fff; background: rgba(0,0,0,.7); padding: 2px 4px; margin-top: 2px; white-space: nowrap; }
   #szatnia .sbidon.full .bbox { animation: bfull .7s steps(2) infinite; } #szatnia .sbidon.full .bpts { color: #6ee05a; } @keyframes bfull { 50% { filter: drop-shadow(0 0 6px #8ae0ff) brightness(1.2); } }
+  /* player profile: name typed on the 90s keyboard, nickname from "how you play" + "what you had for lunch" */
+  #pprof { position: fixed; inset: 0; z-index: 72; display: grid; place-items: center; background: rgba(6,4,18,.78); font-family: "Press Start 2P", monospace; color: #fff; } #pprof[hidden] { display: none; }
+  #pprof .ppb { position: relative; width: min(94vw, 760px); max-height: 94vh; overflow-y: auto; box-sizing: border-box; background: #0c0a1e; border: 4px solid #fff; box-shadow: 0 0 0 4px #1a1030, 8px 8px 0 4px #3ce6c8; padding: 14px 16px; font-size: clamp(7px, 1.25vw, 11px); }
+  #pprof h3 { margin: 0 0 10px; font-size: 1.5em; color: #ffe14a; text-align: center; } #pprof h4 { margin: 10px 0 6px; font-size: 1em; color: #b8b0e0; font-weight: normal; }
+  #pprof .ppx { position: absolute; right: 8px; top: 8px; width: 32px; height: 32px; font: 12px "Press Start 2P", monospace; color: #fff; background: #e8302a; border: 3px solid #000; cursor: pointer; padding: 0; }
+  #pprof .pprow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } #pprof .pprow.c { justify-content: center; margin-top: 12px; } #pprof .pprow small { color: #b8b0e0; font-size: 1em; }
+  #pprof .ppname { flex: 1; min-width: 8em; text-align: left; font: 1.7em "Press Start 2P", monospace; color: #ffe14a; background: #1a1540; border: 3px solid #7a6ad8; padding: .45em .5em; cursor: text; }
+  #pprof .ppname.on { border-color: #ff4fb8; } #pprof .ppname.on::after { content: '_'; animation: ppblink .8s steps(1) infinite; } @keyframes ppblink { 50% { opacity: 0; } }
+  #pprof button { font: inherit; cursor: pointer; } #pprof .pprow button:not(.ppname), #pprof .ppnick button { padding: .9em 1.1em; color: #1a1030; background: #6ee05a; border: 3px solid #000; box-shadow: 0 3px 0 #000; } #pprof button.g { background: #d8d4e8 !important; }
+  #pprof .ppchips { display: flex; flex-wrap: wrap; gap: 5px; } #pprof .ppchips button { padding: .7em .7em; color: #fff; background: #1a1540; border: 2px solid #7a6ad8; }
+  #pprof .ppchips button.on { color: #1a1030; background: #ffe14a; border-color: #000; box-shadow: 2px 2px 0 #ff4fb8; }
+  #pprof .ppnick { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; padding: 10px; background: #1a1540; border: 3px dashed #ff4fb8; font-size: 1.1em; } #pprof .ppnick b { color: #ffe14a; font-size: 1.3em; }
+  #pprof .pkbd { position: fixed; inset: 0; z-index: 2; pointer-events: none; } #pprof .pkbd > * { pointer-events: auto; } #pprof .pkbd[hidden] { display: none; }
+  #pprof .pkimg { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; box-shadow: 0 -4px 0 #000; padding: 1.2% 1.2% 1.4%; display: flex; flex-direction: column; box-sizing: border-box; border-top: 3px solid #000;
+    background: #5a3418 repeating-linear-gradient(45deg, rgba(255,255,255,0) 0 14px, rgba(255,79,184,.18) 14px 18px, rgba(255,255,255,0) 18px 34px, rgba(60,230,200,.16) 34px 38px); }
+  #pprof .pkhide { position: absolute; left: 50%; bottom: calc(50% + 6px); transform: translateX(-50%); font: clamp(8px, 1.1vw, 13px) "Press Start 2P", monospace; padding: .6em 1em; color: #1a1030; background: #ffe14a; border: 3px solid #000; box-shadow: 4px 4px 0 #ff4fb8; }
+  #pprof #pkeys { flex: 1; display: flex; flex-direction: column; gap: 2.6%; min-height: 0; } #pprof .frow { flex: 1; display: flex; gap: .8%; justify-content: center; min-height: 0; }
+  #pprof .fkey { flex: 1 1 0; min-width: 0; padding: 0; border: 3px solid #000; border-radius: 6px; font: clamp(8px, 1.6vw, 20px) "Press Start 2P", monospace; color: #1a1030; background: var(--k);
+    box-shadow: inset -4px -5px 0 rgba(0,0,0,.25), inset 3px 3px 0 rgba(255,255,255,.55), 0 4px 0 #000; white-space: nowrap; overflow: hidden; }
+  #pprof .fkey.w2 { flex-grow: 1.7; } #pprof .fkey.w3 { flex-grow: 2.3; } #pprof .fkey.sp { flex-grow: 6; } #pprof .fkey.dn { transform: translateY(3px); filter: brightness(1.15); }
   #szatnia .spanel { cursor: pointer; }
-  #szatnia .sren { align-self: flex-start; margin: .1em 0 .2em; font: .62em "Press Start 2P", monospace; color: #1a1030; background: #3ce6c8; border: 2px solid #000; padding: .35em .5em; cursor: pointer; }
-  #pname { position: fixed; inset: 0; z-index: 72; display: grid; place-items: center; background: rgba(6,4,18,.72); font-family: "Press Start 2P", monospace; color: #fff; } #pname[hidden] { display: none; }
-  #pname .pb { width: min(92vw, 460px); background: #0c0a1e; border: 4px solid #fff; box-shadow: 0 0 0 4px #1a1030, 8px 8px 0 4px #3ce6c8; padding: 18px; text-align: center; }
-  #pname h3 { margin: 0 0 6px; font-size: clamp(11px, 2.2vw, 16px); color: #ffe14a; } #pname p { margin: 0 0 12px; font-size: clamp(7px, 1.3vw, 10px); color: #b8b0e0; line-height: 1.8; }
-  #pname input { width: 100%; box-sizing: border-box; font: clamp(16px, 3vw, 24px) "Press Start 2P", monospace; text-transform: uppercase; text-align: center; color: #ffe14a; background: #1a1540; border: 3px solid #7a6ad8; padding: 12px 8px; outline: none; }
-  #pname input:focus { border-color: #ff4fb8; } #pname .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 14px; }
-  #pname button { font: clamp(9px, 1.6vw, 12px) "Press Start 2P", monospace; padding: 11px 14px; color: #1a1030; background: #6ee05a; border: 3px solid #000; box-shadow: 0 4px 0 #000; cursor: pointer; } #pname button.g { background: #d8d4e8; }
   /* the bottle in the corner while training: it flickers (red/blue split) when it fills, a tap tells how much is in it */
   #bhud { position: fixed; z-index: 45; left: max(6px, env(safe-area-inset-left)); top: 34%; width: clamp(34px, 5vw, 56px); padding: 0; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; }
   #bhud[hidden] { display: none; } #bhud .bbox { width: 100%; } #bhud .bpts { font: clamp(6px, .8vw, 9px) "Press Start 2P", monospace; color: #fff; background: rgba(0,0,0,.72); padding: 2px 3px; margin-top: 2px; white-space: nowrap; }
@@ -519,6 +532,7 @@
   #staty .sthint { margin: 4px 0 0; font: 8px "Press Start 2P", monospace; line-height: 1.6; color: #d8d4ff; }
   #staty .stok { align-self: flex-end; font: 11px "Press Start 2P", monospace; padding: 8px 14px; color: #0a1a30; background: #8ae0ff; border: 3px solid #dff6ff; box-shadow: 0 4px 0 #1a5a9a; cursor: pointer; } #staty .stok:disabled { opacity: .35; cursor: default; }
   @media (max-height: 420px) { #staty .srow { font-size: 8px; } #staty .bbox { height: 62vh; } }
+  #szatnia .bars { cursor: pointer; padding: .3em .4em; border: 2px dashed transparent; border-radius: 4px; } #szatnia .bars:hover { border-color: #7a6ad8; }
   #szatnia .bars { display: grid; grid-template-columns: auto auto; gap: .25em .8em; align-items: center; font-size: clamp(8px, 1.15vw, 15px); }
   #szatnia .bars span { color: #b8b0e8; } #szatnia .bars i { display: flex; gap: 2px; } #szatnia .bars i u { width: 1.6em; height: .7em; background: #3a3270; text-decoration: none; }
   #szatnia .bars i u.on { background: #ffc21a; } #szatnia .bars i.max u.on { background: #ff5a1a; box-shadow: 0 0 6px #ff8a1f; }
@@ -712,7 +726,7 @@
 <div id="toast"></div>
 <div id="stage"></div>
 <div id="rot"><div class="ph">📱</div><b>OBRÓĆ TELEFON POZIOMO</b><span>Gra działa tylko w poziomie</span></div>
-<div id="intro"><div class="side90 l mono"></div><div class="side90 r mono"></div><div class="f169"><video id="v1" src="intro.mp4?v=2" muted playsinline preload="auto" poster="intro_first.jpg"></video><video id="v2" src="intro_loop.mp4" muted loop playsinline preload="auto" poster="intro_loop.jpg"></video>
+<div id="intro"><div class="side90 l mono"></div><div class="side90 r mono"></div><div class="f169"><video id="v1" src="intro.mp4?v=3" muted playsinline preload="auto" poster="intro_first.jpg"></video><video id="v2" src="intro_loop.mp4" muted loop playsinline preload="auto" poster="intro_loop.jpg"></video>
   <div id="pressStart"><span><b>▶</b> PRESS START <b>◀</b></span></div>
   <button class="ibtn" id="skip">POMIŃ ▶▶</button><button class="ibtn" id="snd">🔊 WŁĄCZ DŹWIĘK</button></div></div>
 <div id="score" class="hud"><div class="plate"><svg class="crest" viewBox="0 0 34 38"><path d="M17 1 L32 6 V18 C32 28 25 34 17 37 C9 34 2 28 2 18 V6 Z" fill="#1d1f22" stroke="#e9e9ee" stroke-width="2"/><path d="M17 6 L27 9.5 V18 C27 25 22.5 29.5 17 32 Z" fill="#3fbf55"/><text x="17" y="23" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="11" font-weight="700" fill="#f4f1e8">P</text></svg><span class="tn" style="color:var(--g)">PIX</span><span class="num" id="sc">0 - 0</span><span class="tn" style="color:var(--p)">FIO</span><svg class="crest" viewBox="0 0 34 38"><path d="M17 1 L32 6 V18 C32 28 25 34 17 37 C9 34 2 28 2 18 V6 Z" fill="#4a2a78" stroke="#e9e9ee" stroke-width="2"/><path d="M17 6 L27 9.5 V18 C27 25 22.5 29.5 17 32 Z" fill="#a46ee8"/><text x="17" y="23" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="11" font-weight="700" fill="#f4f1e8">F</text></svg></div><div class="clockp"><span id="clock">2:00</span><span id="half">1P</span><span id="wx"></span></div></div>
@@ -809,13 +823,18 @@
   <div class="jtop"><button class="jback" id="jback" aria-label="Wróć do sklepu"></button><b class="jtitle" id="jtitle">SKLEP · KOSZULKI</b><span class="coin" id="coinJ">0</span><button class="jexit" id="jx" aria-label="Wyjdź ze sklepu">⏻ <span id="jxt">WYJDŹ</span></button></div>
   <div class="jstage"><button class="jarrow l" id="jprev" aria-label="Poprzednia"></button><img id="jimg" alt="Koszulka"><button class="jarrow r" id="jnext" aria-label="Następna"></button></div>
   <div class="jbar"><span class="jnum" id="jnum">1/37</span><b class="jname" id="jname"></b><button class="jheart" id="jheart" aria-label="Ulubione"></button><button class="jbuy" id="jbuy">KUP</button></div></div></div>
-<div id="pname" hidden><div class="pb"><h3 id="pnh">DAJ IMIĘ</h3><p id="pnp"></p><input id="pnin" maxlength="10" autocomplete="off" spellcheck="false"><div class="row"><button id="pnok">OK</button><button class="g" id="pndef">DOMYŚLNE</button><button class="g" id="pnno">ANULUJ</button></div></div></div>
+<div id="pprof" hidden><div class="ppb"><button class="ppx" id="ppx">✕</button><h3 id="pph"></h3>
+  <div class="pprow"><small id="ppnl">IMIE</small><button class="ppname" id="ppname"></button><button class="g" id="ppdef">DOMYSLNE</button></div>
+  <h4 id="ppq1"></h4><div class="ppchips" id="pptr"></div><h4 id="ppq2"></h4><div class="ppchips" id="ppfo"></div>
+  <div class="ppnick"><span id="ppnl2">KSYWKA</span>: <b id="ppnk"></b><button class="g" id="pprand">LOSUJ</button></div>
+  <div class="pprow c"><button id="ppok">ZAPISZ</button><button class="g" id="ppno">ANULUJ</button></div></div>
+  <div class="pkbd" id="pkbd" hidden><button class="pkhide" id="pkhide">▼ GOTOWE</button><div class="pkimg"><div id="pkeys"></div></div></div></div>
 <div id="szatnia" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg"></div><div class="sbox"><img src="szatnia_base.jpg?v=2" alt="">
   <div class="sanim" aria-hidden="true"><div class="lamp a" style="left:18.541%;top:12.965%;width:12.739%;height:2.657%"><i></i></div><div class="lamp b" style="left:43.182%;top:12.965%;width:12.799%;height:2.657%"><i></i></div><div class="lamp c" style="left:68.600%;top:13.177%;width:12.380%;height:2.550%"><i></i></div><div class="lev" style="left:74.522%;top:42.402%;width:9.988%;height:21.679%"><div class="aura"></div><div class="orb back"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div><img src="kid27.png" alt=""><div class="orb front"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div></div><img class="tie" src="kid10.png" alt="" style="left:36.244%;top:41.445%;width:8.134%;height:23.061%"><img class="sip" src="kid7h.png" alt="" style="left:56.998%;top:40.701%;width:6.220%;height:13.603%"><div class="phone" style="left:19.258%;top:53.879%;width:2.093%;height:1.913%"></div></div>
   <div class="kid" data-i="0" style="left:14.5%;width:12.5%"></div><div class="kid" data-i="1" style="left:34.5%;width:12.5%"></div>
   <div class="kid" data-i="2" style="left:54.5%;width:12.5%"></div><div class="kid" data-i="3" style="left:73.5%;width:12.5%"></div>
   <div class="pick" id="spick">▼</div><div id="dog" title="Pies"></div>
-  <div class="spanel" id="spanel"><div class="face" id="sface"></div><div class="who"><b id="sname"></b><button class="sren" id="sren">✎ <span>ZMIEŃ IMIĘ</span></button><span id="spos"></span><em>KAPITAN · ROZGRYWAJĄCY</em><i id="ssup"></i></div><button class="sbidon" id="sbidon" aria-label="Bidon"><div class="bbox"><div class="bwin"><div class="bwater"><i></i></div></div><img src="bidon.png?v=2" alt=""></div><span class="bpts">0/100</span></button><div class="bars" id="sbars"></div></div>
+  <div class="spanel" id="spanel"><div class="face" id="sface"></div><div class="who"><b id="sname"></b><span id="spos"></span><em>KAPITAN · ROZGRYWAJĄCY</em><i id="ssup"></i></div><button class="sbidon" id="sbidon" aria-label="Bidon"><div class="bbox"><div class="bwin"><div class="bwater"><i></i></div></div><img src="bidon.png?v=2" alt=""></div><span class="bpts">0/100</span></button><div class="bars" id="sbars"></div></div>
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <button class="hot" id="sset" aria-label="Ustawienia"></button>
@@ -970,6 +989,40 @@
   window.PNAME_SET = (n, v) => { const o = pnames(); if (v && v !== PDEF[n]) o[n] = v; else delete o[n]; try { localStorage.setItem('cs_names', JSON.stringify(o)); } catch (e) {} };
   window.PNAME_DEF = (n) => PDEF[n];
   const NAMES = new Proxy({}, { get: (_, k) => window.PNAME(+k) });
+  // nickname = how you play + what you had for lunch (no Polish letters, they read badly in the pixel font)
+  const TRAITS = [['IMPULSYWNY', 'IMPULSIVE'], ['KREATYWNY', 'CREATIVE'], ['TECHNICZNY', 'TECHNICAL'], ['DOKLADNY', 'PRECISE'], ['SKUTECZNY', 'CLINICAL'], ['SZYBKI', 'FAST'], ['WALECZNY', 'FIERCE'], ['CZUJNY', 'ALERT'], ['SKUPIONY', 'FOCUSED'], ['TWARDY', 'TOUGH']];
+  const FOODS = [['SCHABOWY', 'SCHNITZEL'], ['KOTLET', 'CUTLET'], ['ROSOL', 'BROTH'], ['ZUREK', 'SOUP'], ['PIEROG', 'DUMPLING'], ['BIGOS', 'STEW'], ['ZIEMNIAK', 'POTATO'], ['MAKARON', 'PASTA'], ['RYZ', 'RICE'], ['BURAK', 'BEETROOT'], ['KLUSEK', 'NOODLE'], ['GULASZ', 'GOULASH']];
+  const nicks = () => { try { return JSON.parse(localStorage.getItem('cs_nicks') || '{}'); } catch (e) { return {}; } };
+  const nickTxt = (p) => { const e = window.LANG === 'en' ? 1 : 0; return p && TRAITS[p[0]] && FOODS[p[1]] ? `${TRAITS[p[0]][e]} ${FOODS[p[1]][e]}` : ''; };
+  window.PNICK = (n) => nickTxt(nicks()[n]);
+  window.PPROF = (() => { let num = 27, name = '', tr = -1, fo = -1, done = null; const EN = () => window.LANG === 'en', L = (pl, en) => (EN() ? en : pl);
+    const ROWS = [['Q','W','E','R','T','Y','U','I','O','P'], ['A','S','D','F','G','H','J','K','L','BS'], ['Z','X','C','V','B','N','M','-','RET'], ['STOP','SP']];
+    const KCOL = ['#ff4fb8', '#3ce6c8', '#ffe14a', '#a46ef0', '#7ad0ff', '#ff8a3a', '#b4f04a'];
+    const keys = () => { const LAB = { BS: '←', RET: L('GOTOWE', 'DONE'), SP: L('SPACJA', 'SPACE'), STOP: L('CZYSC', 'CLEAR') };
+      $('pkeys').innerHTML = ROWS.map((r, ri) => `<div class="frow">${r.map((k, ci) => `<button class="fkey${k === 'SP' ? ' sp' : k === 'RET' || k === 'STOP' ? ' w3' : k === 'BS' ? ' w2' : ''}" data-k="${k}" style="--k:${KCOL[(ri * 3 + ci * 5) % KCOL.length]}">${LAB[k] || k}</button>`).join('')}</div>`).join('');
+      $('pkeys').querySelectorAll('.fkey').forEach((b) => b.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); b.classList.add('dn'); setTimeout(() => b.classList.remove('dn'), 110); press(b.dataset.k); })); };
+    const kbd = (on) => { $('pkbd').hidden = !on; $('ppname').classList.toggle('on', on); $('pkhide').textContent = L('▼ GOTOWE', '▼ DONE'); };
+    const press = (k) => { window.KCLICK?.(['SP', 'RET', 'BS', 'STOP'].includes(k));
+      if (k === 'BS') name = name.slice(0, -1); else if (k === 'SP') { if (name && name.length < 10 && !name.endsWith(' ')) name += ' '; } else if (k === 'RET') kbd(false); else if (k === 'STOP') name = ''; else if (name.length < 10) name += k; draw(); };
+    const chips = (el, list, cur, pick) => { el.innerHTML = list.map((t, i) => `<button data-i="${i}" class="${i === cur ? 'on' : ''}">${t[EN() ? 1 : 0]}</button>`).join(''); el.querySelectorAll('button').forEach((b) => (b.onclick = () => { pick(+b.dataset.i); window.SZFX?.drip?.(); draw(); })); };
+    const draw = () => { $('ppname').textContent = name; chips($('pptr'), TRAITS, tr, (i) => (tr = i)); chips($('ppfo'), FOODS, fo, (i) => (fo = i));
+      $('ppnk').textContent = tr >= 0 && fo >= 0 ? nickTxt([tr, fo]) : (tr >= 0 ? TRAITS[tr][EN() ? 1 : 0] + ' ...' : '...'); };
+    const close = () => { kbd(false); $('pprof').hidden = true; };
+    const open = (n, cb) => { num = n; done = cb; name = window.PNAME(n); const p = nicks()[n]; tr = p ? p[0] : -1; fo = p ? p[1] : -1;
+      $('pph').textContent = L(`PROFIL · NR ${n}`, `PROFILE · No. ${n}`); $('ppnl').textContent = L('IMIE', 'NAME'); $('ppdef').textContent = L('DOMYSLNE', 'DEFAULT');
+      $('ppq1').textContent = L('JAKI JESTES NA BOISKU?', 'HOW DO YOU PLAY?'); $('ppq2').textContent = L('CO JADLES NA OBIAD?', 'WHAT DID YOU HAVE FOR LUNCH?');
+      $('ppnl2').textContent = L('KSYWKA', 'NICKNAME'); $('pprand').textContent = L('LOSUJ', 'RANDOM'); $('ppok').textContent = L('ZAPISZ', 'SAVE'); $('ppno').textContent = L('ANULUJ', 'CANCEL');
+      keys(); kbd(false); draw(); $('pprof').hidden = false; };
+    $('ppname').onclick = () => kbd(true); $('pkhide').onclick = () => kbd(false);
+    $('ppdef').onclick = () => { name = window.PNAME_DEF(num); draw(); };
+    $('pprand').onclick = () => { tr = Math.random() * TRAITS.length | 0; fo = Math.random() * FOODS.length | 0; window.SZFX?.shop?.(); draw(); };
+    $('ppx').onclick = close; $('ppno').onclick = close;
+    $('ppok').onclick = () => { window.PNAME_SET(num, name.trim()); const o = nicks(); if (tr >= 0 && fo >= 0) o[num] = [tr, fo]; try { localStorage.setItem('cs_nicks', JSON.stringify(o)); } catch (e) {} window.SZFX?.shop?.(); close(); window.SZ_REFRESH?.(); done?.(); };
+    $('pprof').addEventListener('click', (e) => { if (e.target.id === 'pprof') close(); });
+    addEventListener('keydown', (e) => { if ($('pprof').hidden) return; e.stopPropagation(); if (e.key === 'Escape') { if (!$('pkbd').hidden) kbd(false); else close(); return; }
+      if ($('pkbd').hidden) { if (e.key === 'Enter') $('ppok').click(); return; } e.preventDefault(); const k = e.key.toUpperCase();
+      if (/^[A-Z]$/.test(k) || k === '-') press(k); else if (k === ' ') press('SP'); else if (k === 'BACKSPACE') press('BS'); else if (k === 'ENTER') press('RET'); }, true);
+    return { open }; })();
   const TMUS = MV.reg(new Audio('tablica.mp3?v=2'), 0.5); TMUS.loop = true;   // the board's tune, from 1:54 of the user's track
   // ---- settings panel and the match menu --------------------------------------------------------------------------------
   const SETV = {
@@ -1215,6 +1268,7 @@
       for (let k = 0; k < n; k++) d[k] = (Math.random() * 2 - 1) * Math.pow(1 - k / n, big ? 5 : 9);
       const src = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(); src.buffer = buf; f.type = 'bandpass'; f.frequency.value = (big ? 1400 : 2600) + Math.random() * 900; f.Q.value = 1.2; g.gain.value = big ? 0.9 : 0.7; src.connect(f).connect(g).connect(AC.destination); src.start(t);
       const o = AC.createOscillator(), og = AC.createGain(); o.type = 'square'; o.frequency.setValueAtTime(big ? 90 : 140 + Math.random() * 40, t); og.gain.setValueAtTime(0.08, t); og.gain.exponentialRampToValueAtTime(0.0008, t + 0.04); o.connect(og).connect(AC.destination); o.start(t); o.stop(t + 0.05); } catch (e) {} };
+    window.KCLICK = click;
     const press = (k) => { if (bad) { bad = false; q = ''; } const big = ['SP', 'RET', 'BS', 'STOP'].includes(k); click(big);
       if (k === 'BS') q = q.slice(0, -1); else if (k === 'SP') { if (q.length < 22) q += ' '; } else if (k === 'RET') { if (q.trim()) { bad = true; setTimeout(() => window.SZFX?.drip?.(), 80); } } else if (k === 'STOP') q = ''; else if (k === 'SHIFT' || k === 'CTRL') {} else if (q.length < 22) q += k;
       showQ(); };
@@ -1364,7 +1418,7 @@
     const kids = [...document.querySelectorAll('#szatnia .kid')];
     const mark = () => { const q = SQ[sel]; window.CAPTAIN = q.num; kids.forEach((k, i) => k.classList.toggle('sel', i === sel));
       $('spick').style.left = (parseFloat(kids[sel].style.left) + parseFloat(kids[sel].style.width) / 2) + '%';
-      $('sname').textContent = `${q.num} ${window.PNAME(q.num)}`; $('spos').textContent = q.pos; $('ssup').textContent = '★ ' + q.sup;
+      $('sname').textContent = `${q.num} ${window.PNAME(q.num)}`; $('spos').textContent = q.pos; { const nk = window.PNICK(q.num); $('ssup').textContent = nk ? (window.LANG === 'en' ? 'NICKNAME: ' : 'KSYWKA: ') + nk : (window.LANG === 'en' ? '▶ TAP THE STATS: NICKNAME' : '▶ KLIKNIJ STATYSTYKI: KSYWKA'); }
       const [fx, fy] = FACE[q.face]; $('sface').style.backgroundPosition = `${(fx - 5.6) / (100 - 11.1) * 100}% ${(fy - 9.9) / (100 - 19.8) * 100}%`;
       const lvq = window.LEVELS ? window.LEVELS(q.num) : q.st; $('sbars').innerHTML = (window.LANG === 'en' ? ['SHOOTING', 'PASSING', 'DRIBBLING', 'OBRONA'.replace('OBRONA', 'DEFENCE'), 'SPEED'] : ['STRZAŁ', 'PODANIE', 'DRYBLING', 'OBRONA', 'PRĘDKOŚĆ']).map((n, i) => `<span>${n}</span><i class="${lvq[i] >= 5 ? 'max' : ''}">${[1, 2, 3, 4, 5].map((k) => `<u class="${k <= lvq[i] ? 'on' : ''}"></u>`).join('')}</i>`).join(''); };
     // little 8-bit sounds: each boy answers with his own (14 a phone game, 10 a shoelace zip, 7 a gulp of water, 27 a calm chime)
@@ -1386,15 +1440,7 @@
     window.SZ_REFRESH = () => { mark(); window.BIDON?.mini(); };
     $('spanel').addEventListener('click', () => window.BIDON.open()); $('sbidon').addEventListener('click', (e) => { e.stopPropagation(); window.BIDON.open(); });
     const L3 = (pl, en) => (window.LANG === 'en' ? en : pl);
-    const rename = () => { const q = SQ[sel]; $('pnh').textContent = L3(`DAJ IMIĘ: NR ${q.num}`, `NAME No. ${q.num}`); $('pnp').textContent = L3(`Domyślnie: ${window.PNAME_DEF(q.num)}. Do 10 liter.`, `Default: ${window.PNAME_DEF(q.num)}. Up to 10 letters.`);
-      $('pnok').textContent = 'OK'; $('pndef').textContent = L3('DOMYŚLNE', 'DEFAULT'); $('pnno').textContent = L3('ANULUJ', 'CANCEL');
-      const inp = $('pnin'); inp.value = window.PNAME(q.num); $('pname').hidden = false; setTimeout(() => { inp.focus(); inp.select(); }, 50);
-      const done = (v) => { $('pname').hidden = true; if (v !== undefined) { window.PNAME_SET(q.num, v); FX.shop(); mark(); } };
-      $('pnok').onclick = () => done(inp.value.toUpperCase().replace(/[^A-ZĄĆĘŁŃÓŚŹŻ0-9 -]/g, '').trim().slice(0, 10));
-      $('pndef').onclick = () => done(''); $('pnno').onclick = () => done();
-      inp.onkeydown = (e) => { e.stopPropagation(); if (e.key === 'Enter') $('pnok').click(); else if (e.key === 'Escape') done(); }; };
-    $('sren').addEventListener('click', (e) => { e.stopPropagation(); rename(); }); $('sname').addEventListener('click', (e) => { e.stopPropagation(); rename(); });
-    $('sface').addEventListener('click', (e) => { e.stopPropagation(); rename(); });
+    $('sbars').addEventListener('click', (e) => { e.stopPropagation(); window.PPROF.open(SQ[sel].num); });
     const choose = (i) => { FX.kid(SQ[i].face); pop(i); if (i === sel) return; sel = i; mark(); };
     kids.forEach((k, i) => k.addEventListener('click', () => choose(i)));
     // the coin box: a ding and a few coins jumping out of it
@@ -1501,7 +1547,7 @@
     document.addEventListener('keydown', (e) => {
       if (!I.hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (stage === 3) { blip(); afterIntro(); } else if (['Enter', 'Escape', 'Space'].includes(e.code)) skip(); else if (I.classList.contains('muted')) tune(); return; }
       if (!$('modes').hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'KeyA' || e.code === 'KeyD') { modeSel = (modeSel + (e.code === 'ArrowLeft' || e.code === 'KeyA' ? 4 : 1)) % 5; markMode(); } else if (e.code === 'Digit1') pickMode('match'); else if (e.code === 'Digit2') pickMode('karne'); else if (e.code === 'Digit3') pickMode('kapki'); else if (e.code === 'Digit4') pickMode('but'); else if (e.code === 'Digit5') pickMode('kapsle'); else if (e.code === 'Escape' || e.code === 'Backspace') pickMode('back'); else if (e.code === 'Enter' || e.code === 'Space') pickMode(['match', 'karne', 'kapki', 'but', 'kapsle'][modeSel]); return; }
-      if (!$('pname').hidden) return;
+      if (!$('pprof').hidden) return;
       if (!$('szatnia').hidden) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) SZ.key(e); return; }
       if ($('rank') && !$('rank').hidden) return;
       if (!$('kapki').hidden) { e.preventDefault(); e.stopPropagation(); if (e.code === 'Escape') K.stop(); else if (!$('kend').hidden && (e.code === 'Enter' || e.code === 'Space') && !e.repeat) K.start(); return; }
