@@ -576,6 +576,10 @@
   #pwar .pwit { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px; background: #fff; border: 3px solid #d8d4e8; border-radius: 6px; cursor: pointer; font: clamp(6px, .8vw, 9px) "Press Start 2P", monospace; color: #1a1030; }
   #pwar .pwit img, #pwar .pwit canvas { width: 100%; aspect-ratio: 1; object-fit: contain; image-rendering: pixelated; } #pwar .pwit.boot canvas { aspect-ratio: auto; }
   #pwar .pwit em { font-style: normal; padding: 3px 6px; background: #ffd23a; border: 2px solid #1a1030; } #pwar .pwit.on { border-color: #ff4fb8; box-shadow: 0 0 0 3px #ff4fb8; } #pwar .pwit.on em { background: #6ee05a; }
+  #pwar .pwgrid.bt { display: flex; gap: 14px; overflow: hidden; padding: 8px 4px; }
+  #pwar .pwmine { flex: 0 0 clamp(120px, 22%, 220px); display: flex; flex-direction: column; align-items: center; gap: 8px; padding-right: 12px; border-right: 3px dashed #ffb3dc; overflow-y: auto; }
+  #pwar .pwmine svg { width: 100%; height: auto; } #pwar .pwmine .pwit { width: 100%; } #pwar .pwmine p { font: clamp(6px, .75vw, 9px) "Press Start 2P", monospace; color: #b0569a; text-align: center; line-height: 1.7; margin: 0; }
+  #pwar .pwlist { flex: 1; min-width: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(90px, 13vw, 150px), 1fr)); gap: 12px; align-content: start; padding: 4px; }
   #pwar .pwnote { font: clamp(8px, 1vw, 12px) "Press Start 2P", monospace; color: #6a6488; text-align: center; line-height: 1.7; margin: 0 0 4%; }
   #pokoj .pitem { position: absolute; background: none; border: 0; padding: 0; cursor: pointer; }
   #pokoj .pitem canvas { display: block; image-rendering: pixelated; }
@@ -613,7 +617,7 @@
   #wback { left: 1.5%; top: 2.5%; } #wgo { left: 50%; bottom: 4%; transform: translateX(-50%); color: #1a1030 !important; background: #ffe14a !important; border-color: #fff6c0 !important; box-shadow: 0 4px 0 #b08a00; animation: tarr 0.9s steps(2) infinite; }
   #wtabs { position: absolute; left: 1.5%; top: 14%; display: flex; flex-direction: column; gap: 6px; } #wtabs .wbtn { position: static; font-size: 8px; } #wtabs .wbtn.on { color: #1a1030; background: #6ee05a; border-color: #d8ffc8; }
   #wpart { position: absolute; left: 1.5%; bottom: 4%; max-width: 13%; font: 9px "Press Start 2P", monospace; line-height: 1.5; color: #ffe14a; text-shadow: 2px 2px 0 #000; }
-  #wcoinbox { position: absolute; left: 1.5%; top: 32%; }
+  #wcoinbox { display: none !important; }
   #wtools { position: absolute; left: 1.5%; top: 40%; display: flex; flex-direction: column; gap: 6px; } #wtools .wbtn { position: static; font-size: 8px; padding: 7px 8px; }
   #wstats { position: absolute; left: 1.5%; top: 58%; width: 15%; display: grid; grid-template-columns: 1fr auto; gap: 2px 6px; padding: 6px; background: rgba(12,9,28,.85); border: 3px solid #5a4aa8; font: 6px "Press Start 2P", monospace; color: #fff; }
   #wstats h5 { grid-column: 1 / -1; margin: 0 0 3px; font: 7px "Press Start 2P", monospace; color: #ffe14a; } #wstats b { color: #6ee05a; font-weight: 400; }
@@ -969,8 +973,9 @@
   const closeSet = () => { $('setov').hidden = true; if (setBack) setBack(); };
   $('setok').onclick = closeSet; $('setx').onclick = closeSet;
   // our own pixel yes/no question: the browser's confirm() is blocked in fullscreen and in app browsers
-  const ask = (q, yes, head = 'NA PEWNO?') => { $('askh').textContent = head; $('askq').textContent = q; $('askov').hidden = false;
-    $('askyes').onclick = () => { $('askov').hidden = true; yes(); }; $('askno').onclick = () => { $('askov').hidden = true; }; };
+  const ask = (q, yes, head = 'NA PEWNO?', no) => { $('askh').textContent = head; $('askq').textContent = q; $('askov').hidden = false;
+    $('askyes').onclick = () => { $('askov').hidden = true; yes(); }; $('askno').onclick = () => { $('askov').hidden = true; no?.(); }; };
+  window.ASK = ask;
   const exitGame = () => ask('Wyjść z gry? Wrócisz do ekranu startowego.', () => { try { window.GAME?.quit?.(); window.GAME?.freeze(false); } catch (e) {}
       try { MV.stopAll ? MV.stopAll() : document.querySelectorAll('audio').forEach((a) => a.pause()); } catch (e) {}
       try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
@@ -1507,8 +1512,8 @@
 <script>
   document.getElementById('mvol').addEventListener('click', (e) => { e.stopPropagation(); MV.next(); }); MV.lbl();
 </script>
-<script src="./warsztat.js?v=8"></script>
-<script src="./room.js?v=5"></script>
+<script src="./warsztat.js?v=9"></script>
+<script src="./room.js?v=6"></script>
 <script src="./pen.js?v=5"></script>
 <script src="./lace.js"></script>
 <script src="./caps.js"></script>

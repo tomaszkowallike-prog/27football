@@ -9,7 +9,7 @@
     <div class="pv" data-v="1" hidden><img src="pokoj_b.jpg?v=1" alt=""><button class="phot" id="pwardrobe" style="left:17.2%;top:17%;width:31.4%;height:78%" aria-label="${T('Szafa', 'Wardrobe')}"></button>
       <button class="phot" id="pdoor" style="left:56.7%;top:17.4%;width:19.7%;height:63%" aria-label="${T('Drzwi', 'Door')}"></button><button class="phot" id="pballs" style="left:79.6%;top:57.6%;width:13%;height:42%" aria-label="Piłki"></button></div>
     <div class="pv" data-v="2" hidden><img id="pszimg" src="pokoj_szafa.jpg?v=1" alt=""><button class="phot" id="pszhot" style="left:16%;top:12%;width:64%;height:82%" aria-label="${T('Moje rzeczy', 'My stuff')}"></button><div class="pinfo" id="pinfo"></div>
-      <button class="pbtn" id="pclose" style="left:2%;bottom:3%">${T('◀ ZAMKNIJ SZAFĘ', '◀ CLOSE WARDROBE')}</button><button class="pbtn shop" id="pshop" style="right:2%;bottom:3%">${T('SKLEP', 'SHOP')}</button></div>
+      <button class="pbtn" id="pclose" style="left:2%;bottom:3%">${T('◀ ZAMKNIJ SZAFĘ', '◀ CLOSE WARDROBE')}</button></div>
     <button class="parrow l" id="pleft" aria-label="${T('W lewo', 'Left')}"></button><button class="parrow r" id="pright" aria-label="${T('W prawo', 'Right')}"></button>
     <div class="ptitle" id="ptitle">${T('MÓJ POKÓJ', 'MY ROOM')}</div>
     <button class="pbtn" id="pback" style="left:2%;top:3%">${T('◀ SZATNIA', '◀ LOCKER ROOM')}</button><div class="phint" id="phint"></div></div>
@@ -47,23 +47,35 @@
     if (open) fill(); };
 
   // the open wardrobe fills up with what was bought in the shop: empty, a few, more, full, overflowing (30+)
+  const KID = `<svg viewBox="0 0 200 170" fill="none" stroke="#ff5fb4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M58 22c-2 7 1 13 0 19M101 18c1 8-2 15 1 22"/><path d="M28 50c9 27 30 44 62 45c33 1 57-17 72-49" /><path d="M36 58c-6-3-11-1-14 3M155 41c5-4 10-3 13 1"/>
+    <g transform="rotate(-7 100 135)" stroke-width="5"><path d="M42 112c1 14-2 31 0 44"/><path d="M42 113c19-6 27 4 15 14c-6 4-12 4-15 3c21-3 30 8 17 19c-6 5-13 7-19 6"/>
+      <path d="M89 112c-3 15-2 34 13 38c13 3 17-13 16-39"/><path d="M137 113c15-2 30-1 41 2M157 112c2 15-1 30 2 45"/></g></svg>`;
   const myShirts = () => (window.PROG.get().owned || []).filter((k) => /^shirt\d+$/.test(k));
   const fill = () => { const n = myShirts().length, pic = n >= 30 ? 4 : n >= 15 ? 3 : n >= 5 ? 2 : n >= 1 ? 1 : 0;
     $('pszimg').src = pic ? `pokoj_szafa${pic}.jpg?v=1` : 'pokoj_szafa.jpg?v=1';
     $('pinfo').innerHTML = n ? `<b>${T('KOSZULKI', 'JERSEYS')}:</b> ${n} · ${T('dotknij szafy', 'tap the wardrobe')}` : T('Szafa jest pusta. Kup koszulki w sklepie!', 'The wardrobe is empty. Buy jerseys in the shop!'); };
   // the white window with your own things
   let tab = 'shirt';
-  const war = () => { const P = window.PROG.get(), grid = $('pwgrid'); root.querySelectorAll('.pwtab').forEach((b) => b.classList.toggle('on', b.dataset.t === tab)); grid.innerHTML = '';
+  const war = () => { const P = window.PROG.get(), grid = $('pwgrid'); root.querySelectorAll('.pwtab').forEach((b) => b.classList.toggle('on', b.dataset.t === tab)); grid.innerHTML = ''; grid.className = 'pwgrid';
     if (tab === 'shirt') { const list = myShirts();
       list.forEach((k) => { const it = window.JSHOP?.info(k); if (!it) return; const on = P.shirt === k, b = document.createElement('button'); b.className = 'pwit' + (on ? ' on' : '');
         b.innerHTML = `<img src="${it.img}" alt=""><span>${it.name}</span><em>${on ? T('ZAŁOŻONA', 'WEARING') : T('ZAŁÓŻ', 'WEAR')}</em>`;
         b.onclick = () => { const P2 = window.PROG.get(); P2.shirt = P2.shirt === k ? null : k; window.PROG.save(); pick(); war(); }; grid.appendChild(b); });
       $('pwnote').textContent = list.length ? '' : T('Nie masz jeszcze koszulek. Kup je w sklepie.', 'No jerseys yet. Buy some in the shop.'); }
-    else { const list = (P.owned || []).filter((k) => /^boot\d+$/.test(k));
+    else { const list = (P.owned || []).filter((k) => /^boot\d+$/.test(k)); grid.className = 'pwgrid bt';
+      // left: the boot you made in the workshop, under a pink smile and a crooked hand-written BUT
+      let mine = null; try { mine = P.myboot && localStorage.getItem('boot_mine'); } catch (e) {}
+      const left = document.createElement('div'); left.className = 'pwmine'; left.innerHTML = KID; grid.appendChild(left);
+      if (mine) { const on = P.kboots === 'myboot', b = document.createElement('button'); b.className = 'pwit boot' + (on ? ' on' : '');
+        b.innerHTML = `<img src="${mine}" alt=""><span>${T('MÓJ BUT', 'MY BOOT')}</span><em>${on ? T('ZAŁOŻONE', 'WEARING') : T('ZAŁÓŻ', 'WEAR')}</em>`;
+        b.onclick = () => { const P2 = window.PROG.get(); P2.kboots = P2.kboots === 'myboot' ? null : 'myboot'; window.PROG.save(); pick(); war(); }; left.appendChild(b); }
+      else left.insertAdjacentHTML('beforeend', `<p>${T('Zrób swojego buta w warsztacie!', 'Make your own boot in the workshop!')}</p>`);
+      const box = document.createElement('div'); box.className = 'pwlist'; grid.appendChild(box);
       list.forEach((k) => { const it = window.JSHOP?.info(k); if (!it) return; const on = P.kboots === k, b = document.createElement('button'); b.className = 'pwit boot' + (on ? ' on' : '');
         b.innerHTML = `<img src="${it.img}" alt=""><span>${it.name}</span><em>${on ? T('ZAŁOŻONE', 'WEARING') : T('ZAŁÓŻ', 'WEAR')}</em>`;
-        b.onclick = () => { const P2 = window.PROG.get(); P2.kboots = P2.kboots === k ? null : k; window.PROG.save(); pick(); war(); }; grid.appendChild(b); });
-      $('pwnote').textContent = list.length ? '' : T('Nie masz jeszcze butów. Kup je w sklepie.', 'No boots yet. Buy some in the shop.'); }
+        b.onclick = () => { const P2 = window.PROG.get(); P2.kboots = P2.kboots === k ? null : k; window.PROG.save(); pick(); war(); }; box.appendChild(b); });
+      $('pwnote').textContent = list.length ? '' : T('Butów ze sklepu jeszcze nie masz.', 'No boots from the shop yet.'); }
     $('pwar').hidden = false; };
   root.querySelectorAll('.pwtab').forEach((b) => (b.onclick = () => { tab = b.dataset.t; pick(); war(); }));
   $('pwx').onclick = () => { $('pwar').hidden = true; };
@@ -76,7 +88,6 @@
   $('pleft').onclick = () => show(view === 0 ? 1 : 0); $('pright').onclick = () => show(view === 0 ? 1 : 0);
   $('pwardrobe').onclick = () => { creak(); show(2); }; $('pclose').onclick = () => { creak(); show(1); };
   $('pdoor').onclick = $('pback').onclick = () => close();
-  $('pshop').onclick = () => window.OPENSHOP?.();
   $('pballs').onclick = (e) => { tone(300, 0.08, 'triangle', 0.08, 180); e.currentTarget.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-3%)' }, { transform: 'translateY(0)' }], { duration: 300 }); };
   $('pmon').onclick = () => { const m = $('pmon'); m.classList.toggle('lit'); tone(m.classList.contains('lit') ? 880 : 440, 0.08); };
   const open = () => { root.hidden = false; show(0); }, close = () => { root.hidden = true; };

@@ -42,7 +42,8 @@
     const sm = soleMaskImg = await load('boot_sole_m.png?v=7'), c2 = document.createElement('canvas'); c2.width = SW; c2.height = SH; const g2 = c2.getContext('2d'); g2.drawImage(sm, 0, 0);
     const d2 = g2.getImageData(0, 0, SW, SH).data; soleMask = new Uint8Array(SW * SH); for (let i = 0; i < SW * SH; i++) soleMask[i] = d2[i * 4 + 3] > 128 ? 1 : 0;
   };
-  const save = () => { try { localStorage.setItem('boot_paint_' + MOD, paint.toDataURL()); } catch (e) {} const B = cfg(), d = pg.getImageData(0, 0, W, H).data; let n = 0;
+  let dirty = false;
+  const save = () => { dirty = true; try { localStorage.setItem('boot_paint_' + MOD, paint.toDataURL()); } catch (e) {} const B = cfg(), d = pg.getImageData(0, 0, W, H).data; let n = 0;
     for (let i = 3; i < d.length; i += 16) if (d[i] > 0 && (d[i - 3] < 245 || d[i - 2] < 245 || d[i - 1] < 245)) n++; B.style = n > 400 ? 1 : 0; PROG().save(); };
   const pushUndo = () => { undo.push(pg.getImageData(0, 0, W, H)); if (undo.length > 15) undo.shift(); };
   const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
@@ -84,10 +85,10 @@
   };
   // ---- panel
   const bonusTxt = (b) => Object.entries(b).map(([k, v]) => `+${v} ${SKN[SK.indexOf(k)]}`).join(' ') || L('bez premii', 'no bonus');
-  const buy = (item, key) => { const B = cfg(), P = PROG().get(); if (B.own.includes(item.id)) { B[key] = item.id; return true; }
-    if (P.coins < item.p) { window.TOAST?.(L('ZA MAŁO MONET', 'NOT ENOUGH COINS')); return false; } P.coins -= item.p; B.own.push(item.id); B[key] = item.id; window.TOAST?.(`${item.n}: ${bonusTxt(item.b)}`); return true; };
+  // the workshop is not a shop: every material and stud option is free to pick
+  const buy = (item, key) => { const B = cfg(); if (!B.own.includes(item.id)) B.own.push(item.id); if (B[key] !== item.id) window.TOAST?.(`${item.n}: ${bonusTxt(item.b)}`); B[key] = item.id; return true; };
   const opts = (list, key) => list.map((it) => { const B = cfg(), own = B.own.includes(it.id), on = B[key] === it.id;
-    return `<button class="wopt${on ? ' on' : ''}" data-k="${key}" data-id="${it.id}" title="${bonusTxt(it.b)}">${it.n}<small>${own ? bonusTxt(it.b) : it.p + ' ' + L('MONET', 'COINS')}</small></button>`; }).join('');
+    return `<button class="wopt${on ? ' on' : ''}" data-k="${key}" data-id="${it.id}" title="${bonusTxt(it.b)}">${it.n}<small>${bonusTxt(it.b)}</small></button>`; }).join('');
   const panel = () => { const B = cfg(), bb = window.BOOT_BONUS();
     if (view === 'sole') {   // from below: only what can be done to the sole: its colour, the studs' colour, layout and material
       $('wpanel').innerHTML = `<p class="whint">${L('Wybierz kolor i dotknij podeszwy albo korka.', 'Pick a colour and tap the sole or a stud.')}</p>
@@ -102,7 +103,6 @@
       ${tool === 'pat' ? `<div class="wrow">${Object.keys(PATS).map((p) => `<button class="wt${pat === p ? ' on' : ''}" data-p="${p}">${{ paski: L('PASKI', 'STRIPES'), kropki: L('KROPKI', 'DOTS'), kratka: L('KRATKA', 'CHECK'), zygzak: L('ZYGZAK', 'ZIGZAG'), gwiazdki: L('GWIAZDKI', 'STARS'), plomienie: L('PŁOMIENIE', 'FLAMES') }[p]}</button>`).join('')}</div>` : ''}
       <h5>${L('MATERIAŁ', 'MATERIAL')}</h5><div class="wrow">${opts(MATS, 'mat')}</div>
 `;
-    $('wcoins').textContent = PROG().get().coins;
     // left column: undo / clear always in reach, and the boot's bonuses always visible
     $('wtools').innerHTML = `<button class="wbtn" id="wundo">↶ ${L('COFNIJ', 'UNDO')}</button><button class="wbtn" id="wclear">✕ ${L('WYCZYŚĆ', 'CLEAR')}</button>`;
     $('wstats').innerHTML = `<h5>${L('PREMIE BUTA', 'BOOT BONUSES')}</h5>${SKN.map((n, i) => `<span>${n}</span><b>${bb[i] ? '+' + bb[i] : '-'}</b>`).join('')}`;
@@ -138,11 +138,23 @@
   // ---- views
   const setView = (v) => { view = v; const sideV = v === 'side'; $('wbg').src = sideV ? MODELS[MOD].bg : 'warsztat_sole.jpg?v=1';
     $('wcv').className = sideV ? 'side' : 'sole'; panel(); $('wtabS').classList.toggle('on', sideV); $('wtabP').classList.toggle('on', !sideV); $('wpart').textContent = ''; draw(); };
-  const openEditor = async () => { await (ready || (ready = prep())); $('wroom').hidden = true; $('wedit').hidden = false; panel(); setView('side'); };
+  const openEditor = async () => { await (ready || (ready = prep())); dirty = false; $('wroom').hidden = true; $('wedit').hidden = false; panel(); setView('side'); };
   window.WARSZTAT = { open() { $('warsztat').hidden = false; $('wroom').hidden = false; $('wedit').hidden = true; ready = ready || prep(); } };
   $('wtable').onclick = openEditor; $('wgo').onclick = openEditor;
   $('wtabS').onclick = () => setView('side'); $('wtabP').onclick = () => setView('sole');
-  $('wback').onclick = () => { if (!$('wedit').hidden) { $('wedit').hidden = true; $('wroom').hidden = false; } else $('warsztat').hidden = true; };
+  // the finished boot as a picture on white, trimmed to the boot, for the wardrobe
+  const snapshot = () => { const v = view; view = 'side'; draw(); view = v; const src = $('wcv'), c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.drawImage(src, 0, 0); const d = src.getContext('2d').getImageData(0, 0, W, H).data; let x0 = W, y0 = H, x1 = 0, y1 = 0;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3] > 20) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 <= x0) return null; const p = 24, bw = x1 - x0 + p * 2, bh = y1 - y0 + p * 2, s = Math.min(1, 480 / bw), o = document.createElement('canvas'); o.width = Math.round(bw * s); o.height = Math.round(bh * s);
+    const og = o.getContext('2d'); og.fillStyle = '#fff'; og.fillRect(0, 0, o.width, o.height); og.imageSmoothingEnabled = false; og.drawImage(c, x0 - p, y0 - p, bw, bh, 0, 0, o.width, o.height);
+    if (v !== 'side') draw(); return o.toDataURL('image/jpeg', 0.88); };
+  const keep = () => { const url = snapshot(); if (!url) return; try { localStorage.setItem('boot_mine', url); } catch (e) { window.TOAST?.(L('Nie udało się zapisać', 'Could not save')); return; }
+    const P = PROG().get(); P.myboot = Date.now(); PROG().save(); window.TOAST?.(L('Twój but jest w szafie!', 'Your boot is in the wardrobe!')); };
+  const leaveEditor = () => { $('wedit').hidden = true; $('wroom').hidden = false; };
+  $('wback').onclick = () => { if ($('wedit').hidden) { $('warsztat').hidden = true; return; }
+    if (!dirty || !window.ASK) { leaveEditor(); return; } dirty = false;
+    window.ASK(L('Chcesz zachować tego buta? Będzie w twojej szafie w pokoju.', 'Keep this boot? It will be in the wardrobe in your room.'), () => { keep(); leaveEditor(); }, L('TWÓJ BUT', 'YOUR BOOT'), leaveEditor); };
   // load the saved paint early so the bonus is known
   setTimeout(() => { if (window.PROG) cfg(); }, 0);
 })();
