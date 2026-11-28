@@ -31,8 +31,8 @@ const TEAMS = [
       { sheet: '10', num: 1, name: 'MAREK', role: 'gk', pos: 'GK', keeper: true },
       // stats 1-5: st shot, pa pass, dr dribble, ob defence, sp speed; the captain chosen in the locker room plays in the middle
       { sheet: '7', num: 7, name: 'SZYMON', role: 'def', pos: 'DF', home: [9, 0], super: { name: 'SZYMONOWY ZYGZAK', kind: 'zigzag' }, stats: { st: 2, pa: 3, dr: 2, ob: 5, sp: 3 } },
-      { sheet: 's14', num: 14, name: 'SOWA', role: 'mid', pos: 'MF', home: [19, -8], super: { name: 'SOWIA SPIRALA', kind: 'curve' }, stats: { st: 3, pa: 4, dr: 3, ob: 3, sp: 3 } },
-      { sheet: 's10', num: 10, name: 'ARTUR', role: 'mid', pos: 'MF', home: [19, 8], super: { name: 'ARTUROWA TRĄBA', kind: 'tornado' }, stats: { st: 3, pa: 3, dr: 4, ob: 2, sp: 4 } },
+      { sheet: 's14', num: 14, name: 'ADAM', role: 'mid', pos: 'MF', home: [19, -8], super: { name: 'ZAKRĘCONA SPIRALA', kind: 'curve' }, stats: { st: 3, pa: 4, dr: 3, ob: 3, sp: 3 } },
+      { sheet: 's10', num: 10, name: 'ROBERT', role: 'mid', pos: 'MF', home: [19, 8], super: { name: 'TRĄBA POWIETRZNA', kind: 'tornado' }, stats: { st: 3, pa: 3, dr: 4, ob: 2, sp: 4 } },
       { sheet: '27', num: 27, name: 'DOMINIK', role: 'fwd', pos: 'FW', home: [26, 0], super: { name: 'KUJAWSKA PETARDA', kind: 'fire' }, captain: true, stats: { st: 5, pa: 3, dr: 4, ob: 2, sp: 4 } },
     ] },
   { name: 'FIOLETOWI', short: 'FIO', img: IMG_P, color: '#a46ee8', dir: -1,

@@ -477,7 +477,7 @@
   #szatnia .pick { position: absolute; top: 24.5%; transform: translateX(-50%); font-size: clamp(18px, 3.4vw, 40px); color: #ffe14a; text-shadow: 3px 3px 0 #000; animation: hop .6s steps(2) infinite; pointer-events: none; }
   @keyframes hop { 50% { transform: translate(-50%, -6px); } }
   #szatnia .stitle { position: absolute; left: 50%; top: 12.5%; transform: translateX(-50%); font-size: clamp(11px, 1.7vw, 20px); letter-spacing: .18em; color: #ffe14a; background: rgba(0,0,0,.75); padding: 2px 12px; white-space: nowrap; }
-  #szatnia .spanel { position: absolute; left: 11.4%; top: 75.8%; width: 59.8%; height: 20.4%; background: linear-gradient(#1b1640, #0e0b26); border: 3px solid #5a4aa8; border-radius: 6px; display: flex; align-items: center; gap: 2%; padding: 0 2%; box-sizing: border-box; }
+  #szatnia .spanel { position: absolute; left: .8%; top: 75.8%; width: 70.4%; z-index: 2; height: 20.4%; background: linear-gradient(#1b1640, #0e0b26); border: 3px solid #5a4aa8; border-radius: 6px; display: flex; align-items: center; gap: 2%; padding: 0 2%; box-sizing: border-box; }
   #szatnia .face { height: 92%; aspect-ratio: 1; background: url(szatnia.jpg) no-repeat; background-size: 900% auto; image-rendering: pixelated; border-radius: 4px; flex: none; align-self: flex-end; }
   #szatnia .who { flex: 1; display: flex; flex-direction: column; gap: .15em; font-size: clamp(9px, 1.25vw, 16px); white-space: nowrap; overflow: hidden; }
   #szatnia .who b { font-size: 2.2em; line-height: 1; } #szatnia .who em { font-style: normal; color: #ffe14a; font-size: .85em; } #szatnia .who i { font-style: normal; color: #ff8a1f; font-size: .85em; }
@@ -487,10 +487,17 @@
   .bbox .bwater { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: linear-gradient(90deg, #4ab8ff, #8ae0ff 40%, #3a9cf0); transition: height .35s steps(8); }
   .bbox .bwater i { position: absolute; left: 0; right: 0; top: 0; height: 3px; background: #dff6ff; animation: bwave 1.2s steps(2) infinite; } @keyframes bwave { 50% { transform: translateY(1px); opacity: .6; } }
   .bbox .drop { position: absolute; left: 40%; top: 6%; width: 7px; height: 7px; background: #8ae0ff; box-shadow: 0 0 0 2px #1a3a80; pointer-events: none; }
-  #szatnia .sbidon { position: absolute; left: 1.6%; top: 77.5%; width: 8.4%; height: 20.5%; padding: 0; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; z-index: 3; }
-  #szatnia .sbidon .bbox { height: 82%; } #szatnia .sbidon .bpts { font: clamp(6px, .9vw, 11px) "Press Start 2P", monospace; color: #fff; background: rgba(0,0,0,.7); padding: 2px 4px; margin-top: 2px; white-space: nowrap; }
+  #szatnia .sbidon { position: relative; flex: none; height: 96%; padding: 0; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #szatnia .sbidon .bbox { height: 78%; } #szatnia .sbidon .bpts { font: clamp(6px, .9vw, 11px) "Press Start 2P", monospace; color: #fff; background: rgba(0,0,0,.7); padding: 2px 4px; margin-top: 2px; white-space: nowrap; }
   #szatnia .sbidon.full .bbox { animation: bfull .7s steps(2) infinite; } #szatnia .sbidon.full .bpts { color: #6ee05a; } @keyframes bfull { 50% { filter: drop-shadow(0 0 6px #8ae0ff) brightness(1.2); } }
   #szatnia .spanel { cursor: pointer; }
+  #szatnia .sren { align-self: flex-start; margin: .1em 0 .2em; font: .62em "Press Start 2P", monospace; color: #1a1030; background: #3ce6c8; border: 2px solid #000; padding: .35em .5em; cursor: pointer; }
+  #pname { position: fixed; inset: 0; z-index: 72; display: grid; place-items: center; background: rgba(6,4,18,.72); font-family: "Press Start 2P", monospace; color: #fff; } #pname[hidden] { display: none; }
+  #pname .pb { width: min(92vw, 460px); background: #0c0a1e; border: 4px solid #fff; box-shadow: 0 0 0 4px #1a1030, 8px 8px 0 4px #3ce6c8; padding: 18px; text-align: center; }
+  #pname h3 { margin: 0 0 6px; font-size: clamp(11px, 2.2vw, 16px); color: #ffe14a; } #pname p { margin: 0 0 12px; font-size: clamp(7px, 1.3vw, 10px); color: #b8b0e0; line-height: 1.8; }
+  #pname input { width: 100%; box-sizing: border-box; font: clamp(16px, 3vw, 24px) "Press Start 2P", monospace; text-transform: uppercase; text-align: center; color: #ffe14a; background: #1a1540; border: 3px solid #7a6ad8; padding: 12px 8px; outline: none; }
+  #pname input:focus { border-color: #ff4fb8; } #pname .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 14px; }
+  #pname button { font: clamp(9px, 1.6vw, 12px) "Press Start 2P", monospace; padding: 11px 14px; color: #1a1030; background: #6ee05a; border: 3px solid #000; box-shadow: 0 4px 0 #000; cursor: pointer; } #pname button.g { background: #d8d4e8; }
   /* the bottle in the corner while training: it flickers (red/blue split) when it fills, a tap tells how much is in it */
   #bhud { position: fixed; z-index: 45; left: max(6px, env(safe-area-inset-left)); top: 34%; width: clamp(34px, 5vw, 56px); padding: 0; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; }
   #bhud[hidden] { display: none; } #bhud .bbox { width: 100%; } #bhud .bpts { font: clamp(6px, .8vw, 9px) "Press Start 2P", monospace; color: #fff; background: rgba(0,0,0,.72); padding: 2px 3px; margin-top: 2px; white-space: nowrap; }
@@ -671,7 +678,7 @@
   body.playing #mute { display: block; } body.playing.touch #mute { top: max(10px, env(safe-area-inset-top)); right: calc(max(10px, env(safe-area-inset-right)) + 156px); bottom: auto; }
   @media (max-width: 700px) { #score .tn { font-size: 16px; } #score .num { font-size: 24px; min-width: 50px; } #score .clockp { font-size: 18px; } #score .crest { width: 26px; height: 30px; } #score .plate, #score .clockp { height: 38px; } }
 </style>
-<script src="./lang.js?v=9"></script>
+<script src="./lang.js?v=10"></script>
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js" } }</script>
 <script>
   // music volume for every track (match, locker room, penalties, keepy-uppy): 100 / 60 / 30 / off, remembered
@@ -705,7 +712,7 @@
 <div id="toast"></div>
 <div id="stage"></div>
 <div id="rot"><div class="ph">📱</div><b>OBRÓĆ TELEFON POZIOMO</b><span>Gra działa tylko w poziomie</span></div>
-<div id="intro"><div class="side90 l mono"></div><div class="side90 r mono"></div><div class="f169"><video id="v1" src="intro.mp4" muted playsinline preload="auto" poster="intro_first.jpg"></video><video id="v2" src="intro_loop.mp4" muted loop playsinline preload="auto" poster="intro_loop.jpg"></video>
+<div id="intro"><div class="side90 l mono"></div><div class="side90 r mono"></div><div class="f169"><video id="v1" src="intro.mp4?v=2" muted playsinline preload="auto" poster="intro_first.jpg"></video><video id="v2" src="intro_loop.mp4" muted loop playsinline preload="auto" poster="intro_loop.jpg"></video>
   <div id="pressStart"><span><b>▶</b> PRESS START <b>◀</b></span></div>
   <button class="ibtn" id="skip">POMIŃ ▶▶</button><button class="ibtn" id="snd">🔊 WŁĄCZ DŹWIĘK</button></div></div>
 <div id="score" class="hud"><div class="plate"><svg class="crest" viewBox="0 0 34 38"><path d="M17 1 L32 6 V18 C32 28 25 34 17 37 C9 34 2 28 2 18 V6 Z" fill="#1d1f22" stroke="#e9e9ee" stroke-width="2"/><path d="M17 6 L27 9.5 V18 C27 25 22.5 29.5 17 32 Z" fill="#3fbf55"/><text x="17" y="23" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="11" font-weight="700" fill="#f4f1e8">P</text></svg><span class="tn" style="color:var(--g)">PIX</span><span class="num" id="sc">0 - 0</span><span class="tn" style="color:var(--p)">FIO</span><svg class="crest" viewBox="0 0 34 38"><path d="M17 1 L32 6 V18 C32 28 25 34 17 37 C9 34 2 28 2 18 V6 Z" fill="#4a2a78" stroke="#e9e9ee" stroke-width="2"/><path d="M17 6 L27 9.5 V18 C27 25 22.5 29.5 17 32 Z" fill="#a46ee8"/><text x="17" y="23" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="11" font-weight="700" fill="#f4f1e8">F</text></svg></div><div class="clockp"><span id="clock">2:00</span><span id="half">1P</span><span id="wx"></span></div></div>
@@ -802,12 +809,13 @@
   <div class="jtop"><button class="jback" id="jback" aria-label="Wróć do sklepu"></button><b class="jtitle" id="jtitle">SKLEP · KOSZULKI</b><span class="coin" id="coinJ">0</span><button class="jexit" id="jx" aria-label="Wyjdź ze sklepu">⏻ <span id="jxt">WYJDŹ</span></button></div>
   <div class="jstage"><button class="jarrow l" id="jprev" aria-label="Poprzednia"></button><img id="jimg" alt="Koszulka"><button class="jarrow r" id="jnext" aria-label="Następna"></button></div>
   <div class="jbar"><span class="jnum" id="jnum">1/37</span><b class="jname" id="jname"></b><button class="jheart" id="jheart" aria-label="Ulubione"></button><button class="jbuy" id="jbuy">KUP</button></div></div></div>
+<div id="pname" hidden><div class="pb"><h3 id="pnh">DAJ IMIĘ</h3><p id="pnp"></p><input id="pnin" maxlength="10" autocomplete="off" spellcheck="false"><div class="row"><button id="pnok">OK</button><button class="g" id="pndef">DOMYŚLNE</button><button class="g" id="pnno">ANULUJ</button></div></div></div>
 <div id="szatnia" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg"></div><div class="sbox"><img src="szatnia_base.jpg?v=2" alt="">
   <div class="sanim" aria-hidden="true"><div class="lamp a" style="left:18.541%;top:12.965%;width:12.739%;height:2.657%"><i></i></div><div class="lamp b" style="left:43.182%;top:12.965%;width:12.799%;height:2.657%"><i></i></div><div class="lamp c" style="left:68.600%;top:13.177%;width:12.380%;height:2.550%"><i></i></div><div class="lev" style="left:74.522%;top:42.402%;width:9.988%;height:21.679%"><div class="aura"></div><div class="orb back"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div><img src="kid27.png" alt=""><div class="orb front"><i style="--a:0deg;--d:0.00s;--r:52%"></i><i style="--a:45deg;--d:-0.37s;--r:60%"></i><i style="--a:90deg;--d:-0.74s;--r:68%"></i><i style="--a:135deg;--d:-1.11s;--r:52%"></i><i style="--a:180deg;--d:-1.48s;--r:60%"></i><i style="--a:225deg;--d:-1.85s;--r:68%"></i><i style="--a:270deg;--d:-2.22s;--r:52%"></i><i style="--a:315deg;--d:-2.59s;--r:60%"></i></div></div><img class="tie" src="kid10.png" alt="" style="left:36.244%;top:41.445%;width:8.134%;height:23.061%"><img class="sip" src="kid7h.png" alt="" style="left:56.998%;top:40.701%;width:6.220%;height:13.603%"><div class="phone" style="left:19.258%;top:53.879%;width:2.093%;height:1.913%"></div></div>
   <div class="kid" data-i="0" style="left:14.5%;width:12.5%"></div><div class="kid" data-i="1" style="left:34.5%;width:12.5%"></div>
   <div class="kid" data-i="2" style="left:54.5%;width:12.5%"></div><div class="kid" data-i="3" style="left:73.5%;width:12.5%"></div>
   <div class="pick" id="spick">▼</div><div id="dog" title="Pies"></div>
-  <button class="sbidon" id="sbidon" aria-label="Bidon"><div class="bbox"><div class="bwin"><div class="bwater"><i></i></div></div><img src="bidon.png?v=2" alt=""></div><span class="bpts">0/100</span></button><div class="spanel" id="spanel"><div class="face" id="sface"></div><div class="who"><b id="sname"></b><span id="spos"></span><em>KAPITAN · ROZGRYWAJĄCY</em><i id="ssup"></i></div><div class="bars" id="sbars"></div></div>
+  <div class="spanel" id="spanel"><div class="face" id="sface"></div><div class="who"><b id="sname"></b><button class="sren" id="sren">✎ <span>ZMIEŃ IMIĘ</span></button><span id="spos"></span><em>KAPITAN · ROZGRYWAJĄCY</em><i id="ssup"></i></div><button class="sbidon" id="sbidon" aria-label="Bidon"><div class="bbox"><div class="bwin"><div class="bwater"><i></i></div></div><img src="bidon.png?v=2" alt=""></div><span class="bpts">0/100</span></button><div class="bars" id="sbars"></div></div>
   <button class="hot" id="sback" style="left:1.8%;top:81%;width:8%;height:13%" aria-label="Wróć"></button>
   <button class="hot" id="sgo" style="left:72.6%;top:78%;width:25.6%;height:17.5%" aria-label="Graj"></button>
   <button class="hot" id="sset" aria-label="Ustawienia"></button>
@@ -955,7 +963,13 @@
     SZ.show(); };
   // ---- the mode screen: a match, or keepy-uppy on the stadium from the intro ----
   let modeSel = 0;
-  const NAMES = { 14: 'SOWA', 10: 'ARTUR', 7: 'SZYMON', 27: 'DOMINIK' };
+  // the four boys' names: defaults, or whatever the player called them (tap the name in the locker room)
+  const PDEF = { 14: 'ADAM', 10: 'ROBERT', 7: 'SZYMON', 27: 'DOMINIK' };
+  const pnames = () => { try { return JSON.parse(localStorage.getItem('cs_names') || '{}'); } catch (e) { return {}; } };
+  window.PNAME = (n) => pnames()[n] || PDEF[n] || '';
+  window.PNAME_SET = (n, v) => { const o = pnames(); if (v && v !== PDEF[n]) o[n] = v; else delete o[n]; try { localStorage.setItem('cs_names', JSON.stringify(o)); } catch (e) {} };
+  window.PNAME_DEF = (n) => PDEF[n];
+  const NAMES = new Proxy({}, { get: (_, k) => window.PNAME(+k) });
   const TMUS = MV.reg(new Audio('tablica.mp3?v=2'), 0.5); TMUS.loop = true;   // the board's tune, from 1:54 of the user's track
   // ---- settings panel and the match menu --------------------------------------------------------------------------------
   const SETV = {
@@ -1343,14 +1357,14 @@
   const SZ = (() => {
     const MUS = MV.reg(new Audio('szatnia.mp3?v=2'), 0.5); MUS.loop = true;   // the locker-room tune, from 0:08 of the user's track
     const musOff = () => { MUS.pause(); };
-    const SQ = [{ num: 14, name: 'SOWA', pos: 'POMOCNIK', sup: 'SOWIA SPIRALA', st: [3, 4, 3, 3, 3], face: 0 }, { num: 10, name: 'ARTUR', pos: 'NAPASTNIK', sup: 'ARTUROWA TRĄBA', st: [3, 3, 4, 2, 4], face: 1 },
+    const SQ = [{ num: 14, name: 'ADAM', pos: 'POMOCNIK', sup: 'ZAKRĘCONA SPIRALA', st: [3, 4, 3, 3, 3], face: 0 }, { num: 10, name: 'ROBERT', pos: 'NAPASTNIK', sup: 'TRĄBA POWIETRZNA', st: [3, 3, 4, 2, 4], face: 1 },
       { num: 7, name: 'SZYMON', pos: 'OBROŃCA', sup: 'SZYMONOWY ZYGZAK', st: [2, 3, 2, 5, 3], face: 2 }, { num: 27, name: 'DOMINIK', pos: 'NAPASTNIK', sup: 'KUJAWSKA PETARDA', st: [5, 3, 4, 2, 4], face: 3 }];
     const FACE = [[20.2, 49], [41, 50], [60.4, 48], [79, 51]];   // head centres in % of the picture
     let sel = 3; try { const v = +localStorage.getItem('captain'); const i = SQ.findIndex((q) => q.num === v); if (i >= 0) sel = i; } catch (e) {}
     const kids = [...document.querySelectorAll('#szatnia .kid')];
     const mark = () => { const q = SQ[sel]; window.CAPTAIN = q.num; kids.forEach((k, i) => k.classList.toggle('sel', i === sel));
       $('spick').style.left = (parseFloat(kids[sel].style.left) + parseFloat(kids[sel].style.width) / 2) + '%';
-      $('sname').textContent = `${q.num} ${q.name}`; $('spos').textContent = q.pos; $('ssup').textContent = '★ ' + q.sup;
+      $('sname').textContent = `${q.num} ${window.PNAME(q.num)}`; $('spos').textContent = q.pos; $('ssup').textContent = '★ ' + q.sup;
       const [fx, fy] = FACE[q.face]; $('sface').style.backgroundPosition = `${(fx - 5.6) / (100 - 11.1) * 100}% ${(fy - 9.9) / (100 - 19.8) * 100}%`;
       const lvq = window.LEVELS ? window.LEVELS(q.num) : q.st; $('sbars').innerHTML = (window.LANG === 'en' ? ['SHOOTING', 'PASSING', 'DRIBBLING', 'OBRONA'.replace('OBRONA', 'DEFENCE'), 'SPEED'] : ['STRZAŁ', 'PODANIE', 'DRYBLING', 'OBRONA', 'PRĘDKOŚĆ']).map((n, i) => `<span>${n}</span><i class="${lvq[i] >= 5 ? 'max' : ''}">${[1, 2, 3, 4, 5].map((k) => `<u class="${k <= lvq[i] ? 'on' : ''}"></u>`).join('')}</i>`).join(''); };
     // little 8-bit sounds: each boy answers with his own (14 a phone game, 10 a shoelace zip, 7 a gulp of water, 27 a calm chime)
@@ -1371,6 +1385,16 @@
       $('spick').animate([{ marginTop: '0px' }, { marginTop: '-10px' }, { marginTop: '0px' }, { marginTop: '-4px' }, { marginTop: '0px' }], { duration: 420, easing: 'steps(6)' }); };
     window.SZ_REFRESH = () => { mark(); window.BIDON?.mini(); };
     $('spanel').addEventListener('click', () => window.BIDON.open()); $('sbidon').addEventListener('click', (e) => { e.stopPropagation(); window.BIDON.open(); });
+    const L3 = (pl, en) => (window.LANG === 'en' ? en : pl);
+    const rename = () => { const q = SQ[sel]; $('pnh').textContent = L3(`DAJ IMIĘ: NR ${q.num}`, `NAME No. ${q.num}`); $('pnp').textContent = L3(`Domyślnie: ${window.PNAME_DEF(q.num)}. Do 10 liter.`, `Default: ${window.PNAME_DEF(q.num)}. Up to 10 letters.`);
+      $('pnok').textContent = 'OK'; $('pndef').textContent = L3('DOMYŚLNE', 'DEFAULT'); $('pnno').textContent = L3('ANULUJ', 'CANCEL');
+      const inp = $('pnin'); inp.value = window.PNAME(q.num); $('pname').hidden = false; setTimeout(() => { inp.focus(); inp.select(); }, 50);
+      const done = (v) => { $('pname').hidden = true; if (v !== undefined) { window.PNAME_SET(q.num, v); FX.shop(); mark(); } };
+      $('pnok').onclick = () => done(inp.value.toUpperCase().replace(/[^A-ZĄĆĘŁŃÓŚŹŻ0-9 -]/g, '').trim().slice(0, 10));
+      $('pndef').onclick = () => done(''); $('pnno').onclick = () => done();
+      inp.onkeydown = (e) => { e.stopPropagation(); if (e.key === 'Enter') $('pnok').click(); else if (e.key === 'Escape') done(); }; };
+    $('sren').addEventListener('click', (e) => { e.stopPropagation(); rename(); }); $('sname').addEventListener('click', (e) => { e.stopPropagation(); rename(); });
+    $('sface').addEventListener('click', (e) => { e.stopPropagation(); rename(); });
     const choose = (i) => { FX.kid(SQ[i].face); pop(i); if (i === sel) return; sel = i; mark(); };
     kids.forEach((k, i) => k.addEventListener('click', () => choose(i)));
     // the coin box: a ding and a few coins jumping out of it
@@ -1477,6 +1501,7 @@
     document.addEventListener('keydown', (e) => {
       if (!I.hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (stage === 3) { blip(); afterIntro(); } else if (['Enter', 'Escape', 'Space'].includes(e.code)) skip(); else if (I.classList.contains('muted')) tune(); return; }
       if (!$('modes').hidden) { e.preventDefault(); e.stopPropagation(); if (e.repeat) return; if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'KeyA' || e.code === 'KeyD') { modeSel = (modeSel + (e.code === 'ArrowLeft' || e.code === 'KeyA' ? 4 : 1)) % 5; markMode(); } else if (e.code === 'Digit1') pickMode('match'); else if (e.code === 'Digit2') pickMode('karne'); else if (e.code === 'Digit3') pickMode('kapki'); else if (e.code === 'Digit4') pickMode('but'); else if (e.code === 'Digit5') pickMode('kapsle'); else if (e.code === 'Escape' || e.code === 'Backspace') pickMode('back'); else if (e.code === 'Enter' || e.code === 'Space') pickMode(['match', 'karne', 'kapki', 'but', 'kapsle'][modeSel]); return; }
+      if (!$('pname').hidden) return;
       if (!$('szatnia').hidden) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) SZ.key(e); return; }
       if ($('rank') && !$('rank').hidden) return;
       if (!$('kapki').hidden) { e.preventDefault(); e.stopPropagation(); if (e.code === 'Escape') K.stop(); else if (!$('kend').hidden && (e.code === 'Enter' || e.code === 'Space') && !e.repeat) K.start(); return; }
@@ -1529,7 +1554,7 @@
 <script src="./caps.js"></script>
 <script src="./flip.js"></script>
 <script src="./paluchy.js?v=7"></script>
-<script src="./bieg.js?v=1795689650"></script>
-<script type="module" src="./game.js?v=5"></script>
+<script src="./bieg.js?v=1795689651"></script>
+<script type="module" src="./game.js?v=6"></script>
 </body>
 </html>

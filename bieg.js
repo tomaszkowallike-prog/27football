@@ -26,7 +26,7 @@
   const PL = 252, PR = 1418, PT = 188, PB = 742;
   const LANES = [-9, -3, 3, 9];
   const LAMPS = [[172, 148], [1497, 148], [157, 636], [1512, 640]];
-  const NAMES = { 14: 'SOWA', 10: 'ARTUR', 7: 'SZYMON', 27: 'DOMINIK' };
+  const NAMES = new Proxy({}, { get: (_, k) => window.PNAME?.(+k) || '' });
   const SPR_H = 72;
 
   // ---- sound ----

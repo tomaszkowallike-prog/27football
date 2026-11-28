@@ -52,7 +52,7 @@
     'Na start masz 3 boiska. Każda wygrana w turnieju odkrywa kolejne. Na Księżycu, w oceanie, w niebie i na stacji niższa grawitacja: piłka i skoki lecą wyżej.': 'You start with 3 pitches. Every tournament win unlocks another. On the Moon, in the ocean, in the sky and on the station gravity is lower: the ball and jumps go higher.',
     // squad
     'POMOCNIK': 'MIDFIELDER', 'NAPASTNIK': 'STRIKER', 'OBROŃCA': 'DEFENDER', 'BRAMKARZ': 'GOALKEEPER', 'PODANIE': 'PASSING', 'DRYBLING': 'DRIBBLING', 'OBRONA': 'DEFENCE', 'PRĘDKOŚĆ': 'SPEED', 'NOWY REKORD!': 'NEW RECORD!',
-    'SOWIA SPIRALA': 'OWL SPIRAL', 'ARTUROWA TRĄBA': "ARTUR'S TWISTER", 'SZYMONOWY ZYGZAK': "SZYMON'S ZIGZAG", 'KUJAWSKA PETARDA': 'KUJAWY FIRECRACKER', 'KRUCZY ŁUK': 'RAVEN ARC',
+    'ZAKRĘCONA SPIRALA': 'TWISTED SPIRAL', 'TRĄBA POWIETRZNA': 'WHIRLWIND', 'ZMIEŃ IMIĘ': 'RENAME', 'SZYMONOWY ZYGZAK': "SZYMON'S ZIGZAG", 'KUJAWSKA PETARDA': 'KUJAWY FIRECRACKER', 'KRUCZY ŁUK': 'RAVEN ARC',
     'ŚLIWKOWA BOMBA': 'PLUM BOMB', 'LAWENDOWY WIR': 'LAVENDER WHIRL', 'FIOLETOWY PIORUN': 'PURPLE THUNDER', 'ELEKTRYCZNY STRZAŁ': 'ELECTRIC SHOT', 'TY': 'YOU', 'FW · TY': 'FW · YOU',
     // match
     'GOL!': 'GOAL!', 'GOL': 'GOAL', 'BŁYSKAWICA': 'LIGHTNING', 'ROZDWOJENIE': 'SPLIT', 'MEGA PIŁKA': 'MEGA BALL', 'WILK': 'WOLF', 'SMOK': 'DRAGON', 'ROBOT': 'ROBOT', 'PORTALE': 'PORTALS',
