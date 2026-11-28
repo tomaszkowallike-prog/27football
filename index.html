@@ -501,6 +501,7 @@
   #pprof button { font: inherit; cursor: pointer; } #pprof .pprow button:not(.ppname), #pprof .ppnick button { padding: .9em 1.1em; color: #1a1030; background: #6ee05a; border: 3px solid #000; box-shadow: 0 3px 0 #000; } #pprof button.g { background: #d8d4e8 !important; }
   #pprof .ppchips { display: flex; flex-wrap: wrap; gap: 5px; } #pprof .ppchips button { padding: .7em .7em; color: #fff; background: #1a1540; border: 2px solid #7a6ad8; }
   #pprof .ppchips button.on { color: #1a1030; background: #ffe14a; border-color: #000; box-shadow: 2px 2px 0 #ff4fb8; }
+  #pprof .ppstep { margin: 10px 0 6px; font-size: .9em; color: #ff4fb8; } #pprof .ppnote { margin: 8px 0 0; text-align: center; color: #b8b0e0; line-height: 1.8; } #pprof .ppnick.pop { animation: pppop .5s steps(5); } @keyframes pppop { 0% { transform: scale(.6); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
   #pprof .ppnick { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; padding: 10px; background: #1a1540; border: 3px dashed #ff4fb8; font-size: 1.1em; } #pprof .ppnick b { color: #ffe14a; font-size: 1.3em; }
   #pprof .pkbd { position: fixed; inset: 0; z-index: 2; pointer-events: none; } #pprof .pkbd > * { pointer-events: auto; } #pprof .pkbd[hidden] { display: none; }
   #pprof .pkimg { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; box-shadow: 0 -4px 0 #000; padding: 1.2% 1.2% 1.4%; display: flex; flex-direction: column; box-sizing: border-box; border-top: 3px solid #000;
@@ -530,6 +531,9 @@
   #staty .srow .lvl { display: flex; gap: 2px; } #staty .srow u { width: 14px; height: 9px; background: #3a3270; text-decoration: none; } #staty .srow u.on { background: #ffc21a; } #staty .srow u.pre { background: #8ae0ff; animation: blink .6s steps(2, jump-none) infinite; }
   #staty .srow b { color: #8ae0ff; font-weight: 400; text-align: right; } #staty .srow input { width: 100%; accent-color: #4ab8ff; } #staty .srow input:disabled { opacity: .35; }
   #staty .sthint { margin: 4px 0 0; font: 8px "Press Start 2P", monospace; line-height: 1.6; color: #d8d4ff; }
+  #staty .sthint.lock { margin: 8px 0 0; padding: 8px 10px; font-size: clamp(8px, 1.2vw, 11px); line-height: 1.8; color: #1a1030; background: #ffe14a; border: 3px solid #000; box-shadow: 3px 3px 0 #ff4fb8; } #staty .sthint.lock b { color: #c0161a; }
+  #staty .srow input:disabled { pointer-events: none; }
+  #staty .sthint.shake { animation: stshake .4s steps(4); } @keyframes stshake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
   #staty .stok { align-self: flex-end; font: 11px "Press Start 2P", monospace; padding: 8px 14px; color: #0a1a30; background: #8ae0ff; border: 3px solid #dff6ff; box-shadow: 0 4px 0 #1a5a9a; cursor: pointer; } #staty .stok:disabled { opacity: .35; cursor: default; }
   @media (max-height: 420px) { #staty .srow { font-size: 8px; } #staty .bbox { height: 62vh; } }
   #szatnia .bars { cursor: pointer; padding: .3em .4em; border: 2px dashed transparent; border-radius: 4px; } #szatnia .bars:hover { border-color: #7a6ad8; }
@@ -825,8 +829,7 @@
   <div class="jbar"><span class="jnum" id="jnum">1/37</span><b class="jname" id="jname"></b><button class="jheart" id="jheart" aria-label="Ulubione"></button><button class="jbuy" id="jbuy">KUP</button></div></div></div>
 <div id="pprof" hidden><div class="ppb"><button class="ppx" id="ppx">✕</button><h3 id="pph"></h3>
   <div class="pprow"><small id="ppnl">IMIE</small><button class="ppname" id="ppname"></button><button class="g" id="ppdef">DOMYSLNE</button></div>
-  <h4 id="ppq1"></h4><div class="ppchips" id="pptr"></div><h4 id="ppq2"></h4><div class="ppchips" id="ppfo"></div>
-  <div class="ppnick"><span id="ppnl2">KSYWKA</span>: <b id="ppnk"></b><button class="g" id="pprand">LOSUJ</button></div>
+  <div id="ppwiz"></div>
   <div class="pprow c"><button id="ppok">ZAPISZ</button><button class="g" id="ppno">ANULUJ</button></div></div>
   <div class="pkbd" id="pkbd" hidden><button class="pkhide" id="pkhide">▼ GOTOWE</button><div class="pkimg"><div id="pkeys"></div></div></div></div>
 <div id="szatnia" hidden><div class="side90 l"></div><div class="side90 r"></div><div class="sbg"></div><div class="sbox"><img src="szatnia_base.jpg?v=2" alt="">
@@ -1004,20 +1007,28 @@
     const kbd = (on) => { $('pkbd').hidden = !on; $('ppname').classList.toggle('on', on); $('pkhide').textContent = L('▼ GOTOWE', '▼ DONE'); };
     const press = (k) => { window.KCLICK?.(['SP', 'RET', 'BS', 'STOP'].includes(k));
       if (k === 'BS') name = name.slice(0, -1); else if (k === 'SP') { if (name && name.length < 10 && !name.endsWith(' ')) name += ' '; } else if (k === 'RET') kbd(false); else if (k === 'STOP') name = ''; else if (name.length < 10) name += k; draw(); };
-    const chips = (el, list, cur, pick) => { el.innerHTML = list.map((t, i) => `<button data-i="${i}" class="${i === cur ? 'on' : ''}">${t[EN() ? 1 : 0]}</button>`).join(''); el.querySelectorAll('button').forEach((b) => (b.onclick = () => { pick(+b.dataset.i); window.SZFX?.drip?.(); draw(); })); };
-    const draw = () => { $('ppname').textContent = name; chips($('pptr'), TRAITS, tr, (i) => (tr = i)); chips($('ppfo'), FOODS, fo, (i) => (fo = i));
-      $('ppnk').textContent = tr >= 0 && fo >= 0 ? nickTxt([tr, fo]) : (tr >= 0 ? TRAITS[tr][EN() ? 1 : 0] + ' ...' : '...'); };
+    // nickname: question 1, then question 2, then it sticks; a new one only after a week
+    const WEEK = 7 * 864e5; let mode = 'show', pop = false;
+    const chips = (list, pick) => `<div class="ppchips">${list.map((t, i) => `<button data-i="${i}">${t[EN() ? 1 : 0]}</button>`).join('')}</div>`;
+    const draw = () => { $('ppname').textContent = name; const w = $('ppwiz'), p = nicks()[num], t = p ? p[2] || 0 : 0, wait = t + WEEK - Date.now();
+      if (mode === 'q1') { w.innerHTML = `<p class="ppstep">${L('PYTANIE 1 Z 2', 'QUESTION 1 OF 2')}</p><h4>${L('JAKI JESTES NA BOISKU?', 'HOW DO YOU PLAY?')}</h4>${chips(TRAITS)}<p class="ppnote">${L('Uwaga: ksywka zostanie z toba na 7 dni!', 'Careful: the nickname stays with you for 7 days!')}</p>`;
+        w.querySelectorAll('button').forEach((b) => (b.onclick = () => { tr = +b.dataset.i; mode = 'q2'; window.SZFX?.drip?.(); draw(); })); return; }
+      if (mode === 'q2') { w.innerHTML = `<p class="ppstep">${L('PYTANIE 2 Z 2', 'QUESTION 2 OF 2')}</p><h4>${L('CO JADLES NA OBIAD?', 'WHAT DID YOU HAVE FOR LUNCH?')}</h4>${chips(FOODS)}`;
+        w.querySelectorAll('button').forEach((b) => (b.onclick = () => { fo = +b.dataset.i; const o = nicks(); o[num] = [tr, fo, Date.now()]; try { localStorage.setItem('cs_nicks', JSON.stringify(o)); } catch (e) {}
+          mode = 'show'; pop = true; window.SZFX?.shop?.(); draw(); window.SZ_REFRESH?.(); })); return; }
+      const nk = window.PNICK(num), days = Math.ceil(wait / 864e5);
+      w.innerHTML = `<div class="ppnick${pop ? ' pop' : ''}"><span>${L('KSYWKA', 'NICKNAME')}</span>: <b>${nk || '...'}</b>${!nk || wait <= 0 ? `<button id="ppnew">${nk ? L('NOWA KSYWKA', 'NEW NICKNAME') : L('WYMYSL KSYWKE', 'GET A NICKNAME')}</button>` : ''}</div>
+        <p class="ppnote">${pop ? L('Tak zostaje! Nowa ksywka dopiero za 7 dni.', 'That\'s it! A new one only in 7 days.') : nk && wait > 0 ? L(`Nowa ksywka za ${days} ${days === 1 ? 'dzien' : 'dni'}.`, `New nickname in ${days} ${days === 1 ? 'day' : 'days'}.`) : ''}</p>`;
+      pop = false; const nb = $('ppnew'); if (nb) nb.onclick = () => { mode = 'q1'; window.SZFX?.drip?.(); draw(); }; };
     const close = () => { kbd(false); $('pprof').hidden = true; };
-    const open = (n, cb) => { num = n; done = cb; name = window.PNAME(n); const p = nicks()[n]; tr = p ? p[0] : -1; fo = p ? p[1] : -1;
+    const open = (n, cb) => { num = n; done = cb; name = window.PNAME(n); tr = fo = -1; mode = window.PNICK(n) ? 'show' : 'q1'; pop = false;
       $('pph').textContent = L(`PROFIL · NR ${n}`, `PROFILE · No. ${n}`); $('ppnl').textContent = L('IMIE', 'NAME'); $('ppdef').textContent = L('DOMYSLNE', 'DEFAULT');
-      $('ppq1').textContent = L('JAKI JESTES NA BOISKU?', 'HOW DO YOU PLAY?'); $('ppq2').textContent = L('CO JADLES NA OBIAD?', 'WHAT DID YOU HAVE FOR LUNCH?');
-      $('ppnl2').textContent = L('KSYWKA', 'NICKNAME'); $('pprand').textContent = L('LOSUJ', 'RANDOM'); $('ppok').textContent = L('ZAPISZ', 'SAVE'); $('ppno').textContent = L('ANULUJ', 'CANCEL');
+      $('ppok').textContent = L('ZAPISZ', 'SAVE'); $('ppno').textContent = L('ANULUJ', 'CANCEL');
       keys(); kbd(false); draw(); $('pprof').hidden = false; };
     $('ppname').onclick = () => kbd(true); $('pkhide').onclick = () => kbd(false);
     $('ppdef').onclick = () => { name = window.PNAME_DEF(num); draw(); };
-    $('pprand').onclick = () => { tr = Math.random() * TRAITS.length | 0; fo = Math.random() * FOODS.length | 0; window.SZFX?.shop?.(); draw(); };
     $('ppx').onclick = close; $('ppno').onclick = close;
-    $('ppok').onclick = () => { window.PNAME_SET(num, name.trim()); const o = nicks(); if (tr >= 0 && fo >= 0) o[num] = [tr, fo]; try { localStorage.setItem('cs_nicks', JSON.stringify(o)); } catch (e) {} window.SZFX?.shop?.(); close(); window.SZ_REFRESH?.(); done?.(); };
+    $('ppok').onclick = () => { window.PNAME_SET(num, name.trim()); window.SZFX?.shop?.(); close(); window.SZ_REFRESH?.(); done?.(); };
     $('pprof').addEventListener('click', (e) => { if (e.target.id === 'pprof') close(); });
     addEventListener('keydown', (e) => { if ($('pprof').hidden) return; e.stopPropagation(); if (e.key === 'Escape') { if (!$('pkbd').hidden) kbd(false); else close(); return; }
       if ($('pkbd').hidden) { if (e.key === 'Enter') $('ppok').click(); return; } e.preventDefault(); const k = e.key.toUpperCase();
@@ -1143,7 +1154,10 @@
         return `<div class="srow"><span class="sn">${n}</span><i class="lvl">${[0, 1, 2, 3, 4].map((i) => `<u class="${i < lv[k] ? 'on' : i < pl ? 'pre' : ''}"></u>`).join('')}</i>
           <input type="range" min="0" max="${Math.min(room(num, k), CAP)}" step="5" value="${pour[k]}" data-k="${k}" ${full && room(num, k) > 0 ? '' : 'disabled'}><b>${pour[k] ? '+' + pour[k] : lv[k] >= 5 ? 'MAKS' : ''}</b></div>`; }).join('');
       $('strows').querySelectorAll('input').forEach((r) => r.addEventListener('input', () => { if (get() < CAP) { r.value = 0; return; } const k = +r.dataset.k; let v = +r.value; const others = pour.reduce((a, b, i) => a + (i === k ? 0 : b), 0); v = Math.min(v, get() - others); pour[k] = v; r.value = v; drip(); upd(); }));
-      $('stok').disabled = !full || !pour.some((x) => x > 0); $('sthint').textContent = full ? L2('Przesuń suwaki, żeby rozlać punkty, i wciśnij WLEJ.') : L2('Bidon napełnisz w treningach: bieg, kapki, karne i mecze. Punkty rozlejesz, gdy będzie pełny.');
+      $('stok').disabled = !full || !pour.some((x) => x > 0); { const h = $('sthint'), en = window.LANG === 'en', have = get(); h.classList.toggle('lock', !full);
+        if (full) h.textContent = L2('Przesuń suwaki, żeby rozlać punkty, i wciśnij WLEJ.');
+        else h.innerHTML = en ? `🔒 <b>THE BOTTLE IS NOT FULL YET (${have}/${CAP}).</b> You can pour points into skills only at ${CAP}/${CAP}. ${CAP - have} to go: fill it in training (race, keepy-ups, penalties) and matches.`
+          : `🔒 <b>BIDON NIE JEST JESZCZE PEŁNY (${have}/${CAP}).</b> Punkty wlejesz w umiejętności dopiero przy ${CAP}/${CAP}. Brakuje ${CAP - have}: napełnisz go w treningach (bieg, kapki, karne) i meczach.`; }
       water(left()); };
     const upd = () => { const num = window.CAPTAIN || 27, P = PROG.get(), lv = window.LEVELS(num), xp = P.xp[num] || [0, 0, 0, 0, 0];
       $('strows').querySelectorAll('.srow').forEach((row, k) => { const prev = lv[k] * XPL + xp[k] + pour[k], pl = Math.min(5, Math.floor(prev / XPL));
@@ -1155,6 +1169,7 @@
       pour.forEach((v, k) => { if (v > 0) { const u = addXP(num, k, v); used += v; ups += u || 0; } });
       P.bidon = Math.max(0, get() - used); PROG.save(); pour = [0, 0, 0, 0, 0]; window.SZFX?.shop?.(); toast(ups ? `▲ +${ups} ${L2('POZIOM')}` : L2('Punkty wlane')); draw(); B.mini(); window.SZ_REFRESH?.(); };
     const open = () => { pour = [0, 0, 0, 0, 0]; el.hidden = false; draw(); };
+    $('strows').addEventListener('pointerdown', () => { if (get() >= CAP) return; const h = $('sthint'); h.classList.remove('shake'); void h.offsetWidth; h.classList.add('shake'); window.SZFX?.drip?.(); });
     $('stx').onclick = () => { el.hidden = true; pour = [0, 0, 0, 0, 0]; window.SZ_REFRESH?.(); };
     $('stok').onclick = commit;
     const H = $('bhud'); let pend = 0, hudT = 0, tipT = 0;
