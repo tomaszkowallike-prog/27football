@@ -47,10 +47,35 @@
     if (open) fill(); };
 
   // the open wardrobe fills up with what was bought in the shop: empty, a few, more, full, overflowing (30+)
-  const KID = `<svg viewBox="0 0 200 170" fill="none" stroke="#ff5fb4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M58 22c-2 7 1 13 0 19M101 18c1 8-2 15 1 22"/><path d="M28 50c9 27 30 44 62 45c33 1 57-17 72-49" /><path d="M36 58c-6-3-11-1-14 3M155 41c5-4 10-3 13 1"/>
-    <g transform="rotate(-7 100 135)" stroke-width="5"><path d="M42 112c1 14-2 31 0 44"/><path d="M42 113c19-6 27 4 15 14c-6 4-12 4-15 3c21-3 30 8 17 19c-6 5-13 7-19 6"/>
-      <path d="M89 112c-3 15-2 34 13 38c13 3 17-13 16-39"/><path d="M137 113c15-2 30-1 41 2M157 112c2 15-1 30 2 45"/></g></svg>`;
+  // a pink smile and a crooked hand-written BUT / BOOT, drawn in chunky pixels like a kid's doodle
+  const KID = () => { const w = 40, h = 36, c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.fillStyle = '#ff4fb4';
+    const dot = (x, y) => g.fillRect(Math.round(x), Math.round(y), 2, 2);
+    dot(13, 2); dot(13, 4); dot(23, 1); dot(24, 3);                                   // eyes, not quite level
+    for (let t = 0; t <= 1; t += 0.03) { const x = 5 + t * 30, y = 8 + Math.sin(t * Math.PI) * 9 + (t > 0.7 ? (t - 0.7) * -8 : 0); dot(x, y); }
+    dot(3, 7); dot(36, 6);
+    const F = { B: ['110', '101', '110', '101', '110'], U: ['101', '101', '101', '101', '111'], T: ['111', '010', '010', '010', '010'], O: ['111', '101', '101', '101', '111'] };
+    const word = T('BUT', 'BOOT'), sp = word.length > 3 ? 8 : 10, x0 = Math.round((w - (word.length - 1) * sp - 6) / 2), jit = [0, 2, -1, 1];
+    [...word].forEach((ch, i) => F[ch].forEach((row, y) => [...row].forEach((v, x) => { if (v === '1') g.fillRect(x0 + i * sp + x * 2 + (y > 2 ? i % 2 : 0), 23 + jit[i] + y * 2, 2, 2); })));
+    return c; };
+  // the stored picture of your boot, with a thick dark pixel outline round its silhouette
+  const outlined = (src, done) => { const im = new Image(); im.onload = () => { const w = im.width, h = im.height, B = 4, gw = Math.ceil(w / B) + 4, gh = Math.ceil(h / B) + 4;
+    const s = document.createElement('canvas'); s.width = w; s.height = h; const sg = s.getContext('2d'); sg.drawImage(im, 0, 0); const img = sg.getImageData(0, 0, w, h), d = img.data;
+    // background = the near-white area reached from the picture's border (a white boot stays whole)
+    const bg = new Uint8Array(w * h), st = [], wh = (p) => d[p * 4] > 234 && d[p * 4 + 1] > 234 && d[p * 4 + 2] > 234;
+    for (let x = 0; x < w; x++) st.push(x, (h - 1) * w + x); for (let y = 0; y < h; y++) st.push(y * w, y * w + w - 1);
+    while (st.length) { const p = st.pop(); if (bg[p] || !wh(p)) continue; bg[p] = 1; const x = p % w; if (x > 0) st.push(p - 1); if (x < w - 1) st.push(p + 1); if (p >= w) st.push(p - w); if (p < w * (h - 1)) st.push(p + w); }
+    const m = new Uint8Array(gw * gh); for (let p = 0; p < w * h; p++) { if (bg[p]) d[p * 4 + 3] = 0; else m[((p / w / B | 0) + 2) * gw + ((p % w) / B | 0) + 2] = 1; }
+    sg.putImageData(img, 0, 0);
+    const c = document.createElement('canvas'); c.width = gw * B; c.height = gh * B; const g = c.getContext('2d'); g.fillStyle = '#1a1030';
+    for (let y = 2; y < gh - 2; y++) for (let x = 2; x < gw - 2; x++) { let n = 0; for (let dy = -2; dy <= 2 && !n; dy++) for (let dx = -2; dx <= 2; dx++) if (Math.abs(dx) + Math.abs(dy) <= 2 && m[(y + dy) * gw + x + dx]) { n = 1; break; } if (n) g.fillRect(x * B, y * B, B, B); }
+    g.fillStyle = '#fff'; for (let p = 0; p < w * h; p++) if (!bg[p]) g.fillRect((p % w) + 2 * B, (p / w | 0) + 2 * B, 1, 1);   // no outline showing through the boot
+    g.drawImage(s, 2 * B, 2 * B); done(c); }; im.src = src; };
+  const mineView = (src) => { const ov = document.createElement('div'); ov.className = 'pwbig'; const P = window.PROG.get(), on = P.kboots === 'myboot';
+    ov.innerHTML = `<div class="pwbigb"><button class="pwx">✕</button><b>${T('MÓJ BUT', 'MY BOOT')}</b><div class="pwbigi"></div><button class="pwwear${on ? ' on' : ''}">${on ? T('ZAŁOŻONE', 'WEARING') : T('ZAŁÓŻ', 'WEAR')}</button></div>`;
+    outlined(src, (c) => ov.querySelector('.pwbigi').appendChild(c));
+    ov.onclick = (e) => { if (e.target === ov || e.target.classList.contains('pwx')) ov.remove(); };
+    ov.querySelector('.pwwear').onclick = () => { const P2 = window.PROG.get(); P2.kboots = P2.kboots === 'myboot' ? null : 'myboot'; window.PROG.save(); pick(); ov.remove(); war(); };
+    $('pwar').appendChild(ov); };
   const myShirts = () => (window.PROG.get().owned || []).filter((k) => /^shirt\d+$/.test(k));
   const fill = () => { const n = myShirts().length, pic = n >= 30 ? 4 : n >= 15 ? 3 : n >= 5 ? 2 : n >= 1 ? 1 : 0;
     $('pszimg').src = pic ? `pokoj_szafa${pic}.jpg?v=1` : 'pokoj_szafa.jpg?v=1';
@@ -64,13 +89,10 @@
         b.onclick = () => { const P2 = window.PROG.get(); P2.shirt = P2.shirt === k ? null : k; window.PROG.save(); pick(); war(); }; grid.appendChild(b); });
       $('pwnote').textContent = list.length ? '' : T('Nie masz jeszcze koszulek. Kup je w sklepie.', 'No jerseys yet. Buy some in the shop.'); }
     else { const list = (P.owned || []).filter((k) => /^boot\d+$/.test(k)); grid.className = 'pwgrid bt';
-      // left: the boot you made in the workshop, under a pink smile and a crooked hand-written BUT
+      // left: a small doodle icon; tapping it shows the boot you made in the workshop in the middle
       let mine = null; try { mine = P.myboot && localStorage.getItem('boot_mine'); } catch (e) {}
-      const left = document.createElement('div'); left.className = 'pwmine'; left.innerHTML = KID; grid.appendChild(left);
-      if (mine) { const on = P.kboots === 'myboot', b = document.createElement('button'); b.className = 'pwit boot' + (on ? ' on' : '');
-        b.innerHTML = `<img src="${mine}" alt=""><span>${T('MÓJ BUT', 'MY BOOT')}</span><em>${on ? T('ZAŁOŻONE', 'WEARING') : T('ZAŁÓŻ', 'WEAR')}</em>`;
-        b.onclick = () => { const P2 = window.PROG.get(); P2.kboots = P2.kboots === 'myboot' ? null : 'myboot'; window.PROG.save(); pick(); war(); }; left.appendChild(b); }
-      else left.insertAdjacentHTML('beforeend', `<p>${T('Zrób swojego buta w warsztacie!', 'Make your own boot in the workshop!')}</p>`);
+      const left = document.createElement('button'); left.className = 'pwmine' + (P.kboots === 'myboot' ? ' on' : ''); left.title = T('Mój but', 'My boot'); left.appendChild(KID()); grid.appendChild(left);
+      left.onclick = () => { pick(); if (mine) mineView(mine); else window.TOAST?.(T('Zrób swojego buta w warsztacie!', 'Make your own boot in the workshop!')); };
       const box = document.createElement('div'); box.className = 'pwlist'; grid.appendChild(box);
       list.forEach((k) => { const it = window.JSHOP?.info(k); if (!it) return; const on = P.kboots === k, b = document.createElement('button'); b.className = 'pwit boot' + (on ? ' on' : '');
         b.innerHTML = `<img src="${it.img}" alt=""><span>${it.name}</span><em>${on ? T('ZAŁOŻONE', 'WEARING') : T('ZAŁÓŻ', 'WEAR')}</em>`;

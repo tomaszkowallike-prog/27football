@@ -577,8 +577,13 @@
   #pwar .pwit img, #pwar .pwit canvas { width: 100%; aspect-ratio: 1; object-fit: contain; image-rendering: pixelated; } #pwar .pwit.boot canvas { aspect-ratio: auto; }
   #pwar .pwit em { font-style: normal; padding: 3px 6px; background: #ffd23a; border: 2px solid #1a1030; } #pwar .pwit.on { border-color: #ff4fb8; box-shadow: 0 0 0 3px #ff4fb8; } #pwar .pwit.on em { background: #6ee05a; }
   #pwar .pwgrid.bt { display: flex; gap: 14px; overflow: hidden; padding: 8px 4px; }
-  #pwar .pwmine { flex: 0 0 clamp(120px, 22%, 220px); display: flex; flex-direction: column; align-items: center; gap: 8px; padding-right: 12px; border-right: 3px dashed #ffb3dc; overflow-y: auto; }
-  #pwar .pwmine svg { width: 100%; height: auto; } #pwar .pwmine .pwit { width: 100%; } #pwar .pwmine p { font: clamp(6px, .75vw, 9px) "Press Start 2P", monospace; color: #b0569a; text-align: center; line-height: 1.7; margin: 0; }
+  #pwar .pwmine { flex: 0 0 auto; align-self: flex-start; width: clamp(64px, 9vw, 104px); aspect-ratio: 40 / 36; padding: 6px; background: #fff; border: 3px solid #ffb3dc; border-radius: 6px; cursor: pointer; }
+  #pwar .pwmine.on { border-color: #ff4fb8; box-shadow: 0 0 0 3px #ff4fb8; } #pwar .pwmine canvas { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+  #pwar .pwbig { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; background: rgba(6,4,16,.55); }
+  #pwar .pwbigb { position: relative; width: min(70vw, 120vh); background: #fff; border: 6px solid #1a1030; box-shadow: 6px 6px 0 #ff4fb8, 12px 12px 0 #1a1030; padding: 2.5% 3%; display: flex; flex-direction: column; align-items: center; gap: 10px; font: clamp(8px, 1.1vw, 13px) "Press Start 2P", monospace; color: #1a1030; }
+  #pwar .pwbigb .pwx { position: absolute; right: 8px; top: 8px; } #pwar .pwbigi { width: 100%; display: grid; place-items: center; }
+  #pwar .pwbigi canvas { width: 82%; height: auto; max-height: 52vh; object-fit: contain; image-rendering: pixelated; }
+  #pwar .pwwear { font: inherit; padding: 8px 14px; background: #ffd23a; border: 3px solid #1a1030; box-shadow: 3px 3px 0 #1a1030; cursor: pointer; } #pwar .pwwear.on { background: #6ee05a; }
   #pwar .pwlist { flex: 1; min-width: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(90px, 13vw, 150px), 1fr)); gap: 12px; align-content: start; padding: 4px; }
   #pwar .pwnote { font: clamp(8px, 1vw, 12px) "Press Start 2P", monospace; color: #6a6488; text-align: center; line-height: 1.7; margin: 0 0 4%; }
   #pokoj .pitem { position: absolute; background: none; border: 0; padding: 0; cursor: pointer; }
@@ -1513,7 +1518,7 @@
   document.getElementById('mvol').addEventListener('click', (e) => { e.stopPropagation(); MV.next(); }); MV.lbl();
 </script>
 <script src="./warsztat.js?v=9"></script>
-<script src="./room.js?v=6"></script>
+<script src="./room.js?v=7"></script>
 <script src="./pen.js?v=5"></script>
 <script src="./lace.js"></script>
 <script src="./caps.js"></script>
