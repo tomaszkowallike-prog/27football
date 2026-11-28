@@ -95,6 +95,11 @@
       else if ((x > 0 && m[k - 1]) || (x < N - 1 && m[k + 1]) || (y > 0 && m[k - N]) || (y < N - 1 && m[k + N])) { q.fillStyle = '#1a1030'; q.fillRect(x, y, 1, 1); } }
     q.fillStyle = '#fff'; q.fillRect(9, 7, 1, 2); q.fillRect(10, 6, 1, 1); return c; };
   const STAR = starSprite('#ffd21a', '#fff6b0', '#e08a00'), MEGA = starSprite('#ff6ad5', '#ffd6f4', '#b03aa8');
+  // the team dog peeks in from a bottom corner and laughs at every third miss (8-bit "ha-ha", never a real bark)
+  const DOG = new Image(); DOG.src = 'dog.png?v=2'; let fails = 0, dogSide = 1;
+  const dogLaugh = () => { S.dog = { t: 0, d: 2.2, side: dogSide = -dogSide };
+    [[900, 0], [760, 0.13], [880, 0.26], [720, 0.39], [840, 0.52], [640, 0.66]].forEach(([fq, dl]) => tone(fq, fq * 0.8, 0.09, 'square', 0.045, 0.3 + dl));
+    tone(1200, 400, 0.25, 'triangle', 0.04, 1.15); };
   const say = (t, c, d = 1.4) => { S.msg = t; S.msgC = c; S.msgT = d; };
   const burst = (x, y, c, n = 22) => { for (let i = 0; i < n; i++) S.parts.push({ x, y, vx: (Math.random() - 0.5) * 700, vy: -Math.random() * 700 - 150, l: 0.7 + Math.random() * 0.4, c }); };
   const land = () => { const ang = wrap(S.a), spins = Math.round(Math.abs(S.a) / TAU), tol = 0.55;
@@ -106,10 +111,10 @@
       if (spins >= 3) { S.star = { t: 2, d: 2, mega: spins >= 4 }; burst(S.x, FLOOR, '#8ae0ff', 18); [784, 988, 1175, 1568, 1976].forEach((fq, i) => tone(fq, fq, 0.12, 'square', 0.05, 0.35 + i * 0.07)); } burst(S.x, FLOOR, '#ffe14a'); burst(S.x, FLOOR, '#ff6ad5', 12);
       [523, 659, 784, 1047].forEach((f, i) => tone(f, f, 0.1, 'square', 0.05, i * 0.08)); thud(0.25); vib([30, 30, 60]);
       if (S.score > S.best) { S.best = S.score; try { localStorage.setItem('flip_best', S.best); } catch (e) {} } }
-    else { S.gain = 0; S.phase = 'fall'; S.t = 0; S.side = Math.sin(ang) >= 0 ? 1 : -1; S.a = ang;
+    else { S.gain = 0; if (++fails % 3 === 0) dogLaugh(); S.phase = 'fall'; S.t = 0; S.side = Math.sin(ang) >= 0 ? 1 : -1; S.a = ang;
       say(Math.abs(ang) < tol ? 'BEZ OBROTU SIĘ NIE LICZY' : Math.abs(ang) > 2.3 ? 'DO GÓRY DNEM!' : ang > 0 ? 'ZA MOCNO' : 'ZA SŁABO', '#ff6a4a');
       if (S.streak > 1) say('KONIEC SERII ×' + S.streak, '#ff6a4a'); S.streak = 0; S.score = 0; thud(0.4); tone(180, 70, 0.35, 'sawtooth', 0.04); vib(80); } };
-  const update = (dt) => { S.t += dt; if (S.msgT > 0) S.msgT -= dt; if (S.star && S.star.t > 0) S.star.t -= dt;
+  const update = (dt) => { S.t += dt; if (S.dog) { S.dog.t += dt; if (S.dog.t > S.dog.d) S.dog = null; } if (S.msgT > 0) S.msgT -= dt; if (S.star && S.star.t > 0) S.star.t -= dt;
     if (S.phase === 'hold') { S.a = Math.sin(S.t * 2.1) * 0.1; const ty = holdY(); S.x = LX + Math.sin(S.a) * half(); S.y = ty + Math.cos(S.a) * half(); }
     else if (S.phase === 'fly') { S.vy += G * dt; S.x += S.vx * dt; S.y += S.vy * dt; S.a += S.w * dt; if (S.vy > 0 && lowest() >= FLOOR) land(); }
     else if (S.phase === 'stand') { S.wob *= Math.exp(-6 * dt); S.a = S.wob * Math.cos(S.t * 24); if (S.t > 1.5) hang(); }
@@ -135,6 +140,12 @@
       if (hgt < 260) { g.save(); g.beginPath(); g.rect(0, fy, W, H - fy); g.clip(); bottle(0.22 * (1 - hgt / 260), true); g.restore(); }
       bottle();
       for (const p of S.parts) { const [x, y] = TS(p.x, p.y), c = Math.max(3, Math.round(6 * sc * 2)); g.fillStyle = p.c; g.fillRect(Math.round(x), Math.round(y), c, c); }
+      if (S.dog && DOG.complete && DOG.width) { const dg = S.dog, k = dg.t, inT = 0.35, outT = 0.4, sh = Math.min(1, k / inT, (dg.d - k) / outT), ease = 1 - Math.pow(1 - Math.max(0, sh), 3);
+        const h = Math.round(H * 0.46), w = Math.round(h * 60 / 62), laugh = k > inT && k < dg.d - outT;
+        const x = dg.side < 0 ? -w * 0.15 - (1 - ease) * w * 1.2 : W - w * 0.85 + (1 - ease) * w * 1.2, y = H - h * 0.92 + (laugh ? Math.abs(Math.sin(k * 18)) * -h * 0.03 : 0);
+        g.save(); g.imageSmoothingEnabled = false; g.translate(x + w / 2, y + h); g.rotate((dg.side < 0 ? 0.28 : -0.28) + (laugh ? Math.sin(k * 22) * 0.09 : 0)); if (dg.side > 0) g.scale(-1, 1);
+        g.drawImage(DOG, 2 * 88 + 18, 0, 62, 64, -w / 2, -h, w, h * 64 / 62); g.restore();
+        if (laugh && Math.floor(k * 5) % 2 === 0) txt('HA HA!', dg.side < 0 ? w * 0.95 : W - w * 0.95, H - h * 1.0, Math.min(26, W / 22), '#ffe14a'); }
       // HUD
       pbox(10, 10, 230, 62, '#1a1540'); g.font = '10px "Press Start 2P", monospace'; g.textAlign = 'left'; g.textBaseline = 'middle';
       g.fillStyle = '#ffe14a'; g.fillText(`WYNIK ${S.score}  ×${S.streak}`, 22, 30); g.fillStyle = '#9fd8ff'; g.fillText(`REKORD ${S.best}`, 22, 52);
