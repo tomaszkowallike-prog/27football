@@ -11,7 +11,7 @@
     #flipBack { right: max(10px, env(safe-area-inset-right)); top: max(10px, env(safe-area-inset-top)); z-index: 2; }`;
   document.head.appendChild(st);
   const cv = $('flipCv'), g = cv.getContext('2d');
-  const BG = new Image(); BG.src = 'flip_bg.jpg';
+  const BG = new Image(); const bgSrc = () => (window.LANG === 'en' ? 'flip_bg_en.jpg' : 'flip_bg.jpg'); BG.src = bgSrc();   // the board has words on it: an English twin
   const BW = 2576, BH = 1142;               // background picture size
   const FLOOR = 985, LX = 1180;             // where the bottle lands, in picture units
   const BOT_H = 320;                        // bottle height in picture units
@@ -135,6 +135,6 @@
   let last = 0, raf = 0;
   const loop = (now) => { if (!S.on) return; raf = requestAnimationFrame(loop); const dt = Math.min(0.04, (now - (last || now)) / 1000); last = now; update(dt); draw(); };
   const close = () => { S.on = false; cancelAnimationFrame(raf); root.hidden = true; removeEventListener('devicemotion', onMotion); if (S.onExit) S.onExit(); };
-  window.FLIP = { start(kind, onExit) { S.kind = kind || 'woda'; load(S.kind); S.onExit = onExit; root.hidden = false; layout(); S.phase = 'intro'; S.streak = 0; S.score = 0; S.parts = []; S.msgT = 0;
+  window.FLIP = { start(kind, onExit) { if (!BG.src.endsWith(bgSrc())) BG.src = bgSrc(); S.kind = kind || 'woda'; load(S.kind); S.onExit = onExit; root.hidden = false; layout(); S.phase = 'intro'; S.streak = 0; S.score = 0; S.parts = []; S.msgT = 0;
       S.on = true; last = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); }, _S: S, _toss: (v, w) => toss(v, w, 'test'), _hang: () => hang() };
 })();
