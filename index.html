@@ -1552,7 +1552,7 @@
     const tune = () => { I.classList.remove('muted'); const p = IMUS.play(); if (p && p.catch) p.catch(() => I.classList.add('muted')); };
     const vplay = (v) => v.play().catch(() => {});
     const toLoop = () => { if (stage === 3) return; stage = 3; I.classList.add('done', 'two'); v2.currentTime = 0; vplay(v2); v1.pause(); };
-    v1.addEventListener('timeupdate', () => { if (stage === 1 && v1.duration && v1.duration - v1.currentTime < 0.07) toLoop(); });
+    v1.addEventListener('timeupdate', () => { if (stage === 1 && v1.duration && (v1.duration - v1.currentTime < 0.07 || v1.currentTime >= 20.26)) toLoop(); });   // 20.26 s: never into the old cut's fade-out, even from a cached copy
     v1.addEventListener('ended', toLoop); v1.addEventListener('error', toLoop);
     const skip = () => { if (stage === 3) return; toLoop(); tune(); };
     $('skip').addEventListener('click', (e) => { e.stopPropagation(); skip(); });
